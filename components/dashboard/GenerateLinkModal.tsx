@@ -15,7 +15,7 @@ interface MedicoOpcao {
   clinica: string;
 }
 
-const S = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor' as const, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+const S = { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor' as const, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
 const TABS: { id: QuizType; label: string; icon: React.ReactElement }[] = [
   { id: 'renovacao', label: 'Renovação', icon: (

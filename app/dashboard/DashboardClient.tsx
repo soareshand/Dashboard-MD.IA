@@ -111,8 +111,8 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
               <Image
                 src="/MD.IA_Logotipo-removebg-preview.png"
                 alt="MD.IA"
-                width={68}
-                height={68}
+                width={96}
+                height={96}
                 className="relative rounded-2xl object-contain drop-shadow-lg"
               />
             </div>
