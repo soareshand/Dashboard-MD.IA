@@ -7,42 +7,60 @@ interface BarItem {
   avg: number;
 }
 
-interface BarChartProps {
-  data: BarItem[];
-}
-
-export default function BarChart({ data }: BarChartProps) {
+export default function BarChart({ data }: { data: BarItem[] }) {
   const max = 5;
+  const sorted = [...data].sort((a, b) => b.avg - a.avg);
 
   return (
     <div className="card-gradient-border p-6">
-      <h3 className="font-orbitron text-sm font-bold text-white mb-6 uppercase tracking-wider">
+      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">
         Média por Ferramenta
       </h3>
-      <div className="space-y-3">
-        {data.map(item => (
-          <div key={item.id} className="flex items-center gap-3">
-            <div className="w-8 text-center text-base flex-shrink-0">
-              {item.emoji || '⚙️'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#A0A0B0] mb-1 truncate">{item.label}</p>
-              <div className="w-full h-6 bg-[#12122A] rounded-full overflow-hidden relative">
+      <div className="space-y-5">
+        {sorted.map(item => {
+          const pct = max > 0 ? (item.avg / max) * 100 : 0;
+          return (
+            <div key={item.id} className="flex items-center gap-4">
+              <p className="w-40 text-xs text-[#6B7A8D] truncate shrink-0 leading-tight font-sora">
+                {item.label}
+              </p>
+              <div
+                className="flex-1 relative rounded-full"
+                style={{
+                  height: '6px',
+                  background: 'rgba(8, 8, 20, 0.9)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                }}
+              >
                 <div
-                  className="h-full rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2"
+                  className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
                   style={{
-                    width: `${(item.avg / max) * 100}%`,
-                    background: 'linear-gradient(90deg, #4A90E2, #C9A84C)',
-                    boxShadow: '0 0 8px rgba(74,144,226,0.4)',
-                    minWidth: item.avg > 0 ? '2.5rem' : '0',
+                    width: `${pct}%`,
+                    background: 'linear-gradient(90deg, #3B9EF5 0%, #7C3AED 55%, #C026D3 100%)',
+                    boxShadow: '0 0 10px rgba(124, 58, 237, 0.5)',
                   }}
-                >
-                  <span className="text-white text-xs font-mono font-bold">{item.avg}</span>
-                </div>
+                />
+                {pct > 2 && (
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-out"
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      left: `calc(${pct}% - 7px)`,
+                      background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)',
+                      boxShadow: '0 0 14px rgba(139, 92, 246, 0.9), 0 0 5px rgba(59, 158, 245, 0.7)',
+                      border: '2px solid rgba(8, 8, 20, 0.95)',
+                    }}
+                  />
+                )}
+              </div>
+              <div className="w-12 shrink-0 text-right">
+                <span className="font-orbitron font-bold text-sm text-white">{item.avg}</span>
+                <span className="text-[#374151] text-xs">/5</span>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

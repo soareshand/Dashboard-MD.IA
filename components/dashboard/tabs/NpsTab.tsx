@@ -12,7 +12,7 @@ export function TabLoader() {
   return (
     <div className="flex items-center justify-center h-64">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-[#4A90E2] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#3B9EF5] border-t-transparent rounded-full animate-spin" />
         <p className="text-[#A0A0B0] text-sm">Carregando…</p>
       </div>
     </div>
@@ -34,7 +34,7 @@ const SCALE_LABELS = ['Muito insatisfeito', 'Insatisfeito', 'Regular', 'Satisfei
 
 function ScoreBar({ nota, count, max }: { nota: number; count: number; max: number }) {
   const pct = max > 0 ? (count / max) * 100 : 0;
-  const color = nota >= 4 ? '#4A90E2' : nota >= 2 ? '#C9A84C' : '#E74C3C';
+  const color = nota >= 4 ? '#3B9EF5' : nota >= 2 ? '#8B5CF6' : '#E74C3C';
   return (
     <div className="flex items-center gap-3">
       <div className="flex flex-col items-center w-8 shrink-0">
@@ -110,12 +110,12 @@ function RenovacaoSubTab() {
   if (!data) return null;
 
   const objetivoChartData = [
-    { name: 'Sim', value: data.objetivoDistribuicao.Sim, color: '#4A90E2' },
-    { name: 'Parcialmente', value: data.objetivoDistribuicao.Parcialmente, color: '#C9A84C' },
-    { name: 'Não', value: data.objetivoDistribuicao.Nao, color: '#9B59B6' },
+    { name: 'Sim', value: data.objetivoDistribuicao.Sim, color: '#3B9EF5' },
+    { name: 'Parcialmente', value: data.objetivoDistribuicao.Parcialmente, color: '#8B5CF6' },
+    { name: 'Não', value: data.objetivoDistribuicao.Nao, color: '#374151' },
   ];
   const renovacaoChartData = [
-    { name: 'Sim', value: data.renovacaoDistribuicao.Sim, color: '#4A90E2' },
+    { name: 'Sim', value: data.renovacaoDistribuicao.Sim, color: '#3B9EF5' },
     { name: 'Não', value: data.renovacaoDistribuicao.Nao, color: '#E74C3C' },
   ];
 
@@ -123,7 +123,7 @@ function RenovacaoSubTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-xs text-[#A0A0B0]" suppressHydrationWarning>Atualizado {timeAgo(data.lastUpdated)}</p>
-        <button onClick={fetchData} className="p-1.5 rounded-lg border border-[rgba(74,144,226,0.2)] text-[#A0A0B0] hover:text-white hover:border-[#4A90E2] transition-all text-sm" title="Atualizar">↻</button>
+        <button onClick={fetchData} className="p-1.5 rounded-lg border border-[rgba(59,158,245,0.2)] text-[#A0A0B0] hover:text-white hover:border-[#3B9EF5] transition-all text-sm" title="Atualizar">↻</button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon="📋" title="Total de Respostas" value={data.kpis.totalRespostas} accent="blue" />
@@ -180,8 +180,8 @@ function CallSubTab() {
   if (data.kpis.total === 0) return <EmptyState label="Pós-Call" />;
 
   const resolucaoChart = [
-    { name: 'Resolvida', value: data.resolucaoDistribuicao.Sim, color: '#4A90E2' },
-    { name: 'Parcialmente', value: data.resolucaoDistribuicao.Parcialmente, color: '#C9A84C' },
+    { name: 'Resolvida', value: data.resolucaoDistribuicao.Sim, color: '#3B9EF5' },
+    { name: 'Parcialmente', value: data.resolucaoDistribuicao.Parcialmente, color: '#8B5CF6' },
     { name: 'Não resolvida', value: data.resolucaoDistribuicao.Nao, color: '#E74C3C' },
   ];
 
@@ -219,7 +219,7 @@ function CallSubTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[rgba(74,144,226,0.1)]">
+                <tr className="border-b border-[rgba(59,158,245,0.1)]">
                   <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Tipo</th>
                   <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Respostas</th>
                   <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Média Call</th>
@@ -228,14 +228,14 @@ function CallSubTab() {
               </thead>
               <tbody>
                 {data.porTipo.map((t, i) => (
-                  <tr key={i} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)]">
+                  <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)]">
                     <td className="px-5 py-3 text-white font-medium">{t.tipo}</td>
                     <td className="px-4 py-3 text-center text-[#A0A0B0] font-mono">{t.total}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className="font-orbitron font-bold text-[#C9A84C]">{t.mediaCall}</span>
+                      <span className="font-orbitron font-bold text-[#8B5CF6]">{t.mediaCall}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="font-orbitron font-bold text-[#9B59B6]">{t.mediaCS}</span>
+                      <span className="font-orbitron font-bold text-[#8B5CF6]">{t.mediaCS}</span>
                     </td>
                   </tr>
                 ))}
@@ -253,7 +253,7 @@ function CallSubTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[rgba(74,144,226,0.1)]">
+              <tr className="border-b border-[rgba(59,158,245,0.1)]">
                 <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Médico</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Tipo</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Respondente</th>
@@ -264,17 +264,17 @@ function CallSubTab() {
             </thead>
             <tbody>
               {data.recent.map((r, i) => (
-                <tr key={i} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)]">
+                <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)]">
                   <td className="px-5 py-3">
                     <p className="text-white font-medium">{r.nome}</p>
                     <p className="text-[#A0A0B0] text-xs">{r.clinica}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(74,144,226,0.1)] text-[#6EC6FF] border border-[rgba(74,144,226,0.2)]">{r.tipoCall || '—'}</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(59,158,245,0.1)] text-[#93C5FD] border border-[rgba(59,158,245,0.2)]">{r.tipoCall || '—'}</span>
                   </td>
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{r.respondente}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#C9A84C]">{r.notaCall}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#9B59B6]">{r.notaCS}</td>
+                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaCall}</td>
+                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaCS}</td>
                   <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.necessidadeResolvida || '—'}</td>
                 </tr>
               ))}
@@ -325,8 +325,8 @@ function TreinamentoSubTab() {
   if (data.kpis.total === 0) return <EmptyState label="Pós-Treinamento" />;
 
   const segurancaChart = [
-    { name: 'Seguro', value: data.segurancaDistribuicao.Sim, color: '#4A90E2' },
-    { name: 'Parcialmente', value: data.segurancaDistribuicao.Parcialmente, color: '#C9A84C' },
+    { name: 'Seguro', value: data.segurancaDistribuicao.Sim, color: '#3B9EF5' },
+    { name: 'Parcialmente', value: data.segurancaDistribuicao.Parcialmente, color: '#8B5CF6' },
     { name: 'Não seguro', value: data.segurancaDistribuicao.Nao, color: '#E74C3C' },
   ];
 
@@ -362,7 +362,7 @@ function TreinamentoSubTab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[rgba(74,144,226,0.1)]">
+                <tr className="border-b border-[rgba(59,158,245,0.1)]">
                   <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Ferramenta</th>
                   <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Respostas</th>
                   <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Nota Trein.</th>
@@ -372,13 +372,13 @@ function TreinamentoSubTab() {
               </thead>
               <tbody>
                 {data.porFerramenta.map((f, i) => (
-                  <tr key={i} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)]">
+                  <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)]">
                     <td className="px-5 py-3 text-white font-medium">{f.ferramenta}</td>
                     <td className="px-4 py-3 text-center text-[#A0A0B0] font-mono">{f.total}</td>
-                    <td className="px-4 py-3 text-center font-orbitron font-bold text-[#C9A84C]">{f.mediaTreinamento}</td>
-                    <td className="px-4 py-3 text-center font-orbitron font-bold text-[#9B59B6]">{f.mediaClareza}</td>
+                    <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{f.mediaTreinamento}</td>
+                    <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{f.mediaClareza}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`font-orbitron font-bold text-sm ${f.taxaSeguranca >= 70 ? 'text-[#4A90E2]' : f.taxaSeguranca >= 40 ? 'text-[#C9A84C]' : 'text-[#E74C3C]'}`}>
+                      <span className={`font-orbitron font-bold text-sm ${f.taxaSeguranca >= 70 ? 'text-[#3B9EF5]' : f.taxaSeguranca >= 40 ? 'text-[#8B5CF6]' : 'text-[#E74C3C]'}`}>
                         {f.taxaSeguranca}%
                       </span>
                     </td>
@@ -398,7 +398,7 @@ function TreinamentoSubTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[rgba(74,144,226,0.1)]">
+              <tr className="border-b border-[rgba(59,158,245,0.1)]">
                 <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Médico</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Ferramenta</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Respondente</th>
@@ -409,17 +409,17 @@ function TreinamentoSubTab() {
             </thead>
             <tbody>
               {data.recent.map((r, i) => (
-                <tr key={i} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)]">
+                <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)]">
                   <td className="px-5 py-3">
                     <p className="text-white font-medium">{r.nome}</p>
                     <p className="text-[#A0A0B0] text-xs">{r.clinica}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(155,89,182,0.1)] text-[#C39BD3] border border-[rgba(155,89,182,0.2)]">{r.ferramenta || '—'}</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(139,92,246,0.1)] text-[#A78BFA] border border-[rgba(139,92,246,0.2)]">{r.ferramenta || '—'}</span>
                   </td>
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{r.respondente}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#C9A84C]">{r.notaTreinamento}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#9B59B6]">{r.notaClareza}</td>
+                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaTreinamento}</td>
+                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaClareza}</td>
                   <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.segurancaUso || '—'}</td>
                 </tr>
               ))}
@@ -447,15 +447,16 @@ export default function NpsTab() {
   return (
     <div className="space-y-6">
       {/* Sub-navigation */}
-      <div className="flex gap-1 bg-[#0D0D1A] rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-[#06060E] rounded-xl p-1 w-fit">
         {SUB_TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setActive(t.id)}
+            style={active === t.id ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-sora transition-all whitespace-nowrap ${
               active === t.id
-                ? 'bg-[#4A90E2] text-white shadow-md'
-                : 'text-[#A0A0B0] hover:text-white'
+                ? 'text-white shadow-md'
+                : 'text-[#5B6778] hover:text-[#A0A0B0]'
             }`}
           >
             <span>{t.icon}</span>

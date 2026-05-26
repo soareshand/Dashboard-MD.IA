@@ -27,7 +27,7 @@ interface PresencaData {
 }
 
 function TaxaBar({ taxa }: { taxa: number }) {
-  const color = taxa >= 70 ? '#4A90E2' : taxa >= 40 ? '#C9A84C' : '#E74C3C';
+  const color = taxa >= 70 ? '#3B9EF5' : taxa >= 40 ? '#8B5CF6' : '#E74C3C';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-[#1A1A2E] rounded-full overflow-hidden">
@@ -101,10 +101,10 @@ export default function PresencaTab() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {data.recentSessoes.map((s, i) => {
             const taxa = s.total > 0 ? Math.round((s.presentes / s.total) * 100) : 0;
-            const color = taxa >= 70 ? '#4A90E2' : taxa >= 40 ? '#C9A84C' : '#E74C3C';
+            const color = taxa >= 70 ? '#3B9EF5' : taxa >= 40 ? '#8B5CF6' : '#E74C3C';
             const isConfirming = deletingSessao === s.sessao;
             return (
-              <div key={i} className="relative bg-[#12122A] rounded-xl p-3 text-center border border-[rgba(74,144,226,0.1)] group">
+              <div key={i} className="relative bg-[#12122A] rounded-xl p-3 text-center border border-[rgba(59,158,245,0.1)] group">
                 <button
                   onClick={() => isConfirming ? handleDeleteSessao(s.sessao) : setDeletingSessao(s.sessao)}
                   disabled={deletingInProgress}
@@ -140,7 +140,7 @@ export default function PresencaTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[rgba(74,144,226,0.1)]">
+              <tr className="border-b border-[rgba(59,158,245,0.1)]">
                 <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">#</th>
                 <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Médico</th>
                 <th className="text-center px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Presenças</th>
@@ -150,7 +150,7 @@ export default function PresencaTab() {
             </thead>
             <tbody>
               {data.medicoStats.map((m, i) => (
-                <tr key={i} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
+                <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)] transition-colors">
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{i + 1}</td>
                   <td className="px-4 py-3 text-white font-medium">{m.medico}</td>
                   <td className="px-4 py-3 text-center text-green-400 font-mono">{m.presencas}</td>
