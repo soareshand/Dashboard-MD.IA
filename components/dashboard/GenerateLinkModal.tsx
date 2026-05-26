@@ -15,19 +15,25 @@ interface MedicoOpcao {
   clinica: string;
 }
 
-const S = { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor' as const, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-
-const TABS: { id: QuizType; label: string; icon: React.ReactElement }[] = [
-  { id: 'renovacao', label: 'Renovação', icon: (
-    <svg {...S}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-  )},
-  { id: 'call', label: 'Pós-Call', icon: (
-    <svg {...S}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l1-1a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
-  )},
-  { id: 'treinamento', label: 'Pós-Treinamento', icon: (
-    <svg {...S}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-  )},
+const TABS: { id: QuizType; label: string }[] = [
+  { id: 'renovacao',   label: 'Renovação'       },
+  { id: 'call',        label: 'Pós-Call'         },
+  { id: 'treinamento', label: 'Pós-Treinamento'  },
 ];
+
+function TabIcon({ id, active }: { id: QuizType; active: boolean }) {
+  const c = active ? '#ffffff' : '#6B7A8D';
+  const s = { width: 17, height: 17, viewBox: '0 0 24 24' as const, fill: 'none' as const, stroke: c, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  if (id === 'renovacao') return (
+    <svg {...s}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+  );
+  if (id === 'call') return (
+    <svg {...s}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l1-1a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
+  );
+  return (
+    <svg {...s}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+  );
+}
 
 const TIPOS_CALL = ['Onboarding', 'Ongoing', 'Suporte', 'Análise'];
 
@@ -183,7 +189,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               }`}
               style={quizType === tab.id ? BTN_ACTIVE : {}}
             >
-              {tab.icon}
+              <TabIcon id={tab.id} active={quizType === tab.id} />
               <span>{tab.label}</span>
             </button>
           ))}
@@ -344,7 +350,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               <div>
                 <p className="text-green-400 font-medium text-sm">Link gerado!</p>
                 <p className="text-green-300/70 text-xs mt-0.5">
-                  {TABS.find(t => t.id === quizType)?.icon}{' '}
+                  <TabIcon id={quizType} active={false} />{' '}
                   {TABS.find(t => t.id === quizType)?.label}
                   {quizType === 'call' && tipoCall ? ` · ${tipoCall}` : ''}
                   {quizType === 'treinamento' && ferramenta ? ` · ${ferramenta}` : ''}
