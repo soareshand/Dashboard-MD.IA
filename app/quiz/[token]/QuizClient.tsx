@@ -104,7 +104,7 @@ export default function QuizClient({ token, initial }: { token: string; initial:
   }
 
   function canAdvance(): boolean {
-    if (step === 1) return !!(form.nome.trim() && form.clinica.trim() && form.email.trim());
+    if (step === 1) return !!(form.nome.trim() && form.clinica.trim());
     if (step === 2) return !!(form.objetivo.trim() && form.objetivoAlcancado && form.maiorDesafio.trim());
     if (step === 3) return !!(form.crescimentoPacientes && form.reducaoTempoOperacional && form.investimentoRetorno);
     if (step === 4) return TOOL_ITEMS.every(t => form[t.id as keyof FormData] !== null);
@@ -244,10 +244,6 @@ function Step1({ form, update }: { form: FormData; update: (f: keyof FormData, v
       <QuestionBlock>
         <Label>Clínica / Consultório *</Label>
         <TextInput value={form.clinica} onChange={v => update('clinica', v)} placeholder="Nome da clínica" />
-      </QuestionBlock>
-      <QuestionBlock>
-        <Label>Email *</Label>
-        <TextInput value={form.email} onChange={v => update('email', v)} placeholder="email@clinica.com.br" type="email" />
       </QuestionBlock>
     </>
   );
