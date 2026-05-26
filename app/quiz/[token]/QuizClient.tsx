@@ -255,12 +255,13 @@ function Step2({ form, update }: { form: FormData; update: (f: keyof FormData, v
     <>
       <StepTitle>Objetivos e Metas</StepTitle>
       <QuestionBlock>
-        <Label>Qual foi o seu principal objetivo ao entrar na MD.IA?</Label>
+        <Label>Qual foi o seu principal objetivo ao entrar na MD.IA? <span className="text-[#555570] text-xs">(pode selecionar mais de um)</span></Label>
         <OptionSelector
           options={OBJETIVOS_OPTIONS}
           value={form.objetivo}
           onChange={v => update('objetivo', v)}
-          placeholder="Descreva seu objetivo principal..."
+          placeholder="Descreva seu objetivo..."
+          multi
         />
       </QuestionBlock>
       <QuestionBlock>
@@ -272,12 +273,13 @@ function Step2({ form, update }: { form: FormData; update: (f: keyof FormData, v
         />
       </QuestionBlock>
       <QuestionBlock>
-        <Label>Qual é o seu maior desafio hoje na clínica?</Label>
+        <Label>Qual é o seu maior desafio hoje na clínica? <span className="text-[#555570] text-xs">(pode selecionar mais de um)</span></Label>
         <OptionSelector
           options={DESAFIOS_OPTIONS}
           value={form.maiorDesafio}
           onChange={v => update('maiorDesafio', v)}
-          placeholder="Descreva seu maior desafio atual..."
+          placeholder="Descreva seu desafio..."
+          multi
         />
       </QuestionBlock>
     </>
