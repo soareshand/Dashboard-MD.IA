@@ -60,7 +60,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
       .catch(() => {});
   }, []);
 
-  const clinicasDisponiveis = [...new Set(medicosAtivos.map(m => m.clinica).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const clinicasDisponiveis = Array.from(new Set(medicosAtivos.map(m => m.clinica).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
   function handleSelectMedico(nomeVal: string) {
     setNome(nomeVal);
