@@ -83,7 +83,7 @@ const NAO_COLOR = '#F59E0B';
 
 function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
   const total = dist.Sim + dist.Parcialmente + dist.Nao;
-  const r = 58, sw = 14;
+  const r = 80, sw = 16;
   const c = 2 * Math.PI * r;
   const gap = 6;
 
@@ -102,42 +102,39 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
     return { ...seg, dash, offset };
   }) : [];
 
+  const cx = 100, cy = 100;
   return (
     <div className="card-gradient-border p-6">
       <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-6 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
-      <div className="flex items-center gap-6">
-        <div className="shrink-0">
-          <svg width={148} height={148} viewBox="0 0 148 148">
-            <defs>
-              <filter id="donut-glow">
-                <feGaussianBlur stdDeviation="3.5" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <circle cx={74} cy={74} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
-            <g transform="rotate(-90 74 74)" filter="url(#donut-glow)">
-              {total === 0
-                ? <circle cx={74} cy={74} r={r} fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth={sw}/>
-                : arcs.map(arc => arc.dash > 0 && (
-                  <circle key={arc.label} cx={74} cy={74} r={r} fill="none"
-                    stroke={arc.color} strokeWidth={sw}
-                    strokeDasharray={`${arc.dash} ${c - arc.dash}`}
-                    strokeDashoffset={-arc.offset}
-                  />
-                ))
-              }
-            </g>
-            <text x={74} y={70} textAnchor="middle" fill="white" fontSize={26} fontFamily="Orbitron,monospace" fontWeight="bold">{total}</text>
-            <text x={74} y={88} textAnchor="middle" fill="#555570" fontSize={9} fontFamily="Sora,sans-serif">respostas</text>
-          </svg>
-        </div>
-        <div className="space-y-4 flex-1">
+      <div className="flex flex-col items-center">
+        <svg width={200} height={200} viewBox="0 0 200 200">
+          <defs>
+            <filter id="donut-glow">
+              <feGaussianBlur stdDeviation="3.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
+          <g transform={`rotate(-90 ${cx} ${cy})`} filter="url(#donut-glow)">
+            {total === 0
+              ? <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth={sw}/>
+              : arcs.map(arc => arc.dash > 0 && (
+                <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none"
+                  stroke={arc.color} strokeWidth={sw}
+                  strokeDasharray={`${arc.dash} ${c - arc.dash}`}
+                  strokeDashoffset={-arc.offset}
+                />
+              ))
+            }
+          </g>
+          <text x={cx} y={cy - 10} textAnchor="middle" fill="white" fontSize={32} fontFamily="Orbitron,monospace" fontWeight="bold">{total}</text>
+          <text x={cx} y={cy + 14} textAnchor="middle" fill="#555570" fontSize={10} fontFamily="Sora,sans-serif">respostas</text>
+        </svg>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-2">
           {segs.map(seg => (
-            <div key={seg.label} className="flex items-center gap-2.5">
+            <div key={seg.label} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
-              <span className="text-xs text-[#A0A0B0] font-sora flex-1">{seg.label}</span>
-              <span className="font-orbitron text-sm font-bold text-white">{seg.value}</span>
-              <span className="text-xs text-[#555570] w-8 text-right">{total > 0 ? Math.round(seg.value / total * 100) : 0}%</span>
+              <span className="text-[11px] text-[#555570] font-sora">{seg.label}: <span className="text-white font-semibold">{seg.value}</span> <span className="text-[#444460]">{total > 0 ? Math.round(seg.value / total * 100) : 0}%</span></span>
             </div>
           ))}
         </div>
