@@ -73,6 +73,10 @@ function FinStatusBadge({ status }: { status: string }) {
     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
       s === 'pago'
         ? 'bg-green-900/40 text-green-400 border border-green-700/30'
+        : s === 'pago parcial'
+        ? 'bg-yellow-900/40 text-yellow-400 border border-yellow-700/30'
+        : s === 'permuta'
+        ? 'bg-purple-900/40 text-purple-400 border border-purple-700/30'
         : s === 'em aberto'
         ? 'bg-red-900/40 text-red-400 border border-red-700/30'
         : 'bg-[#1A1A2E] text-[#A0A0B0] border border-[rgba(74,144,226,0.15)]'
@@ -106,6 +110,7 @@ function ContratoModal({
   const [form, setForm] = useState<ContratoForm>(initial ?? BLANK_CONTRATO);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = !!initial?.id;
 
   useEffect(() => {
@@ -135,6 +140,23 @@ function ContratoModal({
       onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/contratos/${initial!.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao excluir.');
+      onSave();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+      setConfirmDelete(false);
     } finally {
       setSaving(false);
     }
@@ -172,7 +194,9 @@ function ContratoModal({
             <label className={lbl}>Status Financeiro</label>
             <select value={form.statusFinanceiro} onChange={e => set('statusFinanceiro', e.target.value)} className={inp + ' cursor-pointer'}>
               <option value="Em Aberto">Em Aberto</option>
+              <option value="Pago Parcial">Pago Parcial</option>
               <option value="Pago">Pago</option>
+              <option value="Permuta">Permuta</option>
             </select>
           </div>
           <div>
@@ -206,6 +230,19 @@ function ContratoModal({
         {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
+          {isEdit && (
+            <button
+              onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+              disabled={saving}
+              className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
+                confirmDelete
+                  ? 'bg-red-600 text-white'
+                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+              }`}
+            >
+              {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
+            </button>
+          )}
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white transition-all text-sm">
             Cancelar
           </button>
@@ -230,6 +267,7 @@ function RenovacaoModal({
   const [form, setForm] = useState<RenovacaoForm>(initial ?? BLANK_RENOVACAO);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = !!initial?.id;
 
   useEffect(() => {
@@ -259,6 +297,23 @@ function RenovacaoModal({
       onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/renovacoes/${initial!.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao excluir.');
+      onSave();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+      setConfirmDelete(false);
     } finally {
       setSaving(false);
     }
@@ -300,7 +355,9 @@ function RenovacaoModal({
             <label className={lbl}>Status Financeiro</label>
             <select value={form.statusFinanceiro} onChange={e => set('statusFinanceiro', e.target.value)} className={inp + ' cursor-pointer'}>
               <option value="Em Aberto">Em Aberto</option>
+              <option value="Pago Parcial">Pago Parcial</option>
               <option value="Pago">Pago</option>
+              <option value="Permuta">Permuta</option>
             </select>
           </div>
           <div className="sm:col-span-2">
@@ -320,6 +377,19 @@ function RenovacaoModal({
         {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
+          {isEdit && (
+            <button
+              onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+              disabled={saving}
+              className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
+                confirmDelete
+                  ? 'bg-red-600 text-white'
+                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+              }`}
+            >
+              {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
+            </button>
+          )}
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white transition-all text-sm">
             Cancelar
           </button>

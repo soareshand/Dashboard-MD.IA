@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TabLoader, TabError } from './NpsTab';
 import KpiCard from '@/components/dashboard/KpiCard';
 
@@ -74,6 +74,7 @@ function ContatoModal({
   } : BLANK_CONTATO);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = !!initial?.id;
 
   useEffect(() => {
@@ -112,6 +113,23 @@ function ContatoModal({
       onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/contatos/${initial!.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao excluir.');
+      onSave();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+      setConfirmDelete(false);
     } finally {
       setSaving(false);
     }
@@ -184,6 +202,19 @@ function ContatoModal({
         {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
+          {isEdit && (
+            <button
+              onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+              disabled={saving}
+              className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
+                confirmDelete
+                  ? 'bg-red-600 text-white'
+                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+              }`}
+            >
+              {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
+            </button>
+          )}
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white transition-all text-sm">
             Cancelar
           </button>
@@ -331,6 +362,7 @@ function MembroModal({
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isEdit = !!initial?.id;
 
   useEffect(() => {
@@ -360,6 +392,23 @@ function MembroModal({
       onClose();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/clientes/${initial!.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao excluir.');
+      onSave();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+      setConfirmDelete(false);
     } finally {
       setSaving(false);
     }
@@ -445,6 +494,19 @@ function MembroModal({
         {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
+          {isEdit && (
+            <button
+              onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+              disabled={saving}
+              className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
+                confirmDelete
+                  ? 'bg-red-600 text-white'
+                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+              }`}
+            >
+              {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
+            </button>
+          )}
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white transition-all text-sm">
             Cancelar
           </button>
@@ -466,6 +528,11 @@ export default function ClientesTab() {
   const [modalContato, setModalContato] = useState<(ContatoForm & { id?: string }) | null | false>(false);
   const [filtroSituacao, setFiltroSituacao] = useState<'todos' | 'Ativo' | 'Inativo'>('todos');
   const [buscaNome, setBuscaNome] = useState('');
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  function scrollTable(dir: 'left' | 'right') {
+    tableRef.current?.scrollBy({ left: dir === 'right' ? 320 : -320, behavior: 'smooth' });
+  }
 
   const fetchData = useCallback(async () => {
     try {
@@ -646,8 +713,25 @@ export default function ClientesTab() {
       )}
 
       {activeTable === 'membros' && (
+        <div className="space-y-1">
+          {/* Setas superiores */}
+          <div className="flex justify-end gap-1.5">
+            <button
+              onClick={() => scrollTable('left')}
+              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+            >
+              ‹ Anterior
+            </button>
+            <button
+              onClick={() => scrollTable('right')}
+              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+            >
+              Próximo ›
+            </button>
+          </div>
+
         <div className="card-gradient-border overflow-hidden">
-          <div className="overflow-x-auto">
+          <div ref={tableRef} className="overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
             <table className="w-full text-sm min-w-[1200px]">
               <thead>
                 <tr className="border-b border-[rgba(74,144,226,0.1)]">
@@ -725,6 +809,23 @@ export default function ClientesTab() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+          {/* Setas inferiores */}
+          <div className="flex justify-end gap-1.5">
+            <button
+              onClick={() => scrollTable('left')}
+              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+            >
+              ‹ Anterior
+            </button>
+            <button
+              onClick={() => scrollTable('right')}
+              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+            >
+              Próximo ›
+            </button>
           </div>
         </div>
       )}

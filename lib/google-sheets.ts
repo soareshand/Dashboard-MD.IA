@@ -591,6 +591,37 @@ export async function getPresencas(): Promise<PresencaData> {
   return { medicos, sessoes, grid };
 }
 
+// ── Excluir Sessão de Presença ────────────────────────────────────────────────
+
+export async function deletePresencaSessao(sessao: string): Promise<void> {
+  const sheets = getSheetsClient();
+  const SHEET_NAME = 'Presença nas Mentorias em Grupo';
+
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheetMeta = meta.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
+  if (sheetMeta?.properties?.sheetId == null) throw new Error('Sheet not found');
+  const sheetId = sheetMeta!.properties!.sheetId!;
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `'${SHEET_NAME}'!1:1`,
+  });
+  const headerRow = res.data.values?.[0] ?? [];
+  const colIndex = headerRow.indexOf(sessao);
+  if (colIndex === -1) throw new Error('Sessão não encontrada.');
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: {
+      requests: [{
+        deleteDimension: {
+          range: { sheetId, dimension: 'COLUMNS', startIndex: colIndex, endIndex: colIndex + 1 },
+        },
+      }],
+    },
+  });
+}
+
 // ── Registrar Presença ────────────────────────────────────────────────────────
 
 function colIndexToLetter(index: number): string {

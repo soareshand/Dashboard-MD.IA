@@ -22,7 +22,7 @@ Two public surfaces, no authentication:
 - **`/quiz/[token]`** — Public multi-step NPS form for doctors, accessed via unique link. Server component validates the token via Supabase before rendering the client form.
 - **`/dashboard`** — KPI panel for the CS team. Supports `?embed=true` to strip header/footer for iframe embedding in InfiniteGear SuperAdmin CRM.
 
-**Database:** Supabase (PostgreSQL). `lib/supabase.ts` exports a single client using the service role key (bypasses RLS — no RLS policies are active). Google Sheets (`lib/google-sheets.ts`) is used only for one-time migration source data; all live data is in Supabase.
+**Database:** Supabase (PostgreSQL). `lib/supabase.ts` exports a single client using the service role key (bypasses RLS — no RLS policies are active). Google Sheets (`lib/google-sheets.ts`) is still used for presença data (read/write) and the `validate-token` legacy route; all other live data is in Supabase.
 
 **Supabase tables:**
 - `tokens` — one row per generated quiz link (`token`, `cliente_nome`, `clinica`, `email`, `quiz_type`, `extra_info`, `status`, `answered_at`)
@@ -56,9 +56,11 @@ Two public surfaces, no authentication:
 
 **One-time migration routes (do not run again):** `POST /api/migrate-sheets` (clientes from Sheets), `POST /api/migrate-contatos` (296 contato rows from Sheets), `POST /api/patch-clientes-cpf` (backfilled cpf/cep/estado for 55 existing clientes).
 
-**Temporary debug file to delete:** `app/api/debug-clientes/route.ts` — was used to diagnose the Next.js fetch cache bug; no longer needed.
+**Orphaned tabs (not wired into DashboardClient):** `ServicosTab.tsx` and `ResgateTab.tsx` exist in `components/dashboard/tabs/` but are not imported. Their corresponding API routes (`servicos-data`, `resgate-data`) still read from Google Sheets.
 
 ## Important constraints
+
+**`export const dynamic = 'force-dynamic'`:** All Supabase-backed API routes must export this to avoid Next.js trying to statically render them at build time. Currently applied to: `clientes-data`, `financeiro-data`, `dashboard-data`, `nps-call-data`, `nps-treinamento-data`. Add it to any new Supabase route.
 
 **snake_case ↔ camelCase mapping:** Supabase returns snake_case columns. `mapRow()` in `dashboard-data/route.ts` converts them to camelCase for `TOOL_ITEMS` compatibility. When adding a new tool, add the snake_case column to the DB table AND add the camelCase mapping in `mapRow()`.
 

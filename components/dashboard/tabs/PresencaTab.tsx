@@ -43,6 +43,8 @@ export default function PresencaTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [deletingSessao, setDeletingSessao] = useState<string | null>(null);
+  const [deletingInProgress, setDeletingInProgress] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -58,6 +60,20 @@ export default function PresencaTab() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  async function handleDeleteSessao(sessao: string) {
+    setDeletingInProgress(true);
+    try {
+      const res = await fetch(`/api/presenca-sessao?sessao=${encodeURIComponent(sessao)}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Erro ao excluir sessão.');
+      setDeletingSessao(null);
+      fetchData();
+    } catch {
+      setDeletingSessao(null);
+    } finally {
+      setDeletingInProgress(false);
+    }
+  }
 
   if (loading) return <TabLoader />;
   if (error) return <TabError message={error} onRetry={fetchData} />;
@@ -86,11 +102,33 @@ export default function PresencaTab() {
           {data.recentSessoes.map((s, i) => {
             const taxa = s.total > 0 ? Math.round((s.presentes / s.total) * 100) : 0;
             const color = taxa >= 70 ? '#4A90E2' : taxa >= 40 ? '#C9A84C' : '#E74C3C';
+            const isConfirming = deletingSessao === s.sessao;
             return (
-              <div key={i} className="bg-[#12122A] rounded-xl p-3 text-center border border-[rgba(74,144,226,0.1)]">
-                <p className="text-[#A0A0B0] text-xs font-mono mb-1">{s.sessao}</p>
+              <div key={i} className="relative bg-[#12122A] rounded-xl p-3 text-center border border-[rgba(74,144,226,0.1)] group">
+                <button
+                  onClick={() => isConfirming ? handleDeleteSessao(s.sessao) : setDeletingSessao(s.sessao)}
+                  disabled={deletingInProgress}
+                  title={isConfirming ? 'Confirmar exclusão' : 'Excluir sessão'}
+                  className={`absolute top-1.5 right-1.5 text-xs leading-none w-5 h-5 rounded flex items-center justify-center transition-all ${
+                    isConfirming
+                      ? 'bg-red-600 text-white'
+                      : 'opacity-0 group-hover:opacity-100 text-[#555570] hover:text-red-400 hover:bg-red-900/20'
+                  }`}
+                >
+                  {isConfirming ? '✓' : '×'}
+                </button>
+                {isConfirming && (
+                  <button
+                    onClick={() => setDeletingSessao(null)}
+                    className="absolute top-1.5 left-1.5 text-xs leading-none w-5 h-5 rounded flex items-center justify-center text-[#555570] hover:text-[#A0A0B0] transition-all"
+                  >
+                    ✕
+                  </button>
+                )}
+                <p className={`text-xs font-mono mb-1 ${isConfirming ? 'text-red-400' : 'text-[#A0A0B0]'}`}>{s.sessao}</p>
                 <p className="text-xl font-bold font-orbitron" style={{ color }}>{taxa}%</p>
                 <p className="text-[#A0A0B0] text-xs mt-1">{s.presentes}/{s.total}</p>
+                {isConfirming && <p className="text-red-400 text-[10px] mt-1">Excluir?</p>}
               </div>
             );
           })}

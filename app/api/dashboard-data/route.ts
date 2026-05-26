@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { TOOL_ITEMS } from '@/lib/quiz-config';
 
+export const dynamic = 'force-dynamic';
+
 function mapRow(r: Record<string, unknown>) {
   return {
     timestamp: String(r.timestamp ?? ''),
