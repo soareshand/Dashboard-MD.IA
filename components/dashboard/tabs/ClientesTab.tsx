@@ -265,6 +265,14 @@ const BLANK_FORM = {
 
 type MembroForm = typeof BLANK_FORM;
 
+function isBirthdayToday(dataNascimento: string | null): boolean {
+  if (!dataNascimento) return false;
+  const today = new Date();
+  const parts = dataNascimento.split('-');
+  if (parts.length !== 3) return false;
+  return parseInt(parts[1]) === today.getMonth() + 1 && parseInt(parts[2]) === today.getDate();
+}
+
 function toDisplay(iso: string | null | undefined): string {
   if (!iso) return '—';
   const parts = iso.split('-');
@@ -594,13 +602,39 @@ export default function ClientesTab() {
 
       {data.aniversariantes.length > 0 && (
         <div className="card-gradient-border p-4 rounded-xl">
-          <h3 className="text-xs font-medium text-[#C9A84C] uppercase tracking-wider mb-3">🎂 Aniversariantes do mês</h3>
+          <h3 className="flex items-center gap-2 text-xs font-medium text-[#A78BFA] uppercase tracking-wider mb-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/>
+              <line x1="12" y1="22" x2="12" y2="7"/>
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+            </svg>
+            Aniversariantes do mês
+          </h3>
           <div className="flex flex-wrap gap-2">
-            {data.aniversariantes.map((m, i) => (
-              <span key={i} className="px-3 py-1 rounded-full bg-[rgba(201,168,76,0.1)] border border-[rgba(201,168,76,0.25)] text-[#C9A84C] text-xs">
-                {m.nome}{m.data_nascimento ? ` (${toDisplay(m.data_nascimento).split('/').slice(0, 2).join('/')})` : ''}
-              </span>
-            ))}
+            {data.aniversariantes.map((m, i) => {
+              const isToday = isBirthdayToday(m.data_nascimento);
+              return (
+                <span
+                  key={i}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs transition-all"
+                  style={isToday ? {
+                    background: 'rgba(59, 158, 245, 0.12)',
+                    border: '1px solid rgba(59, 158, 245, 0.45)',
+                    color: '#ffffff',
+                    boxShadow: '0 0 12px rgba(59, 158, 245, 0.25)',
+                  } : {
+                    background: 'rgba(139, 92, 246, 0.08)',
+                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    color: '#A78BFA',
+                  }}
+                >
+                  {isToday && <span className="w-1.5 h-1.5 rounded-full bg-[#3B9EF5] dot-pulse shrink-0" />}
+                  {m.nome}{m.data_nascimento ? ` (${toDisplay(m.data_nascimento).split('/').slice(0, 2).join('/')})` : ''}
+                  {isToday && <span className="text-[10px] text-[#93C5FD] font-semibold">hoje!</span>}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
