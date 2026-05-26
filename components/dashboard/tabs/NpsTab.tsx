@@ -79,81 +79,135 @@ interface RenovacaoData {
   lastUpdated: string;
 }
 
-function NeonBar({ label, value, color, total }: { label: string; value: number; color: string; total: number }) {
-  const pct = total > 0 ? (value / total) * 100 : 0;
-  return (
-    <div className="flex items-center gap-4">
-      <p className="w-36 text-xs text-[#6B7A8D] shrink-0 leading-tight font-sora">{label}</p>
-      <div className="flex-1 relative rounded-full" style={{ height: '6px', background: 'rgba(8,8,20,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${pct}%`, background: color, boxShadow: `0 0 10px ${color}80` }} />
-        {pct > 2 && (
-          <div className="absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-out"
-            style={{ width: 14, height: 14, left: `calc(${pct}% - 7px)`, background: color, boxShadow: `0 0 14px ${color}CC, 0 0 5px ${color}99`, border: '2px solid rgba(8,8,20,0.95)' }} />
-        )}
-      </div>
-      <div className="w-16 shrink-0 text-right">
-        <span className="font-orbitron font-bold text-sm text-white">{value}</span>
-        <span className="text-[#374151] text-xs"> {pct.toFixed(0)}%</span>
-      </div>
-    </div>
-  );
-}
+const NAO_COLOR = '#F59E0B';
 
-function ObjetivoChart({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
+function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
   const total = dist.Sim + dist.Parcialmente + dist.Nao;
+  const r = 58, sw = 14;
+  const c = 2 * Math.PI * r;
+  const gap = 6;
+
+  const segs = [
+    { label: 'Sim', value: dist.Sim, color: '#3B9EF5' },
+    { label: 'Parcialmente', value: dist.Parcialmente, color: '#8B5CF6' },
+    { label: 'Não', value: dist.Nao, color: NAO_COLOR },
+  ];
+
+  let accum = 0;
+  const arcs = total > 0 ? segs.map(seg => {
+    const full = (seg.value / total) * c;
+    const dash = Math.max(0, full - gap);
+    const offset = accum;
+    accum += full;
+    return { ...seg, dash, offset };
+  }) : [];
+
   return (
     <div className="card-gradient-border p-6">
-      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
-      <div className="space-y-5">
-        <NeonBar label="Sim" value={dist.Sim} color="#3B9EF5" total={total} />
-        <NeonBar label="Parcialmente" value={dist.Parcialmente} color="#8B5CF6" total={total} />
-        <NeonBar label="Não" value={dist.Nao} color="#E74C3C" total={total} />
+      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-6 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
+      <div className="flex items-center gap-6">
+        <div className="shrink-0">
+          <svg width={148} height={148} viewBox="0 0 148 148">
+            <defs>
+              <filter id="donut-glow">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <circle cx={74} cy={74} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
+            <g transform="rotate(-90 74 74)" filter="url(#donut-glow)">
+              {total === 0
+                ? <circle cx={74} cy={74} r={r} fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth={sw}/>
+                : arcs.map(arc => arc.dash > 0 && (
+                  <circle key={arc.label} cx={74} cy={74} r={r} fill="none"
+                    stroke={arc.color} strokeWidth={sw}
+                    strokeDasharray={`${arc.dash} ${c - arc.dash}`}
+                    strokeDashoffset={-arc.offset}
+                  />
+                ))
+              }
+            </g>
+            <text x={74} y={70} textAnchor="middle" fill="white" fontSize={26} fontFamily="Orbitron,monospace" fontWeight="bold">{total}</text>
+            <text x={74} y={88} textAnchor="middle" fill="#555570" fontSize={9} fontFamily="Sora,sans-serif">respostas</text>
+          </svg>
+        </div>
+        <div className="space-y-4 flex-1">
+          {segs.map(seg => (
+            <div key={seg.label} className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
+              <span className="text-xs text-[#A0A0B0] font-sora flex-1">{seg.label}</span>
+              <span className="font-orbitron text-sm font-bold text-white">{seg.value}</span>
+              <span className="text-xs text-[#555570] w-8 text-right">{total > 0 ? Math.round(seg.value / total * 100) : 0}%</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function ResultadosChart({ data }: { data: ResultadosPercebidos }) {
+function ColumnChart({ data }: { data: ResultadosPercebidos }) {
   const groups = [
     {
-      label: 'Crescimento de Pacientes',
-      total: data.crescimentoPacientes.Sim + data.crescimentoPacientes.AindaNao + data.crescimentoPacientes.Nao,
+      title: 'Crescimento de Pacientes',
       bars: [
         { label: 'Sim', value: data.crescimentoPacientes.Sim, color: '#3B9EF5' },
-        { label: 'Ainda não percebi', value: data.crescimentoPacientes.AindaNao, color: '#8B5CF6' },
-        { label: 'Não', value: data.crescimentoPacientes.Nao, color: '#E74C3C' },
+        { label: 'Ainda não', value: data.crescimentoPacientes.AindaNao, color: '#8B5CF6' },
+        { label: 'Não', value: data.crescimentoPacientes.Nao, color: NAO_COLOR },
       ],
     },
     {
-      label: 'Redução de Tempo Operacional',
-      total: data.reducaoTempo.Sim + data.reducaoTempo.AindaNao + data.reducaoTempo.Nao,
+      title: 'Redução de Tempo',
       bars: [
         { label: 'Sim', value: data.reducaoTempo.Sim, color: '#3B9EF5' },
-        { label: 'Ainda não percebi', value: data.reducaoTempo.AindaNao, color: '#8B5CF6' },
-        { label: 'Não', value: data.reducaoTempo.Nao, color: '#E74C3C' },
+        { label: 'Ainda não', value: data.reducaoTempo.AindaNao, color: '#8B5CF6' },
+        { label: 'Não', value: data.reducaoTempo.Nao, color: NAO_COLOR },
       ],
     },
     {
-      label: 'Investimento × Retorno',
-      total: data.investimentoRetorno.Positivo + data.investimentoRetorno.Neutro + data.investimentoRetorno.Negativo,
+      title: 'Invest. × Retorno',
       bars: [
         { label: 'Positivo', value: data.investimentoRetorno.Positivo, color: '#3B9EF5' },
         { label: 'Neutro', value: data.investimentoRetorno.Neutro, color: '#8B5CF6' },
-        { label: 'Negativo', value: data.investimentoRetorno.Negativo, color: '#E74C3C' },
+        { label: 'Negativo', value: data.investimentoRetorno.Negativo, color: NAO_COLOR },
       ],
     },
   ];
+
+  const globalMax = Math.max(1, ...groups.flatMap(g => g.bars.map(b => b.value)));
+  const BAR_MAX_H = 100;
+
   return (
     <div className="card-gradient-border p-6">
       <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">Resultados Percebidos</h3>
-      <div className="space-y-8">
+      <div className="grid grid-cols-3 gap-3">
         {groups.map(group => (
-          <div key={group.label}>
-            <p className="text-xs font-sora font-semibold text-[#A0A0B0] mb-3">{group.label}</p>
-            <div className="space-y-3">
+          <div key={group.title} className="flex flex-col">
+            <div className="flex items-end gap-1.5 mb-2" style={{ height: `${BAR_MAX_H}px` }}>
+              {group.bars.map(bar => {
+                const h = Math.max(4, Math.round((bar.value / globalMax) * (BAR_MAX_H - 18)));
+                return (
+                  <div key={bar.label} className="flex-1 flex flex-col items-center justify-end">
+                    <span className="font-orbitron text-[10px] font-bold text-white mb-0.5">{bar.value}</span>
+                    <div
+                      className="w-full rounded-t-md"
+                      style={{
+                        height: `${h}px`,
+                        background: `linear-gradient(to top, ${bar.color}22, ${bar.color})`,
+                        boxShadow: `0 0 14px ${bar.color}80, 0 -4px 20px ${bar.color}40`,
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-[#6B7A8D] font-sora text-center leading-tight mb-1.5">{group.title}</p>
+            <div className="flex flex-wrap gap-x-1.5 gap-y-0.5 justify-center">
               {group.bars.map(bar => (
-                <NeonBar key={bar.label} label={bar.label} value={bar.value} color={bar.color} total={group.total} />
+                <div key={bar.label} className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: bar.color, boxShadow: `0 0 4px ${bar.color}` }}/>
+                  <span className="text-[9px] text-[#555570] font-sora">{bar.label}</span>
+                </div>
               ))}
             </div>
           </div>
@@ -213,8 +267,8 @@ function RenovacaoSubTab() {
       </div>
       <BarChart data={data.toolAverages} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ObjetivoChart dist={data.objetivoDistribuicao} />
-        <ResultadosChart data={data.resultadosPercebidos} />
+        <NeonDonut dist={data.objetivoDistribuicao} />
+        <ColumnChart data={data.resultadosPercebidos} />
       </div>
       <ResponsesTable data={data.recentResponses} />
     </div>
