@@ -718,15 +718,15 @@ export default function ClientesTab() {
           <div className="flex justify-end gap-1.5">
             <button
               onClick={() => scrollTable('left')}
-              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
             >
-              ‹ Anterior
+              ←
             </button>
             <button
               onClick={() => scrollTable('right')}
-              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
             >
-              Próximo ›
+              →
             </button>
           </div>
 
@@ -816,15 +816,15 @@ export default function ClientesTab() {
           <div className="flex justify-end gap-1.5">
             <button
               onClick={() => scrollTable('left')}
-              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
             >
-              ‹ Anterior
+              ←
             </button>
             <button
               onClick={() => scrollTable('right')}
-              className="px-3 py-1 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-sm transition-all hover:bg-[rgba(74,144,226,0.08)]"
+              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
             >
-              Próximo ›
+              →
             </button>
           </div>
         </div>
