@@ -147,26 +147,29 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
 }
 
 function ColumnChart({ data }: { data: ResultadosPercebidos }) {
-  const groups = [
+  const rows = [
     {
-      title: 'Crescimento de Pacientes',
-      bars: [
+      label: 'Crescimento de Pacientes',
+      total: data.crescimentoPacientes.Sim + data.crescimentoPacientes.AindaNao + data.crescimentoPacientes.Nao,
+      segments: [
         { label: 'Sim', value: data.crescimentoPacientes.Sim, color: '#3B9EF5' },
         { label: 'Ainda não', value: data.crescimentoPacientes.AindaNao, color: '#8B5CF6' },
         { label: 'Não', value: data.crescimentoPacientes.Nao, color: NAO_COLOR },
       ],
     },
     {
-      title: 'Redução de Tempo',
-      bars: [
+      label: 'Redução de Tempo',
+      total: data.reducaoTempo.Sim + data.reducaoTempo.AindaNao + data.reducaoTempo.Nao,
+      segments: [
         { label: 'Sim', value: data.reducaoTempo.Sim, color: '#3B9EF5' },
         { label: 'Ainda não', value: data.reducaoTempo.AindaNao, color: '#8B5CF6' },
         { label: 'Não', value: data.reducaoTempo.Nao, color: NAO_COLOR },
       ],
     },
     {
-      title: 'Invest. × Retorno',
-      bars: [
+      label: 'Invest. × Retorno',
+      total: data.investimentoRetorno.Positivo + data.investimentoRetorno.Neutro + data.investimentoRetorno.Negativo,
+      segments: [
         { label: 'Positivo', value: data.investimentoRetorno.Positivo, color: '#3B9EF5' },
         { label: 'Neutro', value: data.investimentoRetorno.Neutro, color: '#8B5CF6' },
         { label: 'Negativo', value: data.investimentoRetorno.Negativo, color: NAO_COLOR },
@@ -174,39 +177,34 @@ function ColumnChart({ data }: { data: ResultadosPercebidos }) {
     },
   ];
 
-  const globalMax = Math.max(1, ...groups.flatMap(g => g.bars.map(b => b.value)));
-  const BAR_MAX_H = 100;
-
   return (
     <div className="card-gradient-border p-6">
       <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">Resultados Percebidos</h3>
-      <div className="grid grid-cols-3 gap-3">
-        {groups.map(group => (
-          <div key={group.title} className="flex flex-col">
-            <div className="flex items-end gap-1.5 mb-2" style={{ height: `${BAR_MAX_H}px` }}>
-              {group.bars.map(bar => {
-                const h = Math.max(4, Math.round((bar.value / globalMax) * (BAR_MAX_H - 18)));
-                return (
-                  <div key={bar.label} className="flex-1 flex flex-col items-center justify-end">
-                    <span className="font-orbitron text-[10px] font-bold text-white mb-0.5">{bar.value}</span>
-                    <div
-                      className="w-full rounded-t-md"
-                      style={{
-                        height: `${h}px`,
-                        background: `linear-gradient(to top, ${bar.color}22, ${bar.color})`,
-                        boxShadow: `0 0 14px ${bar.color}80, 0 -4px 20px ${bar.color}40`,
-                      }}
-                    />
-                  </div>
-                );
-              })}
+      <div className="space-y-6">
+        {rows.map(row => (
+          <div key={row.label}>
+            <p className="text-xs text-[#6B7A8D] font-sora mb-2">{row.label}</p>
+            <div className="flex rounded-full overflow-hidden w-full" style={{ height: '22px', background: 'rgba(8,8,20,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              {row.total === 0
+                ? <div className="flex-1" style={{ background: 'rgba(255,255,255,0.03)' }} />
+                : row.segments.map(seg => {
+                    const pct = (seg.value / row.total) * 100;
+                    if (pct === 0) return null;
+                    return (
+                      <div
+                        key={seg.label}
+                        style={{ width: `${pct}%`, background: seg.color, boxShadow: `inset 0 0 12px ${seg.color}40, 0 0 8px ${seg.color}60`, transition: 'width 0.7s ease-out' }}
+                        title={`${seg.label}: ${seg.value} (${pct.toFixed(0)}%)`}
+                      />
+                    );
+                  })
+              }
             </div>
-            <p className="text-[10px] text-[#6B7A8D] font-sora text-center leading-tight mb-1.5">{group.title}</p>
-            <div className="flex flex-wrap gap-x-1.5 gap-y-0.5 justify-center">
-              {group.bars.map(bar => (
-                <div key={bar.label} className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: bar.color, boxShadow: `0 0 4px ${bar.color}` }}/>
-                  <span className="text-[9px] text-[#555570] font-sora">{bar.label}</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+              {row.segments.map(seg => (
+                <div key={seg.label} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 6px ${seg.color}` }} />
+                  <span className="text-[11px] text-[#555570] font-sora">{seg.label}: <span className="text-white font-semibold">{seg.value}</span></span>
                 </div>
               ))}
             </div>
