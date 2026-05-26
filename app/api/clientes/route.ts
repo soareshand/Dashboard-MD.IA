@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
       .insert({
         situacao: body.situacao || 'Ativo',
         nome: body.nome.trim(),
+        clinica: body.clinica || null,
         grupo: body.grupo || null,
         entrada: body.entrada || null,
         saida: body.saida || null,

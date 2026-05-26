@@ -8,6 +8,12 @@ interface GenerateLinkModalProps {
 
 type QuizType = 'renovacao' | 'call' | 'treinamento';
 type Genero = 'Dr.' | 'Dra.';
+type Participante = 'medico' | 'equipe';
+
+interface MedicoOpcao {
+  nome: string;
+  clinica: string;
+}
 
 const TABS: { id: QuizType; label: string; icon: string }[] = [
   { id: 'renovacao', label: 'Renovação', icon: '📋' },
@@ -17,8 +23,12 @@ const TABS: { id: QuizType; label: string; icon: string }[] = [
 
 const TIPOS_CALL = ['Onboarding', 'Ongoing', 'Suporte', 'Análise'];
 
+const BTN_ACTIVE = { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' };
+const INP = 'w-full bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all';
+
 export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   const [quizType, setQuizType] = useState<QuizType>('renovacao');
+  const [participante, setParticipante] = useState<Participante>('medico');
   const [nome, setNome] = useState('');
   const [genero, setGenero] = useState<Genero>('Dr.');
   const [clinica, setClinica] = useState('');
@@ -29,7 +39,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [copiedMsg, setCopiedMsg] = useState(false);
-  const [medicosAtivos, setMedicosAtivos] = useState<string[]>([]);
+  const [medicosAtivos, setMedicosAtivos] = useState<MedicoOpcao[]>([]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -43,12 +53,20 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
       .then(d => {
         const ativos = (d.membros ?? [])
           .filter((m: { situacao: string }) => m.situacao === 'Ativo')
-          .map((m: { nome: string }) => m.nome)
-          .sort((a: string, b: string) => a.localeCompare(b, 'pt-BR'));
+          .map((m: { nome: string; clinica?: string }) => ({ nome: m.nome, clinica: m.clinica || '' }))
+          .sort((a: MedicoOpcao, b: MedicoOpcao) => a.nome.localeCompare(b.nome, 'pt-BR'));
         setMedicosAtivos(ativos);
       })
       .catch(() => {});
   }, []);
+
+  const clinicasDisponiveis = [...new Set(medicosAtivos.map(m => m.clinica).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+  function handleSelectMedico(nomeVal: string) {
+    setNome(nomeVal);
+    const m = medicosAtivos.find(m => m.nome === nomeVal);
+    if (m?.clinica) setClinica(m.clinica);
+  }
 
   function reset() {
     setResult(null);
@@ -64,8 +82,15 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   function handleTabChange(tab: QuizType) {
     setQuizType(tab);
     setNome('');
+    setClinica('');
     setError('');
     setResult(null);
+  }
+
+  function handleParticipanteChange(p: Participante) {
+    setParticipante(p);
+    setNome('');
+    setClinica('');
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -101,7 +126,8 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   }
 
   function buildWhatsAppMessage(url: string): string {
-    const saudacao = `${genero} ${getPrimeiroNome(nome)}`;
+    const isMedicoFlow = quizType === 'renovacao' || participante === 'medico';
+    const saudacao = isMedicoFlow ? `${genero} ${getPrimeiroNome(nome)}` : nome.trim().split(' ')[0];
     if (quizType === 'call') {
       return `Olá, ${saudacao}! 👋\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação é essencial para melhorarmos cada vez mais! 🙏\n\n🔗 ${url}`;
     }
@@ -119,6 +145,8 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
     setTimeout(() => setCopiedMsg(false), 2000);
   }
 
+  const isMedicoFlow = quizType === 'renovacao' || participante === 'medico';
+
   const metaValid =
     quizType === 'renovacao' ||
     (quizType === 'call' && tipoCall !== '') ||
@@ -129,7 +157,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="card-gradient-border w-full max-w-md p-6 animate-fade-up">
+      <div className="card-gradient-border w-full max-w-md p-6 animate-fade-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-orbitron text-base font-bold text-white">Gerar Link do Quiz</h3>
           <button onClick={onClose} className="text-[#A0A0B0] hover:text-white text-xl transition-colors">✕</button>
@@ -145,7 +173,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-sora transition-all ${
                 quizType === tab.id ? 'text-white shadow-md' : 'text-[#A0A0B0] hover:text-white'
               }`}
-              style={quizType === tab.id ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
+              style={quizType === tab.id ? BTN_ACTIVE : {}}
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
@@ -156,61 +184,105 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Dr./Dra. + Nome */}
-            <div>
-              <label className="text-xs text-[#A0A0B0] mb-1.5 block">Nome do médico *</label>
-              <div className="flex gap-2">
-                {/* Gender toggle */}
-                <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
-                  {(['Dr.', 'Dra.'] as Genero[]).map(g => (
+            {/* Participante toggle — só para call e treinamento */}
+            {quizType !== 'renovacao' && (
+              <div>
+                <label className="text-xs text-[#A0A0B0] mb-1.5 block">Participante</label>
+                <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)]">
+                  {(['medico', 'equipe'] as Participante[]).map(p => (
                     <button
-                      key={g}
+                      key={p}
                       type="button"
-                      onClick={() => setGenero(g)}
-                      className={`px-3 py-2.5 text-xs font-sora font-semibold transition-all ${
-                        genero === g ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
+                      onClick={() => handleParticipanteChange(p)}
+                      className={`flex-1 py-2.5 text-xs font-sora font-semibold transition-all ${
+                        participante === p ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
                       }`}
-                      style={genero === g ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
+                      style={participante === p ? BTN_ACTIVE : {}}
                     >
-                      {g}
+                      {p === 'medico' ? 'Médico(a)' : 'Equipe'}
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
 
-                {/* Name: dropdown for renovacao, text input for others */}
-                {quizType === 'renovacao' ? (
+            {/* Nome */}
+            <div>
+              <label className="text-xs text-[#A0A0B0] mb-1.5 block">
+                {isMedicoFlow ? 'Nome do médico *' : 'Nome do responsável *'}
+              </label>
+
+              {isMedicoFlow ? (
+                /* Doctor dropdown + Dr./Dra. toggle */
+                <div className="flex gap-2">
+                  <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
+                    {(['Dr.', 'Dra.'] as Genero[]).map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setGenero(g)}
+                        className={`px-3 py-2.5 text-xs font-sora font-semibold transition-all ${
+                          genero === g ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
+                        }`}
+                        style={genero === g ? BTN_ACTIVE : {}}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
                   <select
                     value={nome}
-                    onChange={e => setNome(e.target.value)}
+                    onChange={e => handleSelectMedico(e.target.value)}
                     required
-                    className="flex-1 bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all appearance-none cursor-pointer"
+                    className={INP + ' flex-1 appearance-none cursor-pointer'}
                   >
                     <option value="" className="bg-[#12122A] text-[#A0A0B0]">Selecione o médico…</option>
                     {medicosAtivos.map(m => (
-                      <option key={m} value={m} className="bg-[#12122A]">{m}</option>
+                      <option key={m.nome} value={m.nome} className="bg-[#12122A]">{m.nome}</option>
                     ))}
                   </select>
-                ) : (
-                  <input
-                    value={nome}
-                    onChange={e => setNome(e.target.value)}
-                    required
-                    placeholder="Nome Sobrenome"
-                    className="flex-1 bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all"
-                  />
-                )}
-              </div>
+                </div>
+              ) : (
+                /* Free text for equipe */
+                <input
+                  value={nome}
+                  onChange={e => setNome(e.target.value)}
+                  required
+                  placeholder="Nome do responsável"
+                  className={INP}
+                />
+              )}
             </div>
 
+            {/* Clínica */}
             <div>
               <label className="text-xs text-[#A0A0B0] mb-1.5 block">Clínica *</label>
-              <input
-                value={clinica} onChange={e => setClinica(e.target.value)} required
-                placeholder="Nome da clínica"
-                className="w-full bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all"
-              />
+              {!isMedicoFlow && clinicasDisponiveis.length > 0 ? (
+                /* Equipe: dropdown with registered clinics */
+                <select
+                  value={clinica}
+                  onChange={e => setClinica(e.target.value)}
+                  required
+                  className={INP + ' appearance-none cursor-pointer'}
+                >
+                  <option value="" className="bg-[#12122A] text-[#A0A0B0]">Selecione a clínica…</option>
+                  {clinicasDisponiveis.map(c => (
+                    <option key={c} value={c} className="bg-[#12122A]">{c}</option>
+                  ))}
+                </select>
+              ) : (
+                /* Médico: auto-preenchida ou input livre */
+                <input
+                  value={clinica}
+                  onChange={e => setClinica(e.target.value)}
+                  required
+                  placeholder="Nome da clínica"
+                  className={INP}
+                />
+              )}
             </div>
 
+            {/* Tipo de call */}
             {quizType === 'call' && (
               <div>
                 <label className="text-xs text-[#A0A0B0] mb-1.5 block">Tipo de call *</label>
@@ -225,7 +297,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
                           ? 'text-white border-transparent shadow-[0_0_10px_rgba(59,158,245,0.3)]'
                           : 'bg-[#12122A] text-[#A0A0B0] border-[rgba(59,158,245,0.2)] hover:border-[#3B9EF5] hover:text-white'
                       }`}
-                      style={tipoCall === t ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
+                      style={tipoCall === t ? BTN_ACTIVE : {}}
                     >
                       {t}
                     </button>
@@ -234,11 +306,13 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               </div>
             )}
 
+            {/* Ferramenta treinada */}
             {quizType === 'treinamento' && (
               <div>
                 <label className="text-xs text-[#A0A0B0] mb-1.5 block">Ferramenta treinada *</label>
                 <input
-                  value={ferramenta} onChange={e => setFerramenta(e.target.value)}
+                  value={ferramenta}
+                  onChange={e => setFerramenta(e.target.value)}
                   placeholder="Ex: Secretária IA, CRM InfiniteGear…"
                   className="w-full bg-[#12122A] border border-[rgba(139,92,246,0.3)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#8B5CF6] transition-all"
                 />
@@ -266,6 +340,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
                   {TABS.find(t => t.id === quizType)?.label}
                   {quizType === 'call' && tipoCall ? ` · ${tipoCall}` : ''}
                   {quizType === 'treinamento' && ferramenta ? ` · ${ferramenta}` : ''}
+                  {quizType !== 'renovacao' ? ` · ${participante === 'medico' ? 'Médico(a)' : 'Equipe'}` : ''}
                 </p>
               </div>
             </div>
@@ -291,7 +366,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               <label className="text-xs text-[#A0A0B0] mb-1.5 block">Mensagem para WhatsApp</label>
               <div className="relative">
                 <pre className="w-full bg-[#0D0D1A] border border-[rgba(59,158,245,0.2)] rounded-xl px-3 py-3 text-[#C0C0D0] text-xs font-sans leading-relaxed whitespace-pre-wrap break-words">
-                  {result && buildWhatsAppMessage(result.quizUrl)}
+                  {buildWhatsAppMessage(result.quizUrl)}
                 </pre>
                 <button
                   onClick={handleCopyMsg}

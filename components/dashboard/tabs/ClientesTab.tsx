@@ -8,6 +8,7 @@ interface Membro {
   id: string;
   situacao: string;
   nome: string;
+  clinica: string | null;
   grupo: string | null;
   entrada: string | null;
   saida: string | null;
@@ -251,6 +252,7 @@ const ESTADOS_BR = [
 const BLANK_FORM = {
   situacao: 'Ativo' as 'Ativo' | 'Inativo',
   nome: '',
+  clinica: '',
   grupo: '',
   entrada: '',
   saida: '',
@@ -365,7 +367,7 @@ function MembroModal({
 }) {
   const [form, setForm] = useState<MembroForm>(
     initial
-      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
+      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
       : BLANK_FORM
   );
   const [saving, setSaving] = useState(false);
@@ -457,6 +459,10 @@ function MembroModal({
           <div className="sm:col-span-2">
             <label className={lbl}>Nome *</label>
             <input value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Nome completo" className={inp} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={lbl}>Nome da Clínica</label>
+            <input value={form.clinica} onChange={e => set('clinica', e.target.value)} placeholder="Nome da clínica" className={inp} />
           </div>
           <div>
             <label className={lbl}>Entrada</label>
@@ -578,6 +584,7 @@ export default function ClientesTab() {
       id: m.id,
       situacao: (m.situacao as 'Ativo' | 'Inativo') || 'Ativo',
       nome: m.nome,
+      clinica: m.clinica ?? '',
       grupo: m.grupo ?? '',
       entrada: m.entrada ?? '',
       saida: m.saida ?? '',
