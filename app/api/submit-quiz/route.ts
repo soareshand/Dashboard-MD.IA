@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
       nome: formData.nome ?? tokenRow.cliente_nome,
       clinica: formData.clinica ?? tokenRow.clinica,
-      email: formData.email ?? tokenRow.email,
+
       objetivo: formData.objetivo ?? '',
       objetivo_alcancado: formData.objetivoAlcancado ?? '',
       maior_desafio: formData.maiorDesafio ?? '',
