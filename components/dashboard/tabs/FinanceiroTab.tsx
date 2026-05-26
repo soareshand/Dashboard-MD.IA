@@ -457,10 +457,10 @@ export default function FinanceiroTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="📄" title="Total de Contratos" value={data.kpis.totalContratos} accent="blue" />
-        <KpiCard icon="✅" title="Pagos" value={data.kpis.contratosPagos} subtitle={`${Math.round(data.kpis.contratosPagos / total * 100)}% do total`} accent="green" />
-        <KpiCard icon="⚠️" title="Em Aberto" value={data.kpis.contratosEmAberto} accent="gold" />
-        <KpiCard icon="🔄" title="Renovações do Mês" value={data.kpis.renovacoesDoMes} accent="purple" />
+        <KpiCard icon="file" title="Total de Contratos" value={data.kpis.totalContratos} />
+        <KpiCard icon="check" title="Pagos" value={data.kpis.contratosPagos} subtitle={`${Math.round(data.kpis.contratosPagos / total * 100)}% do total`} />
+        <KpiCard icon="alert" title="Em Aberto" value={data.kpis.contratosEmAberto} />
+        <KpiCard icon="refresh" title="Renovações do Mês" value={data.kpis.renovacoesDoMes} />
       </div>
 
       <div className="flex items-center justify-between gap-4 flex-wrap">

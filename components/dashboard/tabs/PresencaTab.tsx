@@ -83,9 +83,9 @@ export default function PresencaTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="grid grid-cols-3 gap-4 flex-1">
-          <KpiCard icon="📊" title="Taxa Geral de Presença" value={`${data.kpis.taxaGeral}%`} accent="blue" />
-          <KpiCard icon="📅" title="Total de Sessões" value={data.kpis.totalSessoes} accent="gold" />
-          <KpiCard icon="👥" title="Médicos Monitorados" value={data.kpis.totalMedicos} accent="purple" />
+          <KpiCard icon="chart" title="Taxa Geral de Presença" value={`${data.kpis.taxaGeral}%`} />
+          <KpiCard icon="calendar" title="Total de Sessões" value={data.kpis.totalSessoes} />
+          <KpiCard icon="users" title="Médicos Monitorados" value={data.kpis.totalMedicos} />
         </div>
         <button
           onClick={() => setShowModal(true)}

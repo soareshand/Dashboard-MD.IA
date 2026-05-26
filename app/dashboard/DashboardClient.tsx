@@ -19,23 +19,23 @@ function SidebarIcon({ id, active }: { id: string; active: boolean }) {
   const color = active ? '#3B9EF5' : '#4B5E72';
   const s = { stroke: color, strokeWidth: '1.8', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
   if (id === 'nps') return (
-    <svg width="22" height="22" viewBox="0 0 24 24" {...s}>
+    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
       <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
     </svg>
   );
   if (id === 'financeiro') return (
-    <svg width="22" height="22" viewBox="0 0 24 24" {...s}>
+    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
       <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   );
   if (id === 'clientes') return (
-    <svg width="22" height="22" viewBox="0 0 24 24" {...s}>
+    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" {...s}>
+    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
       <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
     </svg>
@@ -157,20 +157,18 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
           })}
         </nav>
 
-        {/* Gerar Link button */}
-        <div className="px-4 pb-6 pt-3 border-t border-[rgba(139,92,246,0.12)]">
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn-glow w-full py-3 rounded-xl text-white font-sora font-semibold text-[13px]"
-          >
-            + Gerar Novo Link
-          </button>
-        </div>
       </aside>
 
       {/* ── Main content ── */}
       <main className="flex-1 overflow-auto min-h-screen">
         <div className="max-w-6xl mx-auto px-6 py-8">
+          {activeTab === 'nps' && (
+            <div className="flex justify-end mb-5">
+              <button onClick={() => setShowModal(true)} className="btn-glow px-4 py-2.5 rounded-xl text-white font-sora font-semibold text-sm">
+                + Gerar Novo Link
+              </button>
+            </div>
+          )}
           <TabContent activeTab={activeTab} />
         </div>
       </main>

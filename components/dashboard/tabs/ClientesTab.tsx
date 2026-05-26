@@ -586,10 +586,10 @@ export default function ClientesTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="🟢" title="Ativos" value={data.kpis.totalAtivos} accent="green" />
-        <KpiCard icon="🔴" title="Inativos" value={data.kpis.totalInativos} accent="blue" />
-        <KpiCard icon="⚠️" title="Alerta de Contato" value={data.kpis.emAlertaContato} subtitle="Requer atenção" accent="gold" />
-        <KpiCard icon="🎂" title="Aniversariantes" value={data.kpis.aniversariantesDoMes} subtitle="Este mês" accent="purple" />
+        <KpiCard icon="activity" title="Ativos" value={data.kpis.totalAtivos} />
+        <KpiCard icon="user-x" title="Inativos" value={data.kpis.totalInativos} />
+        <KpiCard icon="alert" title="Alerta de Contato" value={data.kpis.emAlertaContato} subtitle="Requer atenção" />
+        <KpiCard icon="gift" title="Aniversariantes" value={data.kpis.aniversariantesDoMes} subtitle="Este mês" />
       </div>
 
       {data.aniversariantes.length > 0 && (

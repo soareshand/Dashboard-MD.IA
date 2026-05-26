@@ -126,10 +126,10 @@ function RenovacaoSubTab() {
         <button onClick={fetchData} className="p-1.5 rounded-lg border border-[rgba(59,158,245,0.2)] text-[#A0A0B0] hover:text-white hover:border-[#3B9EF5] transition-all text-sm" title="Atualizar">↻</button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="📋" title="Total de Respostas" value={data.kpis.totalRespostas} accent="blue" />
-        <KpiCard icon="✅" title="Objetivo Alcançado" value={`${data.kpis.taxaObjetivoAlcancado}%`} subtitle="Sim + Parcialmente" accent="green" />
-        <KpiCard icon="🔄" title="Taxa de Renovação" value={`${data.kpis.taxaRenovacao}%`} subtitle="Pretendem renovar" accent="gold" />
-        <KpiCard icon="⭐" title="NPS Médio Geral" value={`${data.kpis.npsMediaGeral}/5`} subtitle="Média das ferramentas" accent="purple" />
+        <KpiCard icon="clipboard" title="Total de Respostas" value={data.kpis.totalRespostas} />
+        <KpiCard icon="check" title="Objetivo Alcançado" value={`${data.kpis.taxaObjetivoAlcancado}%`} subtitle="Sim + Parcialmente" />
+        <KpiCard icon="refresh" title="Taxa de Renovação" value={`${data.kpis.taxaRenovacao}%`} subtitle="Pretendem renovar" />
+        <KpiCard icon="star" title="NPS Médio Geral" value={`${data.kpis.npsMediaGeral}/5`} subtitle="Média das ferramentas" />
       </div>
       <BarChart data={data.toolAverages} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,10 +190,10 @@ function CallSubTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="📞" title="Total de Respostas" value={data.kpis.total} accent="blue" />
-        <KpiCard icon="⭐" title="Nota Média da Call" value={`${data.kpis.mediaCall}/5`} accent="gold" />
-        <KpiCard icon="🤝" title="Nota Média do CS" value={`${data.kpis.mediaCS}/5`} accent="purple" />
-        <KpiCard icon="✅" title="Taxa de Resolução" value={`${data.kpis.taxaResolucao}%`} subtitle="Sim + Parcialmente" accent="green" />
+        <KpiCard icon="phone" title="Total de Respostas" value={data.kpis.total} />
+        <KpiCard icon="star" title="Nota Média da Call" value={`${data.kpis.mediaCall}/5`} />
+        <KpiCard icon="users" title="Nota Média do CS" value={`${data.kpis.mediaCS}/5`} />
+        <KpiCard icon="check" title="Taxa de Resolução" value={`${data.kpis.taxaResolucao}%`} subtitle="Sim + Parcialmente" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -335,10 +335,10 @@ function TreinamentoSubTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="🎓" title="Total de Respostas" value={data.kpis.total} accent="blue" />
-        <KpiCard icon="⭐" title="Nota Média Treinamento" value={`${data.kpis.mediaTreinamento}/5`} accent="gold" />
-        <KpiCard icon="💡" title="Nota Média Clareza" value={`${data.kpis.mediaClareza}/5`} accent="purple" />
-        <KpiCard icon="✅" title="Seguros para Usar" value={`${data.kpis.taxaSeguranca}%`} subtitle="Sim + Parcialmente" accent="green" />
+        <KpiCard icon="book" title="Total de Respostas" value={data.kpis.total} />
+        <KpiCard icon="star" title="Nota Média Treinamento" value={`${data.kpis.mediaTreinamento}/5`} />
+        <KpiCard icon="lightbulb" title="Nota Média Clareza" value={`${data.kpis.mediaClareza}/5`} />
+        <KpiCard icon="check" title="Seguros para Usar" value={`${data.kpis.taxaSeguranca}%`} subtitle="Sim + Parcialmente" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
