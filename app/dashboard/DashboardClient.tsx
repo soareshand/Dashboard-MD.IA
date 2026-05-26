@@ -104,20 +104,18 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
       <aside className="w-[220px] flex-shrink-0 flex flex-col min-h-screen bg-[#06061A] border-r border-[rgba(139,92,246,0.18)] sticky top-0 h-screen">
 
         {/* Logo */}
-        <div className="px-5 py-7 border-b border-[rgba(139,92,246,0.12)]">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-2xl blur-lg bg-[rgba(107,76,230,0.4)]" />
-              <Image
-                src="/MD.IA_Logotipo-removebg-preview.png"
-                alt="MD.IA"
-                width={96}
-                height={96}
-                className="relative rounded-2xl object-contain drop-shadow-lg"
-              />
-            </div>
-            <div>
-              <h1 className="font-orbitron text-sm font-bold text-white leading-none tracking-wide">Painel CS</h1>
+        <div className="px-5 py-5 border-b border-[rgba(139,92,246,0.12)]">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/MD.IA_Logotipo-removebg-preview.png"
+              alt="MD.IA"
+              width={52}
+              height={52}
+              className="rounded-xl object-contain flex-shrink-0"
+            />
+            <div className="flex flex-col">
+              <span className="font-orbitron text-[11px] font-bold text-[#8B5CF6] tracking-widest uppercase leading-none">MD.IA</span>
+              <span className="font-orbitron text-sm font-bold text-white tracking-wide leading-snug mt-0.5">Painel CS</span>
             </div>
           </div>
         </div>

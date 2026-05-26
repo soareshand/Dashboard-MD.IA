@@ -310,7 +310,7 @@ function Step3({ form, update }: { form: FormData; update: (f: keyof FormData, v
       <QuestionBlock>
         <Label>Como você avalia a relação Investimento x Retorno?</Label>
         <ChoiceButtons
-          options={['Muito Positivo', 'Positivo', 'Neutro', 'Negativo']}
+          options={['Positivo', 'Neutro', 'Negativo']}
           value={form.investimentoRetorno}
           onChange={v => update('investimentoRetorno', v)}
         />

@@ -24,7 +24,6 @@ export default function ScaleInput({ item, value, onChange }: ScaleInputProps) {
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2">
-        <span className="text-xs text-[#A0A0B0] font-mono w-8 text-right hidden sm:block">0</span>
         {SCALE.map(n => (
           <button
             key={n}
@@ -41,7 +40,6 @@ export default function ScaleInput({ item, value, onChange }: ScaleInputProps) {
             {n}
           </button>
         ))}
-        <span className="text-xs text-[#A0A0B0] font-mono w-8 hidden sm:block">5</span>
       </div>
     </div>
   );
