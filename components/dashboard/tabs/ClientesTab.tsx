@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { TabLoader, TabError } from './NpsTab';
 import KpiCard from '@/components/dashboard/KpiCard';
 
@@ -542,11 +542,9 @@ export default function ClientesTab() {
   const [modalContato, setModalContato] = useState<(ContatoForm & { id?: string }) | null | false>(false);
   const [filtroSituacao, setFiltroSituacao] = useState<'todos' | 'Ativo' | 'Inativo'>('todos');
   const [buscaNome, setBuscaNome] = useState('');
-  const tableRef = useRef<HTMLDivElement>(null);
 
-  function scrollTable(dir: 'left' | 'right') {
-    tableRef.current?.scrollBy({ left: dir === 'right' ? 320 : -320, behavior: 'smooth' });
-  }
+
+
 
   const fetchData = useCallback(async () => {
     try {
@@ -757,26 +755,10 @@ export default function ClientesTab() {
       )}
 
       {activeTable === 'membros' && (
-        <div className="space-y-1">
-          {/* Setas superiores */}
-          <div className="flex justify-end gap-1.5">
-            <button
-              onClick={() => scrollTable('left')}
-              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
-            >
-              ←
-            </button>
-            <button
-              onClick={() => scrollTable('right')}
-              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
-            >
-              →
-            </button>
-          </div>
-
+        <div>
         <div className="card-gradient-border overflow-hidden">
-          <div ref={tableRef} className="overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
-            <table className="w-full text-sm min-w-[1200px]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(74,144,226,0.1)]">
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Situação</th>
@@ -785,11 +767,6 @@ export default function ClientesTab() {
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Entrada</th>
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Saída</th>
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Renovação</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">CPF</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Data Nasc.</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Telefone</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">E-mail</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Endereço / CEP</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -817,18 +794,6 @@ export default function ClientesTab() {
                       <td className="px-4 py-3">
                         {inativo ? <span className="text-[#555570] text-xs">—</span> : <RenovacaoBadge entrada={m.entrada} />}
                       </td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{m.cpf || '—'}</td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.data_nascimento)}</td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs whitespace-nowrap">{m.telefone || '—'}</td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs whitespace-nowrap">{m.email || '—'}</td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs max-w-[200px]">
-                        <div className="truncate">{m.endereco || '—'}</div>
-                        {(m.cep || m.estado) && (
-                          <div className="text-[10px] text-[#555570] font-mono mt-0.5">
-                            {[m.cep, m.estado].filter(Boolean).join(' · ')}
-                          </div>
-                        )}
-                      </td>
                       <td className="px-4 py-3">
                         <button
                           onClick={() => openEdit(m)}
@@ -846,7 +811,7 @@ export default function ClientesTab() {
                 })}
                 {data.membros.length === 0 && (
                   <tr>
-                    <td colSpan={12} className="text-center py-12">
+                    <td colSpan={7} className="text-center py-12">
                       <p className="text-[#A0A0B0] text-sm mb-3">Nenhum membro cadastrado.</p>
                       <button onClick={() => setModal(null)} className="text-[#4A90E2] text-sm hover:underline">
                         + Cadastrar primeiro membro
@@ -858,22 +823,6 @@ export default function ClientesTab() {
             </table>
           </div>
         </div>
-
-          {/* Setas inferiores */}
-          <div className="flex justify-end gap-1.5">
-            <button
-              onClick={() => scrollTable('left')}
-              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
-            >
-              ←
-            </button>
-            <button
-              onClick={() => scrollTable('right')}
-              className="px-4 py-2 rounded-lg card-gradient-border text-[#A0A0B0] hover:text-white text-xl leading-none transition-all hover:bg-[rgba(74,144,226,0.08)]"
-            >
-              →
-            </button>
-          </div>
         </div>
       )}
 
