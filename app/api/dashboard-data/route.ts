@@ -74,9 +74,22 @@ export async function GET() {
       Nao: responses.filter(r => r.objetivoAlcancado === 'Não').length,
     };
 
-    const renovacaoDistribuicao = {
-      Sim: renovacaoSim,
-      Nao: responses.filter(r => r.pretendeRenovar.includes('Não')).length,
+    const resultadosPercebidos = {
+      crescimentoPacientes: {
+        Sim: responses.filter(r => r.crescimentoPacientes === 'Sim').length,
+        AindaNao: responses.filter(r => r.crescimentoPacientes.includes('Ainda')).length,
+        Nao: responses.filter(r => r.crescimentoPacientes === 'Não').length,
+      },
+      reducaoTempo: {
+        Sim: responses.filter(r => r.reducaoTempoOperacional === 'Sim').length,
+        AindaNao: responses.filter(r => r.reducaoTempoOperacional.includes('Ainda')).length,
+        Nao: responses.filter(r => r.reducaoTempoOperacional === 'Não').length,
+      },
+      investimentoRetorno: {
+        Positivo: responses.filter(r => r.investimentoRetorno === 'Positivo').length,
+        Neutro: responses.filter(r => r.investimentoRetorno === 'Neutro').length,
+        Negativo: responses.filter(r => r.investimentoRetorno === 'Negativo').length,
+      },
     };
 
     const tokenMap = new Map((tokens ?? []).map(t => [t.token, t]));
@@ -105,7 +118,7 @@ export async function GET() {
       },
       toolAverages,
       objetivoDistribuicao,
-      renovacaoDistribuicao,
+      resultadosPercebidos,
       recentResponses,
       lastUpdated: new Date().toISOString(),
     });

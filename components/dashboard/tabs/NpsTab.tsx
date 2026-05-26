@@ -61,16 +61,106 @@ function EmptyState({ label }: { label: string }) {
 
 // ── Renovação sub-tab ─────────────────────────────────────────────────────────
 
+interface ResultadosPercebidos {
+  crescimentoPacientes: { Sim: number; AindaNao: number; Nao: number };
+  reducaoTempo: { Sim: number; AindaNao: number; Nao: number };
+  investimentoRetorno: { Positivo: number; Neutro: number; Negativo: number };
+}
+
 interface RenovacaoData {
   kpis: { totalRespostas: number; taxaObjetivoAlcancado: number; taxaRenovacao: number; npsMediaGeral: number };
   toolAverages: { id: string; label: string; emoji: string; avg: number }[];
   objetivoDistribuicao: { Sim: number; Parcialmente: number; Nao: number };
-  renovacaoDistribuicao: { Sim: number; Nao: number };
+  resultadosPercebidos: ResultadosPercebidos;
   recentResponses: {
     token: string; nome: string; clinica: string; timestamp: string;
     pretendeRenovar: string; npsMedia: number; statusToken: string; _full: Record<string, unknown>;
   }[];
   lastUpdated: string;
+}
+
+function NeonBar({ label, value, color, total }: { label: string; value: number; color: string; total: number }) {
+  const pct = total > 0 ? (value / total) * 100 : 0;
+  return (
+    <div className="flex items-center gap-4">
+      <p className="w-36 text-xs text-[#6B7A8D] shrink-0 leading-tight font-sora">{label}</p>
+      <div className="flex-1 relative rounded-full" style={{ height: '6px', background: 'rgba(8,8,20,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${pct}%`, background: color, boxShadow: `0 0 10px ${color}80` }} />
+        {pct > 2 && (
+          <div className="absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-700 ease-out"
+            style={{ width: 14, height: 14, left: `calc(${pct}% - 7px)`, background: color, boxShadow: `0 0 14px ${color}CC, 0 0 5px ${color}99`, border: '2px solid rgba(8,8,20,0.95)' }} />
+        )}
+      </div>
+      <div className="w-16 shrink-0 text-right">
+        <span className="font-orbitron font-bold text-sm text-white">{value}</span>
+        <span className="text-[#374151] text-xs"> {pct.toFixed(0)}%</span>
+      </div>
+    </div>
+  );
+}
+
+function ObjetivoChart({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
+  const total = dist.Sim + dist.Parcialmente + dist.Nao;
+  return (
+    <div className="card-gradient-border p-6">
+      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
+      <div className="space-y-5">
+        <NeonBar label="Sim" value={dist.Sim} color="#3B9EF5" total={total} />
+        <NeonBar label="Parcialmente" value={dist.Parcialmente} color="#8B5CF6" total={total} />
+        <NeonBar label="Não" value={dist.Nao} color="#E74C3C" total={total} />
+      </div>
+    </div>
+  );
+}
+
+function ResultadosChart({ data }: { data: ResultadosPercebidos }) {
+  const groups = [
+    {
+      label: 'Crescimento de Pacientes',
+      total: data.crescimentoPacientes.Sim + data.crescimentoPacientes.AindaNao + data.crescimentoPacientes.Nao,
+      bars: [
+        { label: 'Sim', value: data.crescimentoPacientes.Sim, color: '#3B9EF5' },
+        { label: 'Ainda não percebi', value: data.crescimentoPacientes.AindaNao, color: '#8B5CF6' },
+        { label: 'Não', value: data.crescimentoPacientes.Nao, color: '#E74C3C' },
+      ],
+    },
+    {
+      label: 'Redução de Tempo Operacional',
+      total: data.reducaoTempo.Sim + data.reducaoTempo.AindaNao + data.reducaoTempo.Nao,
+      bars: [
+        { label: 'Sim', value: data.reducaoTempo.Sim, color: '#3B9EF5' },
+        { label: 'Ainda não percebi', value: data.reducaoTempo.AindaNao, color: '#8B5CF6' },
+        { label: 'Não', value: data.reducaoTempo.Nao, color: '#E74C3C' },
+      ],
+    },
+    {
+      label: 'Investimento × Retorno',
+      total: data.investimentoRetorno.Positivo + data.investimentoRetorno.Neutro + data.investimentoRetorno.Negativo,
+      bars: [
+        { label: 'Positivo', value: data.investimentoRetorno.Positivo, color: '#3B9EF5' },
+        { label: 'Neutro', value: data.investimentoRetorno.Neutro, color: '#8B5CF6' },
+        { label: 'Negativo', value: data.investimentoRetorno.Negativo, color: '#E74C3C' },
+      ],
+    },
+  ];
+  return (
+    <div className="card-gradient-border p-6">
+      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">Resultados Percebidos</h3>
+      <div className="space-y-8">
+        {groups.map(group => (
+          <div key={group.label}>
+            <p className="text-xs font-sora font-semibold text-[#A0A0B0] mb-3">{group.label}</p>
+            <div className="space-y-3">
+              {group.bars.map(bar => (
+                <NeonBar key={bar.label} label={bar.label} value={bar.value} color={bar.color} total={group.total} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function timeAgo(iso: string) {
@@ -109,16 +199,6 @@ function RenovacaoSubTab() {
   if (error) return <TabError message={error} onRetry={fetchData} />;
   if (!data) return null;
 
-  const objetivoChartData = [
-    { name: 'Sim', value: data.objetivoDistribuicao.Sim, color: '#3B9EF5' },
-    { name: 'Parcialmente', value: data.objetivoDistribuicao.Parcialmente, color: '#8B5CF6' },
-    { name: 'Não', value: data.objetivoDistribuicao.Nao, color: '#374151' },
-  ];
-  const renovacaoChartData = [
-    { name: 'Sim', value: data.renovacaoDistribuicao.Sim, color: '#3B9EF5' },
-    { name: 'Não', value: data.renovacaoDistribuicao.Nao, color: '#E74C3C' },
-  ];
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -133,8 +213,8 @@ function RenovacaoSubTab() {
       </div>
       <BarChart data={data.toolAverages} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <DonutChart title="Objetivo Alcançado" data={objetivoChartData} />
-        <DonutChart title="Intenção de Renovação" data={renovacaoChartData} />
+        <ObjetivoChart dist={data.objetivoDistribuicao} />
+        <ResultadosChart data={data.resultadosPercebidos} />
       </div>
       <ResponsesTable data={data.recentResponses} />
     </div>
