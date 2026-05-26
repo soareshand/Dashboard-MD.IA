@@ -9,7 +9,7 @@ import ClientesTab from '@/components/dashboard/tabs/ClientesTab';
 import PresencaTab from '@/components/dashboard/tabs/PresencaTab';
 
 const TABS = [
-  { id: 'nps',        label: 'NPS / Quiz',  icon: '📊' },
+  { id: 'nps',        label: 'Avaliações',   icon: '📊' },
   { id: 'financeiro', label: 'Financeiro',   icon: '💰' },
   { id: 'clientes',   label: 'Clientes',     icon: '👥' },
   { id: 'presenca',   label: 'Presenças',    icon: '📅' },
