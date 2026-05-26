@@ -7,6 +7,7 @@ interface GenerateLinkModalProps {
 }
 
 type QuizType = 'renovacao' | 'call' | 'treinamento';
+type Genero = 'Dr.' | 'Dra.';
 
 const TABS: { id: QuizType; label: string; icon: string }[] = [
   { id: 'renovacao', label: 'Renovação', icon: '📋' },
@@ -19,6 +20,7 @@ const TIPOS_CALL = ['Onboarding', 'Ongoing', 'Suporte', 'Análise'];
 export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   const [quizType, setQuizType] = useState<QuizType>('renovacao');
   const [nome, setNome] = useState('');
+  const [genero, setGenero] = useState<Genero>('Dr.');
   const [clinica, setClinica] = useState('');
   const [tipoCall, setTipoCall] = useState('');
   const [ferramenta, setFerramenta] = useState('');
@@ -27,12 +29,26 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [copiedMsg, setCopiedMsg] = useState(false);
+  const [medicosAtivos, setMedicosAtivos] = useState<string[]>([]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
+
+  useEffect(() => {
+    fetch('/api/clientes-data')
+      .then(r => r.json())
+      .then(d => {
+        const ativos = (d.membros ?? [])
+          .filter((m: { situacao: string }) => m.situacao === 'Ativo')
+          .map((m: { nome: string }) => m.nome)
+          .sort((a: string, b: string) => a.localeCompare(b, 'pt-BR'));
+        setMedicosAtivos(ativos);
+      })
+      .catch(() => {});
+  }, []);
 
   function reset() {
     setResult(null);
@@ -47,6 +63,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
 
   function handleTabChange(tab: QuizType) {
     setQuizType(tab);
+    setNome('');
     setError('');
     setResult(null);
   }
@@ -79,16 +96,20 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function getPrimeiroNome(n: string): string {
+    return n.trim().replace(/^Dr(?:a)?\.?\s*/i, '').split(' ')[0];
+  }
+
   function buildWhatsAppMessage(url: string): string {
-    const primeiroNome = nome.trim().split(' ')[0];
+    const saudacao = `${genero} ${getPrimeiroNome(nome)}`;
     if (quizType === 'call') {
-      return `Olá, ${primeiroNome}! 👋\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação é essencial para melhorarmos cada vez mais! 🙏\n\n🔗 ${url}`;
+      return `Olá, ${saudacao}! 👋\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação é essencial para melhorarmos cada vez mais! 🙏\n\n🔗 ${url}`;
     }
     if (quizType === 'treinamento') {
       const tool = ferramenta.trim() || 'a ferramenta';
-      return `Olá, ${primeiroNome}! 👋\n\nObrigado pela disponibilidade no treinamento de ${tool}! Queremos saber como foi a sua experiência.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação nos ajuda a oferecer treinamentos cada vez melhores! 🙏\n\n🔗 ${url}`;
+      return `Olá, ${saudacao}! 👋\n\nObrigado pela disponibilidade no treinamento de ${tool}! Queremos saber como foi a sua experiência.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação nos ajuda a oferecer treinamentos cada vez melhores! 🙏\n\n🔗 ${url}`;
     }
-    return `Olá, ${primeiroNome}! Tudo bem?\n\nPassando para avisar que a sua mentoria da MD.IA já está chegando ao fim. Preparei um formulário onde gostaríamos de ouvir a sua experiência ao longo da jornada — seus objetivos, resultados percebidos, avaliação das ferramentas e mentorias, além da intenção de renovação.\n\nSegue o link: ${url}\n\nO seu retorno é muito importante para nós e nos ajuda a evoluir cada vez mais. Qualquer dúvida, estou à disposição. Muito obrigado!`;
+    return `Olá, ${saudacao}! Tudo bem?\n\nPassando para avisar que a sua mentoria da MD.IA já está chegando ao fim. Preparei um formulário onde gostaríamos de ouvir a sua experiência ao longo da jornada — seus objetivos, resultados percebidos, avaliação das ferramentas e mentorias, além da intenção de renovação.\n\nSegue o link: ${url}\n\nO seu retorno é muito importante para nós e nos ajuda a evoluir cada vez mais. Qualquer dúvida, estou à disposição. Muito obrigado!`;
   }
 
   function handleCopyMsg() {
@@ -122,10 +143,9 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               type="button"
               onClick={() => handleTabChange(tab.id)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-sora transition-all ${
-                quizType === tab.id
-                  ? 'bg-[#4A90E2] text-white shadow-md'
-                  : 'text-[#A0A0B0] hover:text-white'
+                quizType === tab.id ? 'text-white shadow-md' : 'text-[#A0A0B0] hover:text-white'
               }`}
+              style={quizType === tab.id ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
@@ -135,13 +155,51 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
 
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Dr./Dra. + Nome */}
             <div>
               <label className="text-xs text-[#A0A0B0] mb-1.5 block">Nome do médico *</label>
-              <input
-                value={nome} onChange={e => setNome(e.target.value)} required
-                placeholder="Dr(a). Nome Sobrenome"
-                className="w-full bg-[#12122A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4A90E2] transition-all"
-              />
+              <div className="flex gap-2">
+                {/* Gender toggle */}
+                <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
+                  {(['Dr.', 'Dra.'] as Genero[]).map(g => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGenero(g)}
+                      className={`px-3 py-2.5 text-xs font-sora font-semibold transition-all ${
+                        genero === g ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
+                      }`}
+                      style={genero === g ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Name: dropdown for renovacao, text input for others */}
+                {quizType === 'renovacao' ? (
+                  <select
+                    value={nome}
+                    onChange={e => setNome(e.target.value)}
+                    required
+                    className="flex-1 bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="" className="bg-[#12122A] text-[#A0A0B0]">Selecione o médico…</option>
+                    {medicosAtivos.map(m => (
+                      <option key={m} value={m} className="bg-[#12122A]">{m}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={nome}
+                    onChange={e => setNome(e.target.value)}
+                    required
+                    placeholder="Nome Sobrenome"
+                    className="flex-1 bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all"
+                  />
+                )}
+              </div>
             </div>
 
             <div>
@@ -149,7 +207,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               <input
                 value={clinica} onChange={e => setClinica(e.target.value)} required
                 placeholder="Nome da clínica"
-                className="w-full bg-[#12122A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#4A90E2] transition-all"
+                className="w-full bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all"
               />
             </div>
 
@@ -164,9 +222,10 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
                       onClick={() => setTipoCall(t)}
                       className={`px-3 py-2 rounded-xl text-sm font-sora transition-all border ${
                         tipoCall === t
-                          ? 'bg-gradient-to-r from-[#4A90E2] to-[#6EC6FF] text-white border-transparent shadow-[0_0_10px_rgba(74,144,226,0.3)]'
-                          : 'bg-[#12122A] text-[#A0A0B0] border-[rgba(74,144,226,0.2)] hover:border-[#4A90E2] hover:text-white'
+                          ? 'text-white border-transparent shadow-[0_0_10px_rgba(59,158,245,0.3)]'
+                          : 'bg-[#12122A] text-[#A0A0B0] border-[rgba(59,158,245,0.2)] hover:border-[#3B9EF5] hover:text-white'
                       }`}
+                      style={tipoCall === t ? { background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)' } : {}}
                     >
                       {t}
                     </button>
@@ -181,7 +240,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
                 <input
                   value={ferramenta} onChange={e => setFerramenta(e.target.value)}
                   placeholder="Ex: Secretária IA, CRM InfiniteGear…"
-                  className="w-full bg-[#12122A] border border-[rgba(155,89,182,0.3)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#9B59B6] transition-all"
+                  className="w-full bg-[#12122A] border border-[rgba(139,92,246,0.3)] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#8B5CF6] transition-all"
                 />
               </div>
             )}
@@ -217,11 +276,11 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
                 <input
                   value={result.quizUrl}
                   readOnly
-                  className="flex-1 bg-[#12122A] border border-[rgba(74,144,226,0.25)] rounded-xl px-3 py-2 text-[#6EC6FF] text-xs font-mono focus:outline-none"
+                  className="flex-1 bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-3 py-2 text-[#93C5FD] text-xs font-mono focus:outline-none"
                 />
                 <button
                   onClick={handleCopy}
-                  className="px-3 py-2 rounded-xl border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white hover:border-[#4A90E2] text-xs transition-all flex-shrink-0"
+                  className="px-3 py-2 rounded-xl border border-[rgba(59,158,245,0.3)] text-[#A0A0B0] hover:text-white hover:border-[#3B9EF5] text-xs transition-all flex-shrink-0"
                 >
                   {copied ? '✓' : '📋'}
                 </button>
@@ -231,12 +290,12 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
             <div>
               <label className="text-xs text-[#A0A0B0] mb-1.5 block">Mensagem para WhatsApp</label>
               <div className="relative">
-                <pre className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.2)] rounded-xl px-3 py-3 text-[#C0C0D0] text-xs font-sans leading-relaxed whitespace-pre-wrap break-words">
+                <pre className="w-full bg-[#0D0D1A] border border-[rgba(59,158,245,0.2)] rounded-xl px-3 py-3 text-[#C0C0D0] text-xs font-sans leading-relaxed whitespace-pre-wrap break-words">
                   {result && buildWhatsAppMessage(result.quizUrl)}
                 </pre>
                 <button
                   onClick={handleCopyMsg}
-                  className="absolute top-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#12122A] border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white hover:border-[#4A90E2] text-xs transition-all flex items-center gap-1"
+                  className="absolute top-2 right-2 px-2.5 py-1.5 rounded-lg bg-[#12122A] border border-[rgba(59,158,245,0.3)] text-[#A0A0B0] hover:text-white hover:border-[#3B9EF5] text-xs transition-all flex items-center gap-1"
                 >
                   {copiedMsg ? '✓ Copiado' : '📋 Copiar'}
                 </button>
