@@ -153,7 +153,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
                   active
                     ? 'bg-[rgba(59,158,245,0.1)] text-white shadow-[0_0_20px_rgba(59,158,245,0.12)]'
                     : featured
-                    ? 'text-[#5858A0] hover:text-[#B0B0D0] hover:bg-[rgba(59,158,245,0.06)] border border-[rgba(59,158,245,0.1)]'
+                    ? 'text-[#8080C0] hover:text-[#C0C0E0] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(59,158,245,0.08)] border border-[rgba(59,158,245,0.18)] shadow-[0_4px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]'
                     : 'text-[#5858A0] hover:text-[#B0B0D0] hover:bg-[rgba(255,255,255,0.04)]'
                 }`}
               >
