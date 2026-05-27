@@ -392,7 +392,7 @@ function CallSubTab() {
           </div>
         </div>
 
-        <DonutChart title="Necessidade Resolvida" data={resolucaoChart} />
+        <DonutChart title="Objetivos Alcançados" data={resolucaoChart} />
       </div>
 
       {/* By call type */}
