@@ -36,8 +36,8 @@ export default function BarChart({ data }: { data: BarItem[] }) {
                   className="absolute left-0 top-0 h-full rounded-full transition-all duration-700 ease-out"
                   style={{
                     width: `${pct}%`,
-                    background: 'linear-gradient(90deg, #3B9EF5 0%, #7C3AED 55%, #C026D3 100%)',
-                    boxShadow: '0 0 10px rgba(124, 58, 237, 0.5)',
+                    background: 'linear-gradient(90deg, #F59E0B 0%, #8B5CF6 50%, #3B9EF5 100%)',
+                    boxShadow: '0 0 10px rgba(139, 92, 246, 0.5)',
                   }}
                 />
                 {pct > 2 && (
@@ -47,8 +47,8 @@ export default function BarChart({ data }: { data: BarItem[] }) {
                       width: '14px',
                       height: '14px',
                       left: `calc(${pct}% - 7px)`,
-                      background: 'linear-gradient(135deg, #3B9EF5, #8B5CF6)',
-                      boxShadow: '0 0 14px rgba(139, 92, 246, 0.9), 0 0 5px rgba(59, 158, 245, 0.7)',
+                      background: 'linear-gradient(135deg, #F59E0B, #8B5CF6)',
+                      boxShadow: '0 0 14px rgba(139, 92, 246, 0.9), 0 0 5px rgba(245, 158, 11, 0.7)',
                       border: '2px solid rgba(8, 8, 20, 0.95)',
                     }}
                   />

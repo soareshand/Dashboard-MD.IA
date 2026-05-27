@@ -52,12 +52,15 @@ function ScoreBar({ nota, count, max }: { nota: number; count: number; max: numb
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-48 gap-3 text-center">
-      <span className="text-4xl opacity-30">📭</span>
+    <div className="flex flex-col items-center justify-center h-48 gap-2 text-center">
       <p className="text-[#A0A0B0] text-sm">Nenhuma resposta de <strong>{label}</strong> ainda.</p>
       <p className="text-[#555570] text-xs">Gere um link e envie para o médico após a próxima call.</p>
     </div>
   );
+}
+
+function stripEmoji(s: string) {
+  return s.replace(/^[✅❌⚠️🔴🟡🟢]\s*/u, '').trim();
 }
 
 // ── Renovação sub-tab ─────────────────────────────────────────────────────────
@@ -123,9 +126,14 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
         </svg>
         <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-2">
           {segs.map(seg => (
-            <div key={seg.label} className="flex items-center gap-1.5 cursor-default" title={`${seg.label}: ${seg.value} (${total > 0 ? Math.round(seg.value / total * 100) : 0}%)`}>
+            <div key={seg.label} className="relative flex items-center gap-1.5 cursor-default group">
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
               <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.label}</span>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                <div className="bg-[#1A1A2E] border border-[rgba(74,144,226,0.3)] rounded-lg px-2.5 py-1 text-xs text-white font-mono whitespace-nowrap shadow-lg">
+                  {seg.value} ({total > 0 ? Math.round(seg.value / total * 100) : 0}%)
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -319,7 +327,7 @@ function CallSubTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Score distribution */}
         <div className="card-gradient-border p-5">
-          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-wider mb-4">Distribuição — Nota da Call</h3>
+          <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] uppercase tracking-[0.15em] mb-4">Distribuição — Nota da Call</h3>
           <div className="space-y-3">
             {[...data.distCall].reverse().map(d => (
               <ScoreBar key={d.nota} nota={d.nota} count={d.count} max={maxDist} />
@@ -395,7 +403,7 @@ function CallSubTab() {
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{r.respondente}</td>
                   <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaCall}</td>
                   <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaCS}</td>
-                  <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.necessidadeResolvida || '—'}</td>
+                  <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.necessidadeResolvida ? stripEmoji(r.necessidadeResolvida) : '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -463,7 +471,7 @@ function TreinamentoSubTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card-gradient-border p-5">
-          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-wider mb-4">Distribuição — Nota do Treinamento</h3>
+          <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] uppercase tracking-[0.15em] mb-4">Distribuição — Nota do Treinamento</h3>
           <div className="space-y-3">
             {[...data.distTreinamento].reverse().map(d => (
               <ScoreBar key={d.nota} nota={d.nota} count={d.count} max={maxDist} />
@@ -540,7 +548,7 @@ function TreinamentoSubTab() {
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{r.respondente}</td>
                   <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaTreinamento}</td>
                   <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaClareza}</td>
-                  <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.segurancaUso || '—'}</td>
+                  <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.segurancaUso ? stripEmoji(r.segurancaUso) : '—'}</td>
                 </tr>
               ))}
             </tbody>

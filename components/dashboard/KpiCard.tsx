@@ -43,7 +43,7 @@ export default function KpiCard({ icon, title, value, subtitle }: KpiCardProps) 
     <div className="card-gradient-border p-5 flex flex-col gap-2 transition-all hover:-translate-y-1">
       <div
         className="h-px w-full mb-2"
-        style={{ background: 'linear-gradient(90deg, #3B9EF5 0%, #8B5CF6 55%, transparent 100%)' }}
+        style={{ background: 'linear-gradient(90deg, #F59E0B 0%, #8B5CF6 38%, #3B9EF5 65%, transparent 100%)' }}
       />
       <div
         className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
