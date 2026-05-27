@@ -60,9 +60,6 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
-function stripEmoji(s: string) {
-  return s.replace(/^(?:✅|❌|⚠️|🔴|🟡|🟢)\s*/, '').trim();
-}
 
 function formatDate(iso: string) {
   if (!iso) return '-';
@@ -442,12 +439,9 @@ function CallSubTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(59,158,245,0.1)]">
-                <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Médico</th>
+                <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Nome</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Tipo</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Respondente</th>
-                <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Call</th>
-                <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">CS</th>
-                <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Resolução</th>
               </tr>
             </thead>
             <tbody>
@@ -461,9 +455,6 @@ function CallSubTab() {
                     <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(59,158,245,0.1)] text-[#93C5FD] border border-[rgba(59,158,245,0.2)]">{r.tipoCall || '—'}</span>
                   </td>
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{r.respondente}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaCall}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaCS}</td>
-                  <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.necessidadeResolvida ? stripEmoji(r.necessidadeResolvida) : '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -614,12 +605,9 @@ function TreinamentoSubTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(59,158,245,0.1)]">
-                <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Médico</th>
+                <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Nome</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Ferramenta</th>
                 <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Respondente</th>
-                <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Trein.</th>
-                <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Clareza</th>
-                <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Segurança</th>
               </tr>
             </thead>
             <tbody>
@@ -633,9 +621,6 @@ function TreinamentoSubTab() {
                     <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(139,92,246,0.1)] text-[#A78BFA] border border-[rgba(139,92,246,0.2)]">{r.ferramenta || '—'}</span>
                   </td>
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{r.respondente}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaTreinamento}</td>
-                  <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{r.notaClareza}</td>
-                  <td className="px-4 py-3 text-xs text-[#A0A0B0]">{r.segurancaUso ? stripEmoji(r.segurancaUso) : '—'}</td>
                 </tr>
               ))}
             </tbody>
