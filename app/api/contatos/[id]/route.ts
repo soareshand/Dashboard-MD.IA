@@ -3,7 +3,13 @@ import { supabase } from '@/lib/supabase';
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { error } = await supabase.from('contatos').delete().eq('id', params.id);
+    // Look up the médico name so we can delete ALL rows for this médico
+    // (the table may have duplicate legacy rows; deleting only by id would leave older ones)
+    const { data: row, error: lookupErr } = await supabase
+      .from('contatos').select('medico').eq('id', params.id).single();
+    if (lookupErr) throw lookupErr;
+
+    const { error } = await supabase.from('contatos').delete().eq('medico', row.medico);
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {
