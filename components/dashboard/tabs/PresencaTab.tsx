@@ -45,6 +45,8 @@ export default function PresencaTab() {
   const [showModal, setShowModal] = useState(false);
   const [deletingSessao, setDeletingSessao] = useState<string | null>(null);
   const [deletingInProgress, setDeletingInProgress] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -60,6 +62,20 @@ export default function PresencaTab() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  async function handleClearAll() {
+    setClearing(true);
+    try {
+      const res = await fetch('/api/presenca-clear', { method: 'POST' });
+      if (!res.ok) throw new Error('Erro ao limpar dados.');
+      setConfirmClear(false);
+      fetchData();
+    } catch {
+      setConfirmClear(false);
+    } finally {
+      setClearing(false);
+    }
+  }
 
   async function handleDeleteSessao(sessao: string) {
     setDeletingInProgress(true);
@@ -87,12 +103,30 @@ export default function PresencaTab() {
           <KpiCard icon="calendar" title="Total de Sessões" value={data.kpis.totalSessoes} />
           <KpiCard icon="users" title="Médicos Monitorados" value={data.kpis.totalMedicos} />
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="ml-4 btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm shrink-0"
-        >
-          + Registrar Presença
-        </button>
+        <div className="ml-4 flex items-center gap-2 shrink-0">
+          {confirmClear && (
+            <button onClick={() => setConfirmClear(false)} className="text-[#555570] hover:text-[#A0A0B0] text-xs transition-colors px-2">
+              Cancelar
+            </button>
+          )}
+          <button
+            onClick={confirmClear ? handleClearAll : () => setConfirmClear(true)}
+            disabled={clearing}
+            className={`px-4 py-2 rounded-xl text-sm font-sora font-semibold transition-all disabled:opacity-60 ${
+              confirmClear
+                ? 'bg-[#F59E0B] text-[#08080F]'
+                : 'border border-[rgba(245,158,11,0.4)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
+            }`}
+          >
+            {clearing ? 'Limpando…' : confirmClear ? 'Confirmar limpeza' : 'Limpar dados'}
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm"
+          >
+            + Registrar Presença
+          </button>
+        </div>
       </div>
 
       {/* Sessões recentes */}

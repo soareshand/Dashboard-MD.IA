@@ -11,16 +11,11 @@ export async function GET() {
       supabase.from('clientes').select('nome, situacao'),
     ]);
 
-    // Build set of active doctor names from Supabase (source of truth)
-    const ativosSet = new Set(
-      (clientesRows ?? [])
-        .filter(m => m.situacao === 'Ativo')
-        .map(m => m.nome.toLowerCase().trim())
-    );
-
-    const medicosAtivos = data.medicos.filter(
-      m => ativosSet.has(m.toLowerCase().trim())
-    );
+    // Use ALL active Supabase members as the base list (source of truth)
+    const medicosAtivos = (clientesRows ?? [])
+      .filter(m => m.situacao === 'Ativo')
+      .map(m => m.nome)
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
     const totalSessoes = data.sessoes.length;
 

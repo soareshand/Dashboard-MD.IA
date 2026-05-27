@@ -654,6 +654,7 @@ export async function registrarPresenca(
 
   const colLetter = colIndexToLetter(colIndex);
   const updates: { range: string; values: string[][] }[] = [];
+  const newRows: string[][] = [];
 
   if (isNewColumn) {
     updates.push({ range: `${SHEET}!${colLetter}1`, values: [[data]] });
@@ -661,11 +662,18 @@ export async function registrarPresenca(
 
   for (const [medico, status] of Object.entries(presencas)) {
     const rowIndex = rows.findIndex((r, i) => i > 0 && r[0] === medico);
-    if (rowIndex === -1) continue;
-    updates.push({
-      range: `${SHEET}!${colLetter}${rowIndex + 1}`,
-      values: [[status]],
-    });
+    if (rowIndex === -1) {
+      // Doctor not yet in sheet — build a new row with the right column count
+      const newRow = new Array(colIndex + 1).fill('');
+      newRow[0] = medico;
+      newRow[colIndex] = status;
+      newRows.push(newRow);
+    } else {
+      updates.push({
+        range: `${SHEET}!${colLetter}${rowIndex + 1}`,
+        values: [[status]],
+      });
+    }
   }
 
   if (updates.length > 0) {
@@ -674,4 +682,23 @@ export async function registrarPresenca(
       requestBody: { valueInputOption: 'USER_ENTERED', data: updates },
     });
   }
+
+  if (newRows.length > 0) {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET}!A:A`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: newRows },
+    });
+  }
+}
+
+// ── Limpar todos os dados de presença ─────────────────────────────────────────
+
+export async function clearPresencas(): Promise<void> {
+  const sheets = getSheetsClient();
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId: SPREADSHEET_ID,
+    range: "'Presença nas Mentorias em Grupo'!A:AZ",
+  });
 }
