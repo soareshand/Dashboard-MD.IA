@@ -108,14 +108,8 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
       <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-6 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
       <div className="flex flex-col items-center">
         <svg width={200} height={200} viewBox="0 0 200 200">
-          <defs>
-            <filter id="donut-glow">
-              <feGaussianBlur stdDeviation="3.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
-          <g transform={`rotate(-90 ${cx} ${cy})`} filter="url(#donut-glow)">
+          <g transform={`rotate(-90 ${cx} ${cy})`}>
             {total === 0
               ? <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth={sw}/>
               : arcs.map(arc => arc.dash > 0 && (
