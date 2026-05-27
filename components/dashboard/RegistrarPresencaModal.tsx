@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   medicos: string[];
-  initialPresencas?: Record<string, 'Presente' | 'Faltou'>;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -38,7 +37,7 @@ function getTodayInputValue(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function RegistrarPresencaModal({ medicos, initialPresencas, onClose, onSuccess }: Props) {
+export default function RegistrarPresencaModal({ medicos, onClose, onSuccess }: Props) {
   const [dateInput, setDateInput] = useState(getTodayInputValue());
   const [presencas, setPresencas] = useState<Record<string, 'Presente' | 'Faltou'>>({});
   const [loading, setLoading] = useState(false);
@@ -56,9 +55,9 @@ export default function RegistrarPresencaModal({ medicos, initialPresencas, onCl
 
   useEffect(() => {
     const initial: Record<string, 'Presente' | 'Faltou'> = {};
-    medicos.forEach(m => { initial[m] = initialPresencas?.[m] ?? 'Faltou'; });
+    medicos.forEach(m => { initial[m] = 'Faltou'; });
     setPresencas(initial);
-  }, [medicos, initialPresencas]);
+  }, [medicos]);
 
   function toggle(medico: string) {
     setPresencas(prev => ({ ...prev, [medico]: prev[medico] === 'Presente' ? 'Faltou' : 'Presente' }));
