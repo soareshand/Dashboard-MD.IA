@@ -72,7 +72,6 @@ export default function ResponseModal({ row, onClose }: ResponseModalProps) {
         <Section title="Identificação">
           <Field label="Nome" value={f.nome} />
           <Field label="Clínica" value={f.clinica} />
-          <Field label="Email" value={f.email} />
         </Section>
 
         <Section title="Objetivos e Metas">
