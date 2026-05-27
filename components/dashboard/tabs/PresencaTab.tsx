@@ -139,6 +139,18 @@ export default function PresencaTab() {
     }).sort((a, b) => b.taxa - a.taxa);
   }, [data, sessoesFiltradas]);
 
+  // Default presencas for new registration: last session's attendance
+  const lastSessaoPresencas = useMemo((): Record<string, 'Presente' | 'Faltou'> => {
+    if (!data || data.sessoes.length === 0) return {};
+    const lastSessao = data.sessoes[data.sessoes.length - 1];
+    const result: Record<string, 'Presente' | 'Faltou'> = {};
+    for (const medico of data.medicos) {
+      const status = data.grid[medico]?.[lastSessao];
+      result[medico] = status === 'Presente' ? 'Presente' : 'Faltou';
+    }
+    return result;
+  }, [data]);
+
   // Filtered recent sessions (up to 6)
   const recentSessoesFiltradas = useMemo((): SessaoStat[] => {
     if (!data) return [];
@@ -303,6 +315,7 @@ export default function PresencaTab() {
       {showModal && (
         <RegistrarPresencaModal
           medicos={data.medicos}
+          initialPresencas={lastSessaoPresencas}
           onClose={() => setShowModal(false)}
           onSuccess={() => { setShowModal(false); fetchData(); }}
         />
