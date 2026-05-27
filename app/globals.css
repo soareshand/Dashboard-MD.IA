@@ -33,7 +33,7 @@ html, body {
   background: #06060E;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(#8B5CF6, #3B9EF5);
+  background: linear-gradient(#F59E0B, #3B9EF5);
   border-radius: 3px;
 }
 
@@ -51,7 +51,7 @@ html, body {
   inset: 0;
   border-radius: 16px;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(59,158,245,0.28), rgba(139,92,246,0.16), rgba(255,255,255,0.04));
+  background: linear-gradient(135deg, rgba(245,158,11,0.18), rgba(59,158,245,0.22), rgba(255,255,255,0.04));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -68,8 +68,8 @@ html, body {
     #3B9EF5 22%,
     transparent 22%,
     transparent 28%,
-    #8B5CF6 28%,
-    #8B5CF6 30%,
+    #F59E0B 28%,
+    #F59E0B 30%,
     #3B9EF5 30%,
     #3B9EF5 35%,
     transparent 35%,
@@ -83,19 +83,19 @@ html, body {
 
 /* Glow button — brand gradient */
 .btn-glow {
-  background: linear-gradient(135deg, #3B9EF5, #8B5CF6);
-  box-shadow: 0 0 22px rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, #F59E0B, #3B9EF5);
+  box-shadow: 0 0 22px rgba(59, 158, 245, 0.4);
   transition: all 0.2s ease;
 }
 .btn-glow:hover {
-  box-shadow: 0 0 34px rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 34px rgba(59, 158, 245, 0.6);
   transform: translateY(-1px);
 }
 
 /* Scale button active (quiz) */
 .scale-btn-active {
-  background: linear-gradient(135deg, #3B9EF5, #8B5CF6);
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, #F59E0B, #3B9EF5);
+  box-shadow: 0 0 12px rgba(59, 158, 245, 0.4);
   color: white;
 }
 

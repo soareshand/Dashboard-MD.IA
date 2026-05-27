@@ -130,13 +130,13 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative w-full flex flex-col items-center gap-2 py-4 px-2 rounded-xl transition-all duration-200 group ${
                   active
-                    ? 'bg-[rgba(139,92,246,0.13)] text-white shadow-[0_0_20px_rgba(139,92,246,0.12)]'
+                    ? 'bg-[rgba(245,158,11,0.08)] text-white shadow-[0_0_20px_rgba(245,158,11,0.1)]'
                     : 'text-[#5858A0] hover:text-[#B0B0D0] hover:bg-[rgba(255,255,255,0.04)]'
                 }`}
               >
                 {/* active left border */}
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-9 bg-gradient-to-b from-[#8B5CF6] to-[#3B9EF5] rounded-r-full" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-9 bg-gradient-to-b from-[#F59E0B] to-[#3B9EF5] rounded-r-full" />
                 )}
 
                 <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
