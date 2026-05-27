@@ -13,7 +13,7 @@ export const TOOL_ITEMS: ToolItem[] = [
   { id: 'notaAgenteIA', label: 'Agente de IA (Secretária)', emoji: '🤖' },
   { id: 'notaGerenteIA', label: 'Gerente de IA (Etiquetas)', emoji: '🏷️' },
   { id: 'notaAutomacoes', label: 'Automações de Experiência', emoji: '⚡' },
-  { id: 'notaDashboard', label: 'Dashboard', emoji: '📊' },
+  { id: 'notaDashboard', label: 'Dashboard CRM', emoji: '📊' },
   { id: 'notaCRM', label: 'Ferramenta CRM', emoji: '📇' },
   { id: 'notaTreinamentosCRM', label: 'Treinamentos do CRM', emoji: '🎯' },
   { id: 'notaSuporteEquipe', label: 'Suporte da equipe', emoji: '🤝' },
