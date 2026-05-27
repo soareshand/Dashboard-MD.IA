@@ -588,7 +588,7 @@ export default function NpsTab() {
           <button
             key={t.id}
             onClick={() => setActive(t.id)}
-            style={active === t.id ? { background: 'linear-gradient(135deg, #F59E0B, #3B9EF5)' } : {}}
+            style={active === t.id ? { background: '#3B9EF5' } : {}}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-sora transition-all whitespace-nowrap ${
               active === t.id
                 ? 'text-white shadow-md'

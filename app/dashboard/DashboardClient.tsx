@@ -72,14 +72,14 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
             + Gerar Link
           </button>
         </div>
-        <div className="border-b border-[rgba(139,92,246,0.15)] px-4 bg-[#0A0A1A] mt-4">
+        <div className="border-b border-[rgba(59,158,245,0.15)] px-4 bg-[#0A0A1A] mt-4">
           <div className="max-w-7xl mx-auto overflow-x-auto">
             <div className="flex gap-0.5 min-w-max">
               {TABS.map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 text-sm font-sora border-b-2 transition-all whitespace-nowrap rounded-t-lg ${
                     activeTab === tab.id
-                      ? 'border-[#8B5CF6] text-white bg-[rgba(139,92,246,0.1)]'
+                      ? 'border-[#3B9EF5] text-white bg-[rgba(59,158,245,0.1)]'
                       : 'border-transparent text-[#7070A0] hover:text-[#C0C0D8]'
                   }`}>
                   <span>{tab.icon}</span><span>{tab.label}</span>
@@ -101,10 +101,10 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
     <div className="flex min-h-screen bg-[#080812]">
 
       {/* ── Sidebar ── */}
-      <aside className="w-[220px] flex-shrink-0 flex flex-col min-h-screen bg-[#06061A] border-r border-[rgba(139,92,246,0.18)] sticky top-0 h-screen">
+      <aside className="w-[220px] flex-shrink-0 flex flex-col min-h-screen bg-[#06061A] border-r border-[rgba(59,158,245,0.18)] sticky top-0 h-screen">
 
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-[rgba(139,92,246,0.12)]">
+        <div className="px-5 py-5 border-b border-[rgba(59,158,245,0.12)]">
           <div className="flex items-center gap-3">
             <Image
               src="/MD.IA_Logotipo-removebg-preview.png"
@@ -114,7 +114,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
               className="rounded-xl object-contain flex-shrink-0"
             />
             <div className="flex flex-col">
-              <span className="font-orbitron text-[11px] font-bold text-[#8B5CF6] tracking-widest uppercase leading-none">MD.IA</span>
+              <span className="font-orbitron text-[11px] font-bold text-[#3B9EF5] tracking-widest uppercase leading-none">MD.IA</span>
               <span className="font-orbitron text-sm font-bold text-white tracking-wide leading-snug mt-0.5">Painel CS</span>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
               >
                 {/* active left border */}
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-9 bg-gradient-to-b from-[#F59E0B] to-[#3B9EF5] rounded-r-full" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-9 bg-[#3B9EF5] rounded-r-full" />
                 )}
 
                 <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
@@ -148,7 +148,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
 
                 {/* separator (except last) */}
                 {i < TABS.length - 1 && !active && (
-                  <span className="absolute bottom-0 left-4 right-4 h-px bg-[rgba(139,92,246,0.08)]" />
+                  <span className="absolute bottom-0 left-4 right-4 h-px bg-[rgba(59,158,245,0.08)]" />
                 )}
               </button>
             );

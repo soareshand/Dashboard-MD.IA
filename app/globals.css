@@ -83,7 +83,7 @@ html, body {
 
 /* Glow button — brand gradient */
 .btn-glow {
-  background: linear-gradient(135deg, #F59E0B, #3B9EF5);
+  background: #3B9EF5;
   box-shadow: 0 0 22px rgba(59, 158, 245, 0.4);
   transition: all 0.2s ease;
 }
