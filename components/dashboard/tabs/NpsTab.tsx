@@ -365,9 +365,9 @@ function CallSubTab() {
   if (data.kpis.total === 0) return <EmptyState label="Pós-Call" />;
 
   const resolucaoChart = [
-    { name: 'Resolvida', value: data.resolucaoDistribuicao.Sim, color: '#3B9EF5' },
+    { name: 'Sim', value: data.resolucaoDistribuicao.Sim, color: '#3B9EF5' },
     { name: 'Parcialmente', value: data.resolucaoDistribuicao.Parcialmente, color: '#8B5CF6' },
-    { name: 'Não resolvida', value: data.resolucaoDistribuicao.Nao, color: NAO_COLOR },
+    { name: 'Não', value: data.resolucaoDistribuicao.Nao, color: NAO_COLOR },
   ];
 
   const maxDist = Math.max(...data.distCall.map(d => d.count), 1);
