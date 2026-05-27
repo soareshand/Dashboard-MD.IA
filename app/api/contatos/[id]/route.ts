@@ -15,15 +15,15 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
-    if (!body.medico?.trim()) {
-      return NextResponse.json({ error: 'Médico é obrigatório.' }, { status: 400 });
+    const medico = body.medico?.trim();
+    if (!medico) {
+      return NextResponse.json({ error: 'Contato é obrigatório.' }, { status: 400 });
     }
 
     const { error } = await supabase
       .from('contatos')
       .update({
-        medico: body.medico.trim(),
-        status: body.status || 'OK',
+        medico,
         ultimo_contato: body.ultimoContato || null,
         proximo_contato: body.proximoContato || null,
         frequencia_ideal: body.frequenciaIdeal || null,

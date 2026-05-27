@@ -26,29 +26,58 @@ export async function GET() {
       return new Date(m.data_nascimento + 'T00:00:00').getMonth() + 1 === mesAtual;
     });
 
-    const inativosNomes = new Set(
-      rows.filter(m => m.situacao === 'Inativo').map(m => m.nome.trim().toLowerCase())
-    );
+    // Deduplicate contatos by médico, keep the most recent (query ordered by created_at DESC)
+    const contatoByMedico = new Map<string, typeof contatosRaw[0]>();
+    for (const c of (contatosRaw ?? [])) {
+      const key = (c.medico ?? '').trim().toLowerCase();
+      if (!contatoByMedico.has(key)) {
+        contatoByMedico.set(key, c);
+      }
+    }
 
-    const contatos = (contatosRaw ?? [])
-      .filter(c => !inativosNomes.has((c.medico ?? '').trim().toLowerCase()))
-      .map(c => ({
-      id: c.id,
-      medico: c.medico,
-      frequenciaIdeal: c.frequencia_ideal,
-      ultimoContato: c.ultimo_contato,
-      diasSemContato: c.ultimo_contato
-        ? Math.floor((now.getTime() - new Date(c.ultimo_contato + 'T00:00:00').getTime()) / 86400000)
-        : null,
-      proximoContato: c.proximo_contato,
-      tipoInteracao: c.tipo_interacao,
-      status: c.status,
-    }));
+    // Build member-centric contatos (one row per active member)
+    const statusOrder: Record<string, number> = { 'Crítico': 0, 'Atenção': 1, 'Em dia': 2 };
 
-    contatos.sort((a, b) => (b.diasSemContato ?? 0) - (a.diasSemContato ?? 0));
+    const contatos = ativos.map(m => {
+      const key = m.nome.trim().toLowerCase();
+      const c = contatoByMedico.get(key);
 
-    const emAlerta = contatos.filter(c => c.status?.toLowerCase().includes('aten'));
-    const criticos = contatos.filter(c => (c.diasSemContato ?? 0) > 30);
+      const ultimoContato = c?.ultimo_contato ?? null;
+      const proximoContato = c?.proximo_contato ?? null;
+
+      const diasSemContato = ultimoContato
+        ? Math.floor((now.getTime() - new Date(ultimoContato + 'T00:00:00').getTime()) / 86400000)
+        : null;
+
+      let status = 'Em dia';
+      if (proximoContato) {
+        const proximo = new Date(proximoContato + 'T00:00:00');
+        const diffDays = Math.ceil((proximo.getTime() - now.getTime()) / 86400000);
+        if (diffDays < 0) status = 'Crítico';
+        else if (diffDays <= 3) status = 'Atenção';
+      }
+
+      return {
+        id: c?.id ?? null,
+        medico: m.nome,
+        clinica: m.clinica ?? null,
+        frequenciaIdeal: c?.frequencia_ideal ?? null,
+        ultimoContato,
+        diasSemContato,
+        proximoContato,
+        tipoInteracao: c?.tipo_interacao ?? null,
+        status,
+      };
+    });
+
+    contatos.sort((a, b) => {
+      const so = (statusOrder[a.status] ?? 2) - (statusOrder[b.status] ?? 2);
+      if (so !== 0) return so;
+      return (b.diasSemContato ?? -1) - (a.diasSemContato ?? -1);
+    });
+
+    const emAlerta = contatos.filter(c => c.status === 'Atenção' || c.status === 'Crítico');
+    const criticos = contatos.filter(c => c.status === 'Crítico');
 
     return NextResponse.json({
       kpis: {

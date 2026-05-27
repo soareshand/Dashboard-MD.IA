@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { TabLoader, TabError } from './NpsTab';
 import KpiCard from '@/components/dashboard/KpiCard';
 
@@ -23,8 +23,9 @@ interface Membro {
 }
 
 interface ContatoRow {
-  id: string;
+  id: string | null;
   medico: string;
+  clinica: string | null;
   ultimoContato: string | null;
   diasSemContato: number | null;
   status: string;
@@ -35,7 +36,6 @@ interface ContatoRow {
 
 const BLANK_CONTATO = {
   medico: '',
-  status: 'OK',
   ultimoContato: '',
   proximoContato: '',
   frequenciaIdeal: '',
@@ -54,20 +54,94 @@ function calcProximoContato(ultimoContato: string, frequenciaIdeal: string): str
   return d.toISOString().slice(0, 10);
 }
 
+function ContatoSelect({
+  value,
+  onChange,
+  membrosAtivos,
+  className,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  membrosAtivos: { nome: string; clinica: string | null }[];
+  className: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const selected = membrosAtivos.find(m => m.nome === value);
+
+  function handleToggle() {
+    if (!open) {
+      const rect = btnRef.current?.getBoundingClientRect();
+      if (rect) {
+        setDropdownStyle({ position: 'fixed', top: rect.bottom + 4, left: rect.left, width: rect.width, zIndex: 9999 });
+      }
+    }
+    setOpen(o => !o);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (btnRef.current?.contains(e.target as Node)) return;
+      if (listRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  return (
+    <div className="relative">
+      <button ref={btnRef} type="button" onClick={handleToggle}
+        className={`${className} flex items-center justify-between cursor-pointer text-left min-h-[42px]`}>
+        {selected ? (
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-white text-sm truncate">{selected.clinica || selected.nome}</p>
+            {selected.clinica && <p className="text-[#A0A0B0] text-xs truncate">{selected.nome}</p>}
+          </div>
+        ) : (
+          <span className="text-[#555570]">— Selecionar contato —</span>
+        )}
+        <svg className="ml-2 shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {open && (
+        <div ref={listRef} style={dropdownStyle}
+          className="bg-[#12122A] border border-[rgba(74,144,226,0.35)] rounded-xl overflow-hidden shadow-2xl max-h-52 overflow-y-auto">
+          {membrosAtivos.map(m => (
+            <button key={m.nome} type="button" onClick={() => { onChange(m.nome); setOpen(false); }}
+              className={`w-full text-left px-3 py-2.5 hover:bg-[rgba(74,144,226,0.1)] transition-colors border-b border-[rgba(74,144,226,0.05)] last:border-0 ${value === m.nome ? 'bg-[rgba(74,144,226,0.08)]' : ''}`}>
+              <p className="font-semibold text-white text-sm">{m.clinica || m.nome}</p>
+              {m.clinica && <p className="text-[#A0A0B0] text-xs">{m.nome}</p>}
+            </button>
+          ))}
+          {membrosAtivos.length === 0 && (
+            <p className="text-[#A0A0B0] text-sm px-3 py-2">Nenhum membro ativo.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ContatoModal({
   initial,
   membrosAtivos,
+  existingContatos,
   onSave,
   onClose,
 }: {
   initial: (ContatoForm & { id?: string }) | null;
-  membrosAtivos: { nome: string }[];
+  membrosAtivos: { nome: string; clinica: string | null }[];
+  existingContatos: ContatoRow[];
   onSave: () => void;
   onClose: () => void;
 }) {
   const [form, setForm] = useState<ContatoForm>(initial ? {
     medico: initial.medico,
-    status: initial.status,
     ultimoContato: initial.ultimoContato,
     proximoContato: initial.proximoContato,
     frequenciaIdeal: initial.frequenciaIdeal,
@@ -86,10 +160,24 @@ function ContatoModal({
 
   function set(field: keyof ContatoForm, value: string) {
     setForm(prev => {
-      const next = { ...prev, [field]: value };
+      let next = { ...prev, [field]: value };
+
+      if (field === 'medico' && !isEdit) {
+        const existing = existingContatos.find(c => c.medico === value);
+        if (existing) {
+          next = {
+            ...next,
+            ultimoContato: existing.ultimoContato ?? '',
+            proximoContato: existing.proximoContato ?? '',
+            frequenciaIdeal: existing.frequenciaIdeal ?? '',
+            tipoInteracao: existing.tipoInteracao ?? '',
+          };
+        }
+      }
+
       if (field === 'ultimoContato' || field === 'frequenciaIdeal') {
-        const ultimo = field === 'ultimoContato' ? value : prev.ultimoContato;
-        const freq = field === 'frequenciaIdeal' ? value : prev.frequenciaIdeal;
+        const ultimo = field === 'ultimoContato' ? value : next.ultimoContato;
+        const freq = field === 'frequenciaIdeal' ? value : next.frequenciaIdeal;
         const calc = calcProximoContato(ultimo, freq);
         if (calc) next.proximoContato = calc;
       }
@@ -98,7 +186,7 @@ function ContatoModal({
   }
 
   async function handleSave() {
-    if (!form.medico.trim()) { setError('Médico é obrigatório.'); return; }
+    if (!form.medico.trim()) { setError('Contato é obrigatório.'); return; }
     setSaving(true);
     setError('');
     try {
@@ -106,7 +194,13 @@ function ContatoModal({
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          medico: form.medico,
+          ultimoContato: form.ultimoContato,
+          proximoContato: form.proximoContato,
+          frequenciaIdeal: form.frequenciaIdeal,
+          tipoInteracao: form.tipoInteracao,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao salvar.');
@@ -154,21 +248,13 @@ function ContatoModal({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <label className={lbl}>Médico *</label>
-            <select value={form.medico} onChange={e => set('medico', e.target.value)} className={inp + ' cursor-pointer'}>
-              <option value="">— Selecionar médico —</option>
-              {membrosAtivos.map(m => (
-                <option key={m.nome} value={m.nome}>{m.nome}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={lbl}>Status</label>
-            <select value={form.status} onChange={e => set('status', e.target.value)} className={inp + ' cursor-pointer'}>
-              <option value="OK">OK</option>
-              <option value="Atenção">Atenção</option>
-              <option value="Crítico">Crítico</option>
-            </select>
+            <label className={lbl}>Contato *</label>
+            <ContatoSelect
+              value={form.medico}
+              onChange={v => set('medico', v)}
+              membrosAtivos={membrosAtivos}
+              className={inp}
+            />
           </div>
           <div>
             <label className={lbl}>Frequência Ideal</label>
@@ -180,23 +266,21 @@ function ContatoModal({
             </select>
           </div>
           <div>
-            <label className={lbl}>Último Contato</label>
-            <input type="date" value={form.ultimoContato} onChange={e => set('ultimoContato', e.target.value)} className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>Próximo Contato</label>
-            <input type="date" value={form.proximoContato} onChange={e => set('proximoContato', e.target.value)} className={inp} />
-          </div>
-          <div className="sm:col-span-2">
             <label className={lbl}>Tipo de Interação</label>
             <select value={form.tipoInteracao} onChange={e => set('tipoInteracao', e.target.value)} className={inp + ' cursor-pointer'}>
               <option value="">— Selecionar —</option>
               <option value="WhatsApp">WhatsApp</option>
               <option value="Call">Call</option>
               <option value="E-mail">E-mail</option>
-              <option value="Presencial">Presencial</option>
-              <option value="Outro">Outro</option>
             </select>
+          </div>
+          <div>
+            <label className={lbl}>Último Contato</label>
+            <input type="date" value={form.ultimoContato} onChange={e => set('ultimoContato', e.target.value)} className={inp} />
+          </div>
+          <div>
+            <label className={lbl}>Próximo Contato</label>
+            <input type="date" value={form.proximoContato} onChange={e => set('proximoContato', e.target.value)} className={inp} />
           </div>
         </div>
 
@@ -329,16 +413,15 @@ function RenovacaoBadge({ entrada }: { entrada: string | null }) {
 }
 
 function ContatoStatusBadge({ status }: { status: string }) {
-  const s = status.toLowerCase();
-  const isOk = s.includes('ok') || s.includes('ativo') || s === '';
-  const isAtencao = s.includes('aten');
+  const isCritico = status === 'Crítico';
+  const isAtencao = status === 'Atenção';
   return (
     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-      isOk ? 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border border-[rgba(59,158,245,0.2)]' :
+      isCritico ? 'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border border-[rgba(245,158,11,0.2)]' :
       isAtencao ? 'bg-[rgba(139,92,246,0.1)] text-[#8B5CF6] border border-[rgba(139,92,246,0.25)]' :
-      'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border border-[rgba(245,158,11,0.2)]'
+      'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border border-[rgba(59,158,245,0.2)]'
     }`}>
-      {status || 'OK'}
+      {status || 'Em dia'}
     </span>
   );
 }
@@ -567,9 +650,8 @@ export default function ClientesTab() {
 
   function openEditContato(c: ContatoRow) {
     setModalContato({
-      id: c.id,
+      id: c.id ?? undefined,
       medico: c.medico,
-      status: c.status || 'OK',
       ultimoContato: c.ultimoContato ?? '',
       proximoContato: c.proximoContato ?? '',
       frequenciaIdeal: c.frequenciaIdeal ?? '',
@@ -711,7 +793,7 @@ export default function ClientesTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(74,144,226,0.1)]">
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Médico</th>
+                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Contato</th>
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Último Contato</th>
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider w-48">Dias sem contato</th>
                   <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Próximo contato</th>
@@ -723,7 +805,10 @@ export default function ClientesTab() {
               <tbody>
                 {data.contatos.map(c => (
                   <tr key={c.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
-                    <td className="px-4 py-3 text-white font-medium">{c.medico}</td>
+                    <td className="px-4 py-3">
+                      {c.clinica && <p className="font-semibold text-white text-sm leading-snug">{c.clinica}</p>}
+                      <p className={`leading-snug ${c.clinica ? 'text-[#A0A0B0] text-xs' : 'text-white font-medium text-sm'}`}>{c.medico}</p>
+                    </td>
                     <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono">{toDisplay(c.ultimoContato)}</td>
                     <td className="px-4 py-3 w-48">
                       {c.diasSemContato != null ? <DiasBar dias={c.diasSemContato} /> : <span className="text-[#A0A0B0] text-xs">—</span>}
@@ -837,7 +922,8 @@ export default function ClientesTab() {
       {modalContato !== false && (
         <ContatoModal
           initial={modalContato}
-          membrosAtivos={data.membros.filter(m => m.situacao === 'Ativo')}
+          membrosAtivos={data.membros.filter(m => m.situacao === 'Ativo').map(m => ({ nome: m.nome, clinica: m.clinica }))}
+          existingContatos={data.contatos}
           onSave={fetchData}
           onClose={() => setModalContato(false)}
         />
