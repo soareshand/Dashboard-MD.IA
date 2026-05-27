@@ -7,12 +7,14 @@ import NpsTab from '@/components/dashboard/tabs/NpsTab';
 import FinanceiroTab from '@/components/dashboard/tabs/FinanceiroTab';
 import ClientesTab from '@/components/dashboard/tabs/ClientesTab';
 import PresencaTab from '@/components/dashboard/tabs/PresencaTab';
+import TarefasTab from '@/components/dashboard/tabs/TarefasTab';
 
 const TABS = [
   { id: 'nps',        label: 'Avaliações',   icon: '📊' },
   { id: 'financeiro', label: 'Financeiro',   icon: '💰' },
   { id: 'clientes',   label: 'Clientes',     icon: '👥' },
   { id: 'presenca',   label: 'Presenças',    icon: '📅' },
+  { id: 'tarefas',    label: 'Tarefas',      icon: '✅' },
 ] as const;
 
 function SidebarIcon({ id, active }: { id: string; active: boolean }) {
@@ -34,6 +36,13 @@ function SidebarIcon({ id, active }: { id: string; active: boolean }) {
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
+  if (id === 'tarefas') return (
+    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
+      <rect x="3" y="3" width="5" height="14" rx="1.5" />
+      <rect x="9.5" y="3" width="5" height="10" rx="1.5" />
+      <rect x="16" y="3" width="5" height="18" rx="1.5" />
+    </svg>
+  );
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
       <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
@@ -51,6 +60,7 @@ function TabContent({ activeTab }: { activeTab: TabId }) {
       {activeTab === 'financeiro' && <FinanceiroTab />}
       {activeTab === 'clientes'   && <ClientesTab />}
       {activeTab === 'presenca'   && <PresencaTab />}
+      {activeTab === 'tarefas'    && <TarefasTab />}
     </>
   );
 }
