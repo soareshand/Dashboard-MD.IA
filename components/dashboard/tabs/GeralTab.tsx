@@ -163,7 +163,7 @@ function SummaryKpis({ cards }: { cards: CardData[] }) {
   const aniversariantesHoje = cards.filter(c => c.isAniversarioHoje).length;
 
   const kpis = [
-    { label: 'Média Score', value: `${avgScore}`, sub: '/ 10', color: avgScore >= 8 ? '#3B9EF5' : avgScore >= 5 ? '#8B5CF6' : '#F59E0B' },
+    { label: 'Média Score', value: `${avgScore}`, sub: '/ 10', color: '#A0A0B0' },
     { label: 'Total Ativos', value: String(total), sub: 'clínicas', color: '#A0A0B0' },
     { label: 'Saudáveis', value: String(saudaveis), sub: 'score ≥ 8', color: '#3B9EF5' },
     { label: 'Em Atenção', value: String(atencao), sub: 'score 5–7.9', color: '#8B5CF6' },
