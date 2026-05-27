@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { TabLoader, TabError } from './NpsTab';
 import KpiCard from '@/components/dashboard/KpiCard';
 
@@ -108,7 +109,7 @@ function ContatoSelect({
           <polyline points="6 9 12 15 18 9"/>
         </svg>
       </button>
-      {open && (
+      {open && typeof window !== 'undefined' && createPortal(
         <div ref={listRef} style={dropdownStyle}
           className="bg-[#12122A] border border-[rgba(74,144,226,0.35)] rounded-xl overflow-hidden shadow-2xl max-h-52 overflow-y-auto">
           {membrosAtivos.map(m => (
@@ -121,7 +122,8 @@ function ContatoSelect({
           {membrosAtivos.length === 0 && (
             <p className="text-[#A0A0B0] text-sm px-3 py-2">Nenhum membro ativo.</p>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
