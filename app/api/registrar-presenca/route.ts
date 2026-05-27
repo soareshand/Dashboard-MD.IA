@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { registrarPresenca } from '@/lib/google-sheets';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +9,16 @@ export async function POST(req: NextRequest) {
     if (!data || !presencas) {
       return NextResponse.json({ error: 'data e presencas são obrigatórios.' }, { status: 400 });
     }
-    await registrarPresenca(data, presencas);
+
+    const rows = Object.entries(presencas as Record<string, 'Presente' | 'Faltou'>).map(
+      ([medico, status]) => ({ medico, sessao: data, status })
+    );
+
+    const { error } = await supabase
+      .from('presencas')
+      .upsert(rows, { onConflict: 'medico,sessao' });
+
+    if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[registrar-presenca]', err);

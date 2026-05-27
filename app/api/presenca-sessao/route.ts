@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deletePresencaSessao } from '@/lib/google-sheets';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function DELETE(req: NextRequest) {
   const sessao = req.nextUrl.searchParams.get('sessao');
@@ -7,7 +9,8 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Sessão não informada.' }, { status: 400 });
   }
   try {
-    await deletePresencaSessao(sessao);
+    const { error } = await supabase.from('presencas').delete().eq('sessao', sessao);
+    if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[presenca-sessao DELETE]', err);

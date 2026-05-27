@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
-import { clearPresencas } from '@/lib/google-sheets';
+import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
   try {
-    await clearPresencas();
+    const { error } = await supabase
+      .from('presencas')
+      .delete()
+      .in('status', ['Presente', 'Faltou']);
+    if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[presenca-clear]', err);
