@@ -168,12 +168,6 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
                 <span className={`font-sora font-semibold leading-none tracking-wide ${featured ? 'text-[13px]' : 'text-[11px]'} ${active ? 'text-white' : ''}`}>
                   {tab.label}
                 </span>
-                {featured && !active && (
-                  <span className="text-[9px] text-[#3B5070] font-mono tracking-wider">HEALTH SCORE</span>
-                )}
-                {featured && active && (
-                  <span className="text-[9px] text-[#3B9EF5] font-mono tracking-wider">HEALTH SCORE</span>
-                )}
 
                 {/* separator */}
                 {i < TABS.length - 1 && !active && (
