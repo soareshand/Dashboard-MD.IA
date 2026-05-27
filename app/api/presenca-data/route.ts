@@ -41,6 +41,8 @@ export async function GET() {
       medicoStats: medicoStats.sort((a, b) => b.taxa - a.taxa),
       recentSessoes,
       medicos: medicosAtivos,
+      sessoes: data.sessoes,
+      grid: data.grid,
     });
   } catch (err) {
     console.error('[presenca-data]', err);
