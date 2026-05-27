@@ -191,7 +191,7 @@ export default function GeralTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busca, setBusca] = useState('');
-  const [filtro, setFiltro] = useState<'todos' | 'saudavel' | 'atencao' | 'critico' | 'aniversariante'>('todos');
+  const [filtro, setFiltro] = useState<'todos' | 'saudavel' | 'atencao' | 'critico'>('todos');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -227,7 +227,6 @@ export default function GeralTab() {
     { v: 'saudavel', label: '🔵 Saudáveis' },
     { v: 'atencao', label: '🟣 Atenção' },
     { v: 'critico', label: '🟡 Críticos' },
-    { v: 'aniversariante', label: '🎂 Aniversariantes' },
   ] as const;
 
   const filtered = data.cards
@@ -240,7 +239,6 @@ export default function GeralTab() {
       if (filtro === 'saudavel') return c.score >= 8;
       if (filtro === 'atencao') return c.score >= 5 && c.score < 8;
       if (filtro === 'critico') return c.score < 5;
-      if (filtro === 'aniversariante') return c.isAniversariante;
       return true;
     });
 
