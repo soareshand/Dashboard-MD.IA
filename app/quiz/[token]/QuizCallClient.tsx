@@ -158,7 +158,7 @@ export default function QuizCallClient({ token, nome, clinica, tipoCall }: Props
 
       {step === 2 && (
         <ChoiceQuestion
-          label="Sua dúvida ou necessidade foi resolvida?"
+          label="Os objetivos da call foram alcançados?"
           options={['Sim', 'Parcialmente', 'Não']}
           value={necessidade}
           onChange={setNecessidade}
