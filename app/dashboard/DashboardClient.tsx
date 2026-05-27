@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import GenerateLinkModal from '@/components/dashboard/GenerateLinkModal';
+import GeralTab from '@/components/dashboard/tabs/GeralTab';
 import NpsTab from '@/components/dashboard/tabs/NpsTab';
 import FinanceiroTab from '@/components/dashboard/tabs/FinanceiroTab';
 import ClientesTab from '@/components/dashboard/tabs/ClientesTab';
@@ -10,41 +11,47 @@ import PresencaTab from '@/components/dashboard/tabs/PresencaTab';
 import TarefasTab from '@/components/dashboard/tabs/TarefasTab';
 
 const TABS = [
-  { id: 'nps',        label: 'Avaliações',   icon: '📊' },
-  { id: 'financeiro', label: 'Financeiro',   icon: '💰' },
-  { id: 'clientes',   label: 'Clientes',     icon: '👥' },
-  { id: 'presenca',   label: 'Presenças',    icon: '📅' },
-  { id: 'tarefas',    label: 'Tarefas',      icon: '✅' },
+  { id: 'geral',      label: 'Geral',        icon: '❤️', featured: true  },
+  { id: 'nps',        label: 'Avaliações',   icon: '📊', featured: false },
+  { id: 'financeiro', label: 'Financeiro',   icon: '💰', featured: false },
+  { id: 'clientes',   label: 'Clientes',     icon: '👥', featured: false },
+  { id: 'presenca',   label: 'Presenças',    icon: '📅', featured: false },
+  { id: 'tarefas',    label: 'Tarefas',      icon: '✅', featured: false },
 ] as const;
 
-function SidebarIcon({ id, active }: { id: string; active: boolean }) {
+function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; size?: number }) {
   const color = active ? '#3B9EF5' : '#4B5E72';
   const s = { stroke: color, strokeWidth: '1.8', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
+  if (id === 'geral') return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  );
   if (id === 'nps') return (
-    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
       <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
     </svg>
   );
   if (id === 'financeiro') return (
-    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
       <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   );
   if (id === 'clientes') return (
-    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
   if (id === 'tarefas') return (
-    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
       <rect x="3" y="3" width="5" height="14" rx="1.5" />
       <rect x="9.5" y="3" width="5" height="10" rx="1.5" />
       <rect x="16" y="3" width="5" height="18" rx="1.5" />
     </svg>
   );
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" {...s}>
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
       <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
     </svg>
@@ -56,6 +63,7 @@ type TabId = typeof TABS[number]['id'];
 function TabContent({ activeTab }: { activeTab: TabId }) {
   return (
     <>
+      {activeTab === 'geral'      && <GeralTab />}
       {activeTab === 'nps'        && <NpsTab />}
       {activeTab === 'financeiro' && <FinanceiroTab />}
       {activeTab === 'clientes'   && <ClientesTab />}
@@ -66,7 +74,7 @@ function TabContent({ activeTab }: { activeTab: TabId }) {
 }
 
 export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
-  const [activeTab, setActiveTab] = useState<TabId>('nps');
+  const [activeTab, setActiveTab] = useState<TabId>('geral');
   const [showModal, setShowModal] = useState(false);
 
   /* ── Embed mode: compact top-bar + horizontal tabs ── */
@@ -131,16 +139,21 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 px-3 py-5 flex flex-col gap-1.5">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
           {TABS.map((tab, i) => {
             const active = activeTab === tab.id;
+            const featured = tab.featured;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative w-full flex flex-col items-center gap-2 py-4 px-2 rounded-xl transition-all duration-200 group ${
+                className={`relative w-full flex flex-col items-center gap-2 rounded-xl transition-all duration-200 group ${
+                  featured ? 'py-5 mb-1' : 'py-3'
+                } px-2 ${
                   active
-                    ? 'bg-[rgba(245,158,11,0.08)] text-white shadow-[0_0_20px_rgba(245,158,11,0.1)]'
+                    ? 'bg-[rgba(59,158,245,0.1)] text-white shadow-[0_0_20px_rgba(59,158,245,0.12)]'
+                    : featured
+                    ? 'text-[#5858A0] hover:text-[#B0B0D0] hover:bg-[rgba(59,158,245,0.06)] border border-[rgba(59,158,245,0.1)]'
                     : 'text-[#5858A0] hover:text-[#B0B0D0] hover:bg-[rgba(255,255,255,0.04)]'
                 }`}
               >
@@ -150,15 +163,21 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
                 )}
 
                 <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
-                  <SidebarIcon id={tab.id} active={active} />
+                  <SidebarIcon id={tab.id} active={active} size={featured ? 30 : 26} />
                 </span>
-                <span className={`text-[11px] font-sora font-semibold leading-none tracking-wide ${active ? 'text-white' : ''}`}>
+                <span className={`font-sora font-semibold leading-none tracking-wide ${featured ? 'text-[13px]' : 'text-[11px]'} ${active ? 'text-white' : ''}`}>
                   {tab.label}
                 </span>
+                {featured && !active && (
+                  <span className="text-[9px] text-[#3B5070] font-mono tracking-wider">HEALTH SCORE</span>
+                )}
+                {featured && active && (
+                  <span className="text-[9px] text-[#3B9EF5] font-mono tracking-wider">HEALTH SCORE</span>
+                )}
 
-                {/* separator (except last) */}
+                {/* separator */}
                 {i < TABS.length - 1 && !active && (
-                  <span className="absolute bottom-0 left-4 right-4 h-px bg-[rgba(59,158,245,0.08)]" />
+                  <span className="absolute bottom-0 left-4 right-4 h-px bg-[rgba(59,158,245,0.06)]" />
                 )}
               </button>
             );

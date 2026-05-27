@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
         telefone: body.telefone || null,
         email: body.email || null,
         data_nascimento: body.dataNascimento || null,
+        produtos: body.produtos ?? {},
       })
       .select()
       .single();

@@ -21,6 +21,13 @@ interface Membro {
   email: string | null;
   data_nascimento: string | null;
   created_at: string;
+  produtos: Record<string, boolean> | null;
+}
+
+interface ProdutoItem {
+  id: string;
+  nome: string;
+  ordem: number;
 }
 
 interface ContatoRow {
@@ -128,6 +135,125 @@ function ContatoSelect({
     </div>
   );
 }
+
+// ── ProdutoModal ─────────────────────────────────────────────────────────────
+
+function ProdutoModal({
+  initial,
+  onSave,
+  onClose,
+}: {
+  initial: ProdutoItem | null;
+  onSave: () => void;
+  onClose: () => void;
+}) {
+  const [nome, setNome] = useState(initial?.nome ?? '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const isEdit = !!initial;
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+
+  async function handleSave() {
+    if (!nome.trim()) { setError('Nome é obrigatório.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const url = isEdit ? `/api/produtos-catalogo/${initial!.id}` : '/api/produtos-catalogo';
+      const res = await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: nome.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao salvar.');
+      onSave();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/produtos-catalogo/${initial!.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao excluir.');
+      onSave();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+      setConfirmDelete(false);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inp = 'w-full bg-[#12122A] border border-[rgba(74,144,226,0.25)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#4A90E2] transition-all';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="card-gradient-border w-full max-w-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-orbitron text-base font-bold text-white">
+            {isEdit ? 'Editar Produto' : 'Novo Produto'}
+          </h3>
+          <button onClick={onClose} className="text-[#A0A0B0] hover:text-white text-xl transition-colors">✕</button>
+        </div>
+
+        <div>
+          <label className="text-xs text-[#A0A0B0] mb-1 block">Nome do Produto *</label>
+          <input
+            value={nome}
+            onChange={e => setNome(e.target.value)}
+            placeholder="Ex: AGENTE LEAD"
+            className={inp}
+            autoFocus
+            onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
+          />
+        </div>
+
+        {error && <p className="text-[#F59E0B] text-xs mt-3">{error}</p>}
+
+        <div className="flex gap-3 mt-5">
+          {isEdit && (
+            <button
+              onClick={confirmDelete ? handleDelete : () => setConfirmDelete(true)}
+              disabled={saving}
+              className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
+                confirmDelete
+                  ? 'bg-[#F59E0B] text-[#08080F]'
+                  : 'border border-[rgba(245,158,11,0.4)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
+              }`}
+            >
+              {confirmDelete ? 'Confirmar' : 'Excluir'}
+            </button>
+          )}
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[rgba(74,144,226,0.3)] text-[#A0A0B0] hover:text-white transition-all text-sm">
+            Cancelar
+          </button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl btn-glow text-white font-semibold text-sm disabled:opacity-60">
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ContatoModal ─────────────────────────────────────────────────────────────
 
 function ContatoModal({
   initial,
@@ -442,12 +568,14 @@ function DiasBar({ dias }: { dias: number }) {
   );
 }
 
+// ── MembroModal ───────────────────────────────────────────────────────────────
+
 function MembroModal({
   initial,
   onSave,
   onClose,
 }: {
-  initial: (MembroForm & { id?: string }) | null;
+  initial: (MembroForm & { id?: string; produtos?: Record<string, boolean> }) | null;
   onSave: () => void;
   onClose: () => void;
 }) {
@@ -456,6 +584,10 @@ function MembroModal({
       ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
       : BLANK_FORM
   );
+  const [modalTab, setModalTab] = useState<'dados' | 'produtos'>('dados');
+  const [catalog, setCatalog] = useState<ProdutoItem[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [produtosAtivos, setProdutosAtivos] = useState<Record<string, boolean>>(initial?.produtos ?? {});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -466,6 +598,16 @@ function MembroModal({
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
+
+  useEffect(() => {
+    if (modalTab === 'produtos' && catalog.length === 0 && !catalogLoading) {
+      setCatalogLoading(true);
+      fetch('/api/produtos-catalogo')
+        .then(r => r.json())
+        .then(data => { setCatalog(data); setCatalogLoading(false); })
+        .catch(() => setCatalogLoading(false));
+    }
+  }, [modalTab, catalog.length, catalogLoading]);
 
   function set(field: keyof MembroForm, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -480,7 +622,7 @@ function MembroModal({
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, produtos: produtosAtivos }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao salvar.');
@@ -513,83 +655,157 @@ function MembroModal({
   const inp = 'w-full bg-[#12122A] border border-[rgba(74,144,226,0.25)] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#4A90E2] transition-all';
   const lbl = 'text-xs text-[#A0A0B0] mb-1 block';
 
+  const produtosAtivosCount = catalog.filter(p => produtosAtivos[p.id]).length;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="card-gradient-border w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-5">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
           <h3 className="font-orbitron text-base font-bold text-white">
             {isEdit ? 'Editar Membro' : 'Novo Membro'}
           </h3>
           <button onClick={onClose} className="text-[#A0A0B0] hover:text-white text-xl transition-colors">✕</button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={lbl}>Situação</label>
-            <select value={form.situacao} onChange={e => set('situacao', e.target.value)} className={inp + ' cursor-pointer'}>
-              <option value="Ativo">Ativo</option>
-              <option value="Inativo">Inativo</option>
-            </select>
-          </div>
-          <div>
-            <label className={lbl}>Grupo</label>
-            <select value={form.grupo} onChange={e => set('grupo', e.target.value)} className={inp + ' cursor-pointer'}>
-              <option value="">— Selecionar —</option>
-              <option value="Mentorado">Mentorado</option>
-              <option value="Infinite Gear">Infinite Gear</option>
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className={lbl}>Nome *</label>
-            <input value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Nome completo" className={inp} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={lbl}>Nome da Clínica</label>
-            <input value={form.clinica} onChange={e => set('clinica', e.target.value)} placeholder="Nome da clínica" className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>Entrada</label>
-            <input type="date" value={form.entrada} onChange={e => set('entrada', e.target.value)} className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>Saída</label>
-            <input type="date" value={form.saida} onChange={e => set('saida', e.target.value)} className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>CPF</label>
-            <input value={form.cpf} onChange={e => set('cpf', e.target.value)} placeholder="000.000.000-00" className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>Data de Nascimento</label>
-            <input type="date" value={form.dataNascimento} onChange={e => set('dataNascimento', e.target.value)} className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>Telefone / WhatsApp</label>
-            <input value={form.telefone} onChange={e => set('telefone', e.target.value)} placeholder="(00) 00000-0000" className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>E-mail</label>
-            <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@clinica.com.br" className={inp} />
-          </div>
-          <div>
-            <label className={lbl}>Estado</label>
-            <select value={form.estado} onChange={e => set('estado', e.target.value)} className={inp + ' cursor-pointer'}>
-              <option value="">— Selecionar —</option>
-              {ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={lbl}>CEP</label>
-            <input value={form.cep} onChange={e => set('cep', e.target.value)} placeholder="00000-000" className={inp} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={lbl}>Endereço</label>
-            <input value={form.endereco} onChange={e => set('endereco', e.target.value)} placeholder="Rua, número, bairro, cidade" className={inp} />
-          </div>
+        {/* Tab nav */}
+        <div className="card-gradient-border p-1 flex gap-1 rounded-xl mb-5">
+          <button
+            onClick={() => setModalTab('dados')}
+            className={`flex-1 py-1.5 rounded-lg text-sm font-sora transition-all ${modalTab === 'dados' ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white'}`}
+          >
+            📋 Dados
+          </button>
+          <button
+            onClick={() => setModalTab('produtos')}
+            className={`flex-1 py-1.5 rounded-lg text-sm font-sora transition-all flex items-center justify-center gap-1.5 ${modalTab === 'produtos' ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white'}`}
+          >
+            📦 Produtos
+            {catalog.length > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${modalTab === 'produtos' ? 'bg-white/20' : 'bg-[rgba(74,144,226,0.2)]'}`}>
+                {produtosAtivosCount}/{catalog.length}
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* ── Dados tab ── */}
+        {modalTab === 'dados' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={lbl}>Situação</label>
+              <select value={form.situacao} onChange={e => set('situacao', e.target.value)} className={inp + ' cursor-pointer'}>
+                <option value="Ativo">Ativo</option>
+                <option value="Inativo">Inativo</option>
+              </select>
+            </div>
+            <div>
+              <label className={lbl}>Grupo</label>
+              <select value={form.grupo} onChange={e => set('grupo', e.target.value)} className={inp + ' cursor-pointer'}>
+                <option value="">— Selecionar —</option>
+                <option value="Mentorado">Mentorado</option>
+                <option value="Infinite Gear">Infinite Gear</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className={lbl}>Nome *</label>
+              <input value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Nome completo" className={inp} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={lbl}>Nome da Clínica</label>
+              <input value={form.clinica} onChange={e => set('clinica', e.target.value)} placeholder="Nome da clínica" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Entrada</label>
+              <input type="date" value={form.entrada} onChange={e => set('entrada', e.target.value)} className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Saída</label>
+              <input type="date" value={form.saida} onChange={e => set('saida', e.target.value)} className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>CPF</label>
+              <input value={form.cpf} onChange={e => set('cpf', e.target.value)} placeholder="000.000.000-00" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Data de Nascimento</label>
+              <input type="date" value={form.dataNascimento} onChange={e => set('dataNascimento', e.target.value)} className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Telefone / WhatsApp</label>
+              <input value={form.telefone} onChange={e => set('telefone', e.target.value)} placeholder="(00) 00000-0000" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>E-mail</label>
+              <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@clinica.com.br" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Estado</label>
+              <select value={form.estado} onChange={e => set('estado', e.target.value)} className={inp + ' cursor-pointer'}>
+                <option value="">— Selecionar —</option>
+                {ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={lbl}>CEP</label>
+              <input value={form.cep} onChange={e => set('cep', e.target.value)} placeholder="00000-000" className={inp} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={lbl}>Endereço</label>
+              <input value={form.endereco} onChange={e => set('endereco', e.target.value)} placeholder="Rua, número, bairro, cidade" className={inp} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Produtos tab ── */}
+        {modalTab === 'produtos' && (
+          <div>
+            {catalogLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <div className="w-6 h-6 border-2 border-[#3B9EF5] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : catalog.length === 0 ? (
+              <div className="text-center py-10 text-[#555570] text-sm">
+                <p>Nenhum produto cadastrado no catálogo.</p>
+                <p className="text-xs mt-1">Adicione produtos em Clientes → Catálogo de Produtos.</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-[#555570] text-xs mb-4">Ative os produtos que estão disponíveis para este membro.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {catalog.map(p => {
+                    const active = !!produtosAtivos[p.id];
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setProdutosAtivos(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
+                        className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                          active
+                            ? 'border-[#3B9EF5] bg-[rgba(59,158,245,0.08)] text-white'
+                            : 'border-[rgba(74,144,226,0.12)] bg-[#080818] text-[#555580] hover:border-[rgba(74,144,226,0.25)] hover:text-[#A0A0B0]'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full flex-shrink-0 border-2 flex items-center justify-center transition-all ${
+                          active ? 'border-[#3B9EF5] bg-[#3B9EF5]' : 'border-[#252545]'
+                        }`}>
+                          {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <span className="text-sm font-semibold tracking-wide">{p.nome}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[#404060] text-xs mt-4 text-right">
+                  {produtosAtivosCount} de {catalog.length} produto{catalog.length !== 1 ? 's' : ''} ativo{produtosAtivosCount !== 1 ? 's' : ''}
+                </p>
+              </>
+            )}
+          </div>
+        )}
 
         {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
 
@@ -619,18 +835,19 @@ function MembroModal({
   );
 }
 
+// ── ClientesTab ───────────────────────────────────────────────────────────────
+
 export default function ClientesTab() {
   const [data, setData] = useState<ClientesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTable, setActiveTable] = useState<'membros' | 'contato'>('membros');
-  const [modal, setModal] = useState<(MembroForm & { id?: string }) | null | false>(false);
+  const [activeTable, setActiveTable] = useState<'membros' | 'contato' | 'catalogo'>('membros');
+  const [modal, setModal] = useState<(MembroForm & { id?: string; produtos?: Record<string, boolean> }) | null | false>(false);
   const [modalContato, setModalContato] = useState<(ContatoForm & { id?: string }) | null | false>(false);
+  const [modalProduto, setModalProduto] = useState<ProdutoItem | null | false>(false);
+  const [catalog, setCatalog] = useState<ProdutoItem[]>([]);
   const [filtroSituacao, setFiltroSituacao] = useState<'todos' | 'Ativo' | 'Inativo'>('todos');
   const [buscaNome, setBuscaNome] = useState('');
-
-
-
 
   const fetchData = useCallback(async () => {
     try {
@@ -645,7 +862,18 @@ export default function ClientesTab() {
     }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const fetchCatalog = useCallback(async () => {
+    try {
+      const res = await fetch('/api/produtos-catalogo');
+      if (!res.ok) return;
+      setCatalog(await res.json());
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    fetchCatalog();
+  }, [fetchData, fetchCatalog]);
 
   if (loading) return <TabLoader />;
   if (error) return <TabError message={error} onRetry={fetchData} />;
@@ -678,8 +906,15 @@ export default function ClientesTab() {
       telefone: m.telefone ?? '',
       email: m.email ?? '',
       dataNascimento: m.data_nascimento ?? '',
+      produtos: m.produtos ?? {},
     });
   }
+
+  const NAV_TABS = [
+    { id: 'membros', label: 'Cadastro de Membros' },
+    { id: 'contato', label: 'Monitoramento de Contato' },
+    { id: 'catalogo', label: 'Catálogo de Produtos' },
+  ] as const;
 
   return (
     <div className="space-y-6">
@@ -731,32 +966,31 @@ export default function ClientesTab() {
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="card-gradient-border p-1 flex gap-1 rounded-xl">
-          {(['membros', 'contato'] as const).map(t => (
+          {NAV_TABS.map(t => (
             <button
-              key={t}
-              onClick={() => setActiveTable(t)}
+              key={t.id}
+              onClick={() => setActiveTable(t.id)}
               className={`px-4 py-1.5 rounded-lg text-sm font-sora transition-all ${
-                activeTable === t ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white'
+                activeTable === t.id ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white'
               }`}
             >
-              {t === 'membros' ? 'Cadastro de Membros' : 'Monitoramento de Contato'}
+              {t.label}
             </button>
           ))}
         </div>
         {activeTable === 'membros' && (
-          <button
-            onClick={() => setModal(null)}
-            className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm"
-          >
+          <button onClick={() => setModal(null)} className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm">
             + Novo Membro
           </button>
         )}
         {activeTable === 'contato' && (
-          <button
-            onClick={() => setModalContato(null)}
-            className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm"
-          >
+          <button onClick={() => setModalContato(null)} className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm">
             + Novo Contato
+          </button>
+        )}
+        {activeTable === 'catalogo' && (
+          <button onClick={() => setModalProduto(null)} className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm">
+            + Novo Produto
           </button>
         )}
       </div>
@@ -790,6 +1024,7 @@ export default function ClientesTab() {
         </div>
       )}
 
+      {/* ── Monitoramento de Contato ── */}
       {activeTable === 'contato' && (
         <div className="card-gradient-border overflow-hidden">
           <div className="overflow-x-auto">
@@ -842,67 +1077,121 @@ export default function ClientesTab() {
         </div>
       )}
 
+      {/* ── Cadastro de Membros ── */}
       {activeTable === 'membros' && (
         <div>
+          <div className="card-gradient-border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[rgba(74,144,226,0.1)]">
+                    <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Situação</th>
+                    <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Grupo</th>
+                    <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Nome</th>
+                    <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Entrada</th>
+                    <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Saída</th>
+                    <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Renovação</th>
+                    <th className="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.membros
+                    .filter(m => filtroSituacao === 'todos' || m.situacao === filtroSituacao)
+                    .filter(m => !buscaNome || m.nome.toLowerCase().includes(buscaNome.toLowerCase()))
+                    .map(m => {
+                    const inativo = m.situacao === 'Inativo';
+                    return (
+                      <tr key={m.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded-full text-xs border ${
+                            inativo
+                              ? 'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border-[rgba(245,158,11,0.2)]'
+                              : 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border-[rgba(59,158,245,0.2)]'
+                          }`}>
+                            {m.situacao || 'Ativo'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-[#A0A0B0] text-xs whitespace-nowrap">{m.grupo || '—'}</td>
+                        <td className={`px-4 py-3 font-medium whitespace-nowrap ${inativo ? 'text-[#A0A0B0]' : 'text-white'}`}>{m.nome}</td>
+                        <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.entrada)}</td>
+                        <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.saida)}</td>
+                        <td className="px-4 py-3">
+                          {inativo ? <span className="text-[#555570] text-xs">—</span> : <RenovacaoBadge entrada={m.entrada} />}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => openEdit(m)}
+                            className="text-[#555570] hover:text-[#3B9EF5] transition-colors p-1.5 rounded-lg hover:bg-[rgba(59,158,245,0.08)]"
+                            title="Editar"
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {data.membros.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-12">
+                        <p className="text-[#A0A0B0] text-sm mb-3">Nenhum membro cadastrado.</p>
+                        <button onClick={() => setModal(null)} className="text-[#4A90E2] text-sm hover:underline">
+                          + Cadastrar primeiro membro
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Catálogo de Produtos ── */}
+      {activeTable === 'catalogo' && (
         <div className="card-gradient-border overflow-hidden">
+          <div className="p-4 border-b border-[rgba(74,144,226,0.12)]">
+            <p className="text-[#555570] text-xs">
+              Estes produtos são usados para marcar quais recursos cada membro tem disponível e calculam o Health Score na aba Geral.
+            </p>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(74,144,226,0.1)]">
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Situação</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Grupo</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Nome</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Entrada</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Saída</th>
-                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Renovação</th>
-                  <th className="px-4 py-3"></th>
+                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider w-12">#</th>
+                  <th className="text-left px-4 py-3 text-[#A0A0B0] text-xs uppercase tracking-wider">Produto</th>
+                  <th className="px-4 py-3 w-16"></th>
                 </tr>
               </thead>
               <tbody>
-                {data.membros
-                  .filter(m => filtroSituacao === 'todos' || m.situacao === filtroSituacao)
-                  .filter(m => !buscaNome || m.nome.toLowerCase().includes(buscaNome.toLowerCase()))
-                  .map(m => {
-                  const inativo = m.situacao === 'Inativo';
-                  return (
-                    <tr key={m.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs border ${
-                          inativo
-                            ? 'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border-[rgba(245,158,11,0.2)]'
-                            : 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border-[rgba(59,158,245,0.2)]'
-                        }`}>
-                          {m.situacao || 'Ativo'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs whitespace-nowrap">{m.grupo || '—'}</td>
-                      <td className={`px-4 py-3 font-medium whitespace-nowrap ${inativo ? 'text-[#A0A0B0]' : 'text-white'}`}>{m.nome}</td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.entrada)}</td>
-                      <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.saida)}</td>
-                      <td className="px-4 py-3">
-                        {inativo ? <span className="text-[#555570] text-xs">—</span> : <RenovacaoBadge entrada={m.entrada} />}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => openEdit(m)}
-                          className="text-[#555570] hover:text-[#3B9EF5] transition-colors p-1.5 rounded-lg hover:bg-[rgba(59,158,245,0.08)]"
-                          title="Editar"
-                        >
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {data.membros.length === 0 && (
+                {catalog.map((p, i) => (
+                  <tr key={p.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
+                    <td className="px-4 py-3 text-[#404060] text-xs font-mono">{i + 1}</td>
+                    <td className="px-4 py-3 text-white font-semibold tracking-wide">{p.nome}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => setModalProduto(p)}
+                        className="text-[#555570] hover:text-[#3B9EF5] transition-colors p-1.5 rounded-lg hover:bg-[rgba(59,158,245,0.08)]"
+                        title="Editar produto"
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {catalog.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-12">
-                      <p className="text-[#A0A0B0] text-sm mb-3">Nenhum membro cadastrado.</p>
-                      <button onClick={() => setModal(null)} className="text-[#4A90E2] text-sm hover:underline">
-                        + Cadastrar primeiro membro
+                    <td colSpan={3} className="text-center py-10">
+                      <p className="text-[#A0A0B0] text-sm mb-2">Nenhum produto cadastrado.</p>
+                      <button onClick={() => setModalProduto(null)} className="text-[#4A90E2] text-sm hover:underline">
+                        + Adicionar primeiro produto
                       </button>
                     </td>
                   </tr>
@@ -911,9 +1200,9 @@ export default function ClientesTab() {
             </table>
           </div>
         </div>
-        </div>
       )}
 
+      {/* Modals */}
       {modal !== false && (
         <MembroModal
           initial={modal}
@@ -929,6 +1218,14 @@ export default function ClientesTab() {
           existingContatos={data.contatos}
           onSave={fetchData}
           onClose={() => setModalContato(false)}
+        />
+      )}
+
+      {modalProduto !== false && (
+        <ProdutoModal
+          initial={modalProduto}
+          onSave={() => { fetchCatalog(); fetchData(); }}
+          onClose={() => setModalProduto(false)}
         />
       )}
     </div>
