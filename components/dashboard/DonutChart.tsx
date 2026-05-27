@@ -11,7 +11,7 @@ export default function DonutChart({ title, data }: DonutChartProps) {
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
     <div className="card-gradient-border p-6">
-      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-4 uppercase tracking-[0.15em]">{title}</h3>
+      <h3 className="font-orbitron text-xs font-bold text-white mb-4 uppercase tracking-[0.15em]">{title}</h3>
       {total === 0 ? (
         <div className="flex items-center justify-center h-40 text-[#A0A0B0] text-sm">Sem dados</div>
       ) : (

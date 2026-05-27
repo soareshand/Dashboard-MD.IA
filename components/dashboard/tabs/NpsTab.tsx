@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import KpiCard from '@/components/dashboard/KpiCard';
 import BarChart from '@/components/dashboard/BarChart';
 import DonutChart from '@/components/dashboard/DonutChart';
@@ -84,68 +85,40 @@ interface RenovacaoData {
 }
 
 function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
-  const total = dist.Sim + dist.Parcialmente + dist.Nao;
-  const r = 80, sw = 26;
-  const c = 2 * Math.PI * r;
-  const gap = 6;
-  const [hoveredSeg, setHoveredSeg] = useState<string | null>(null);
-
   const segs = [
-    { label: 'Sim', value: dist.Sim, color: '#3B9EF5' },
-    { label: 'Parcialmente', value: dist.Parcialmente, color: '#8B5CF6' },
-    { label: 'Não', value: dist.Nao, color: NAO_COLOR },
+    { name: 'Sim', value: dist.Sim, color: '#3B9EF5' },
+    { name: 'Parcialmente', value: dist.Parcialmente, color: '#8B5CF6' },
+    { name: 'Não', value: dist.Nao, color: NAO_COLOR },
   ];
-
-  let accum = 0;
-  const arcs = total > 0 ? segs.map(seg => {
-    const full = (seg.value / total) * c;
-    const dash = Math.max(0, full - gap);
-    const offset = accum;
-    accum += full;
-    return { ...seg, dash, offset };
-  }) : [];
-
-  const cx = 100, cy = 100;
+  const total = segs.reduce((s, d) => s + d.value, 0);
   return (
     <div className="card-gradient-border p-6">
-      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-6 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
-      <div className="flex flex-col items-center">
-        <svg width={200} height={200} viewBox="0 0 200 200">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={sw}/>
-          <g transform={`rotate(-90 ${cx} ${cy})`}>
-            {total === 0
-              ? <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth={sw}/>
-              : arcs.map(arc => arc.dash > 0 && (
-                <circle key={arc.label} cx={cx} cy={cy} r={r} fill="none"
-                  stroke={arc.color} strokeWidth={sw}
-                  strokeDasharray={`${arc.dash} ${c - arc.dash}`}
-                  strokeDashoffset={-arc.offset}
-                />
-              ))
-            }
-          </g>
-        </svg>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-2">
-          {segs.map(seg => (
-            <div
-              key={seg.label}
-              className="relative flex items-center gap-1.5 cursor-default"
-              onMouseEnter={() => setHoveredSeg(seg.label)}
-              onMouseLeave={() => setHoveredSeg(null)}
-            >
-              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
-              <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.label}</span>
-              {hoveredSeg === seg.label && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-20 whitespace-nowrap">
-                  <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-lg px-2.5 py-1 text-xs text-[#111827] font-mono shadow-lg">
-                    {seg.value} ({total > 0 ? Math.round(seg.value / total * 100) : 0}%)
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <h3 className="font-orbitron text-xs font-bold text-white mb-6 uppercase tracking-[0.15em]">Objetivo Alcançado</h3>
+      {total === 0 ? (
+        <div className="flex items-center justify-center h-40 text-[#A0A0B0] text-sm">Sem dados</div>
+      ) : (
+        <>
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie data={segs} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+                {segs.map((entry, i) => <Cell key={i} fill={entry.color} stroke="none" />)}
+              </Pie>
+              <Tooltip
+                contentStyle={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 8, color: '#111827', fontSize: 12 }}
+                formatter={(value: number, name: string) => [`${value} (${total > 0 ? Math.round((value as number) / total * 100) : 0}%)`, name]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-2">
+            {segs.map(seg => (
+              <div key={seg.name} className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
+                <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.name}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -183,7 +156,7 @@ function ColumnChart({ data }: { data: ResultadosPercebidos }) {
 
   return (
     <div className="card-gradient-border p-6">
-      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">Resultados Percebidos</h3>
+      <h3 className="font-orbitron text-xs font-bold text-white mb-7 uppercase tracking-[0.15em]">Resultados Percebidos</h3>
       <div className="space-y-6">
         {rows.map(row => (
           <div key={row.label}>
@@ -335,7 +308,7 @@ function CallSubTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Score distribution */}
         <div className="card-gradient-border p-5">
-          <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] uppercase tracking-[0.15em] mb-4">Distribuição — Nota da Call</h3>
+          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-[0.15em] mb-4">Distribuição — Nota da Call</h3>
           <div className="space-y-3">
             {[...data.distCall].reverse().map(d => (
               <ScoreBar key={d.nota} nota={d.nota} count={d.count} max={maxDist} />
@@ -479,7 +452,7 @@ function TreinamentoSubTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="card-gradient-border p-5">
-          <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] uppercase tracking-[0.15em] mb-4">Distribuição — Nota do Treinamento</h3>
+          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-[0.15em] mb-4">Distribuição — Nota do Treinamento</h3>
           <div className="space-y-3">
             {[...data.distTreinamento].reverse().map(d => (
               <ScoreBar key={d.nota} nota={d.nota} count={d.count} max={maxDist} />

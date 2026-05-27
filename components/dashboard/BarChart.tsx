@@ -13,7 +13,7 @@ export default function BarChart({ data }: { data: BarItem[] }) {
 
   return (
     <div className="card-gradient-border p-6">
-      <h3 className="font-orbitron text-xs font-bold text-[#4B5E72] mb-7 uppercase tracking-[0.15em]">
+      <h3 className="font-orbitron text-xs font-bold text-white mb-7 uppercase tracking-[0.15em]">
         Média por Ferramenta
       </h3>
       <div className="space-y-5">
@@ -21,7 +21,7 @@ export default function BarChart({ data }: { data: BarItem[] }) {
           const pct = max > 0 ? (item.avg / max) * 100 : 0;
           return (
             <div key={item.id} className="flex items-center gap-4">
-              <p className="w-40 text-xs text-[#6B7A8D] truncate shrink-0 leading-tight font-sora">
+              <p className="w-40 text-xs text-[#6B7A8D] shrink-0 leading-tight font-sora">
                 {item.label}
               </p>
               <div
