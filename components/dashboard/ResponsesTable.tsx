@@ -31,7 +31,7 @@ function formatDate(iso: string) {
 
 function RenovaBadge({ value }: { value: string }) {
   if (value === 'Sim' || value === '✅ Sim') return <span className="px-2 py-0.5 rounded-full bg-[#1B4332] text-green-400 text-xs font-medium">Sim</span>;
-  if (value === 'Não' || value === '❌ Não') return <span className="px-2 py-0.5 rounded-full bg-[#4a1212] text-red-400 text-xs font-medium">Não</span>;
+  if (value === 'Não' || value === '❌ Não') return <span className="px-2 py-0.5 rounded-full bg-[#3D2B00] text-[#F59E0B] text-xs font-medium">Não</span>;
   return <span className="px-2 py-0.5 rounded-full bg-[#2a2a1a] text-yellow-400 text-xs font-medium">{value || '-'}</span>;
 }
 

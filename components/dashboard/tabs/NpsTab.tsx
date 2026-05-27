@@ -31,10 +31,11 @@ export function TabError({ message, onRetry }: { message: string; onRetry: () =>
 }
 
 const SCALE_LABELS = ['Muito insatisfeito', 'Insatisfeito', 'Regular', 'Satisfeito', 'Muito satisfeito', 'Excelente'];
+const NAO_COLOR = '#F59E0B';
 
 function ScoreBar({ nota, count, max }: { nota: number; count: number; max: number }) {
   const pct = max > 0 ? (count / max) * 100 : 0;
-  const color = nota >= 4 ? '#3B9EF5' : nota >= 2 ? '#8B5CF6' : '#E74C3C';
+  const color = nota >= 4 ? '#3B9EF5' : nota >= 2 ? '#8B5CF6' : NAO_COLOR;
   return (
     <div className="flex items-center gap-3">
       <div className="flex flex-col items-center w-8 shrink-0">
@@ -79,11 +80,9 @@ interface RenovacaoData {
   lastUpdated: string;
 }
 
-const NAO_COLOR = '#F59E0B';
-
 function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
   const total = dist.Sim + dist.Parcialmente + dist.Nao;
-  const r = 80, sw = 16;
+  const r = 80, sw = 26;
   const c = 2 * Math.PI * r;
   const gap = 6;
 
@@ -121,14 +120,12 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
               ))
             }
           </g>
-          <text x={cx} y={cy - 10} textAnchor="middle" fill="white" fontSize={32} fontFamily="Orbitron,monospace" fontWeight="bold">{total}</text>
-          <text x={cx} y={cy + 14} textAnchor="middle" fill="#555570" fontSize={10} fontFamily="Sora,sans-serif">respostas</text>
         </svg>
         <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-2">
           {segs.map(seg => (
-            <div key={seg.label} className="flex items-center gap-1.5">
+            <div key={seg.label} className="flex items-center gap-1.5 cursor-default" title={`${seg.label}: ${seg.value} (${total > 0 ? Math.round(seg.value / total * 100) : 0}%)`}>
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
-              <span className="text-[11px] text-[#555570] font-sora">{seg.label}: <span className="text-white font-semibold">{seg.value}</span> <span className="text-[#444460]">{total > 0 ? Math.round(seg.value / total * 100) : 0}%</span></span>
+              <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.label}</span>
             </div>
           ))}
         </div>
@@ -144,7 +141,7 @@ function ColumnChart({ data }: { data: ResultadosPercebidos }) {
       total: data.crescimentoPacientes.Sim + data.crescimentoPacientes.AindaNao + data.crescimentoPacientes.Nao,
       segments: [
         { label: 'Sim', value: data.crescimentoPacientes.Sim, color: '#3B9EF5' },
-        { label: 'Ainda não', value: data.crescimentoPacientes.AindaNao, color: '#8B5CF6' },
+        { label: 'Ainda não percebi', value: data.crescimentoPacientes.AindaNao, color: '#8B5CF6' },
         { label: 'Não', value: data.crescimentoPacientes.Nao, color: NAO_COLOR },
       ],
     },
@@ -153,7 +150,7 @@ function ColumnChart({ data }: { data: ResultadosPercebidos }) {
       total: data.reducaoTempo.Sim + data.reducaoTempo.AindaNao + data.reducaoTempo.Nao,
       segments: [
         { label: 'Sim', value: data.reducaoTempo.Sim, color: '#3B9EF5' },
-        { label: 'Ainda não', value: data.reducaoTempo.AindaNao, color: '#8B5CF6' },
+        { label: 'Ainda não percebi', value: data.reducaoTempo.AindaNao, color: '#8B5CF6' },
         { label: 'Não', value: data.reducaoTempo.Nao, color: NAO_COLOR },
       ],
     },
@@ -195,7 +192,7 @@ function ColumnChart({ data }: { data: ResultadosPercebidos }) {
               {row.segments.map(seg => (
                 <div key={seg.label} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 6px ${seg.color}` }} />
-                  <span className="text-[11px] text-[#555570] font-sora">{seg.label}: <span className="text-white font-semibold">{seg.value}</span></span>
+                  <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.label}</span>
                 </div>
               ))}
             </div>
@@ -305,7 +302,7 @@ function CallSubTab() {
   const resolucaoChart = [
     { name: 'Resolvida', value: data.resolucaoDistribuicao.Sim, color: '#3B9EF5' },
     { name: 'Parcialmente', value: data.resolucaoDistribuicao.Parcialmente, color: '#8B5CF6' },
-    { name: 'Não resolvida', value: data.resolucaoDistribuicao.Nao, color: '#E74C3C' },
+    { name: 'Não resolvida', value: data.resolucaoDistribuicao.Nao, color: NAO_COLOR },
   ];
 
   const maxDist = Math.max(...data.distCall.map(d => d.count), 1);
@@ -450,7 +447,7 @@ function TreinamentoSubTab() {
   const segurancaChart = [
     { name: 'Seguro', value: data.segurancaDistribuicao.Sim, color: '#3B9EF5' },
     { name: 'Parcialmente', value: data.segurancaDistribuicao.Parcialmente, color: '#8B5CF6' },
-    { name: 'Não seguro', value: data.segurancaDistribuicao.Nao, color: '#E74C3C' },
+    { name: 'Não seguro', value: data.segurancaDistribuicao.Nao, color: NAO_COLOR },
   ];
 
   const maxDist = Math.max(...data.distTreinamento.map(d => d.count), 1);
@@ -501,7 +498,7 @@ function TreinamentoSubTab() {
                     <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{f.mediaTreinamento}</td>
                     <td className="px-4 py-3 text-center font-orbitron font-bold text-[#8B5CF6]">{f.mediaClareza}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`font-orbitron font-bold text-sm ${f.taxaSeguranca >= 70 ? 'text-[#3B9EF5]' : f.taxaSeguranca >= 40 ? 'text-[#8B5CF6]' : 'text-[#E74C3C]'}`}>
+                      <span className={`font-orbitron font-bold text-sm ${f.taxaSeguranca >= 70 ? 'text-[#3B9EF5]' : f.taxaSeguranca >= 40 ? 'text-[#8B5CF6]' : 'text-[#F59E0B]'}`}>
                         {f.taxaSeguranca}%
                       </span>
                     </td>
