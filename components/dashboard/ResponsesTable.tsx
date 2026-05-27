@@ -30,9 +30,10 @@ function formatDate(iso: string) {
 }
 
 function RenovaBadge({ value }: { value: string }) {
-  if (value === 'Sim' || value === '✅ Sim') return <span className="px-2 py-0.5 rounded-full bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] text-xs font-medium">Sim</span>;
-  if (value === 'Não' || value === '❌ Não') return <span className="px-2 py-0.5 rounded-full bg-[#3D2B00] text-[#F59E0B] text-xs font-medium">Não</span>;
-  return <span className="px-2 py-0.5 rounded-full bg-[#2a2a1a] text-yellow-400 text-xs font-medium">{value || '-'}</span>;
+  const v = (value || '').trim();
+  if (v.includes('Sim')) return <span className="px-2 py-0.5 rounded-full bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] text-xs font-medium">Sim</span>;
+  if (v.includes('Não')) return <span className="px-2 py-0.5 rounded-full bg-[rgba(245,158,11,0.12)] text-[#F59E0B] text-xs font-medium">Não</span>;
+  return <span className="px-2 py-0.5 rounded-full bg-[rgba(160,160,176,0.1)] text-[#A0A0B0] text-xs font-medium">{v || '-'}</span>;
 }
 
 export default function ResponsesTable({ data }: ResponsesTableProps) {
