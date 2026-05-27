@@ -413,6 +413,7 @@ function RenovacaoBadge({ entrada }: { entrada: string | null }) {
 }
 
 function ContatoStatusBadge({ status }: { status: string }) {
+  if (!status) return <span className="text-[#A0A0B0] text-xs">—</span>;
   const isCritico = status === 'Crítico';
   const isAtencao = status === 'Atenção';
   return (
@@ -421,7 +422,7 @@ function ContatoStatusBadge({ status }: { status: string }) {
       isAtencao ? 'bg-[rgba(139,92,246,0.1)] text-[#8B5CF6] border border-[rgba(139,92,246,0.25)]' :
       'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border border-[rgba(59,158,245,0.2)]'
     }`}>
-      {status || 'Em dia'}
+      {status}
     </span>
   );
 }
@@ -804,7 +805,7 @@ export default function ClientesTab() {
               </thead>
               <tbody>
                 {data.contatos.map(c => (
-                  <tr key={c.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
+                  <tr key={c.medico} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
                     <td className="px-4 py-3">
                       {c.clinica && <p className="font-semibold text-white text-sm leading-snug">{c.clinica}</p>}
                       <p className={`leading-snug ${c.clinica ? 'text-[#A0A0B0] text-xs' : 'text-white font-medium text-sm'}`}>{c.medico}</p>

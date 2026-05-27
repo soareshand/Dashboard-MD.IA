@@ -14,7 +14,17 @@ export async function GET() {
     if (e2) throw e2;
 
     const rows = membros ?? [];
-    const ativos = rows.filter(m => m.situacao === 'Ativo');
+
+    // Deduplicate by nome (clientes table may have duplicate active entries)
+    const seenNomes = new Set<string>();
+    const ativosDedupe = rows.filter(m => {
+      if (m.situacao !== 'Ativo') return false;
+      const key = m.nome.trim().toLowerCase();
+      if (seenNomes.has(key)) return false;
+      seenNomes.add(key);
+      return true;
+    });
+    const ativos = ativosDedupe;
     const inativos = rows.filter(m => m.situacao === 'Inativo');
 
     const now = new Date();
@@ -49,12 +59,15 @@ export async function GET() {
         ? Math.floor((now.getTime() - new Date(ultimoContato + 'T00:00:00').getTime()) / 86400000)
         : null;
 
-      let status = 'Em dia';
-      if (proximoContato) {
-        const proximo = new Date(proximoContato + 'T00:00:00');
-        const diffDays = Math.ceil((proximo.getTime() - now.getTime()) / 86400000);
-        if (diffDays < 0) status = 'Crítico';
-        else if (diffDays <= 3) status = 'Atenção';
+      let status = '';
+      if (ultimoContato || proximoContato) {
+        status = 'Em dia';
+        if (proximoContato) {
+          const proximo = new Date(proximoContato + 'T00:00:00');
+          const diffDays = Math.ceil((proximo.getTime() - now.getTime()) / 86400000);
+          if (diffDays < 0) status = 'Crítico';
+          else if (diffDays <= 3) status = 'Atenção';
+        }
       }
 
       return {
