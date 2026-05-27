@@ -31,7 +31,7 @@ export async function GET() {
     now.setHours(0, 0, 0, 0);
 
     const mesAtual = now.getMonth() + 1;
-    const aniversariantes = rows.filter(m => {
+    const aniversariantes = ativos.filter(m => {
       if (!m.data_nascimento) return false;
       return new Date(m.data_nascimento + 'T00:00:00').getMonth() + 1 === mesAtual;
     });
