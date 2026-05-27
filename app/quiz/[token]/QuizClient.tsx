@@ -347,12 +347,12 @@ function Step5({ form, update }: { form: FormData; update: (f: keyof FormData, v
       <QuestionBlock>
         <Label>Pretende renovar a mentoria?</Label>
         <ChoiceButtons
-          options={['✅ Sim', '❌ Não']}
+          options={['Sim', 'Não']}
           value={form.pretendeRenovar}
           onChange={v => update('pretendeRenovar', v)}
           size="lg"
         />
-        {form.pretendeRenovar === '❌ Não' && (
+        {form.pretendeRenovar.includes('Não') && (
           <div className="mt-4 animate-fade-in">
             <Label>Qual o principal motivo? *</Label>
             <Textarea

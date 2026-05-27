@@ -166,7 +166,7 @@ export default function QuizTreinamentoClient({ token, nome, clinica, ferramenta
       {step === 3 && (
         <ChoiceQuestion
           label="Você se sente seguro(a) para usar a ferramenta após o treinamento?"
-          options={['✅ Sim', '⚠️ Parcialmente', '❌ Não']}
+          options={['Sim', 'Parcialmente', 'Não']}
           value={seguranca}
           onChange={setSeguranca}
         />
