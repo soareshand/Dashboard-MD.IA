@@ -1,19 +1,25 @@
 import { NextResponse } from 'next/server';
-import { getPresencas, getMembros } from '@/lib/google-sheets';
+import { getPresencas } from '@/lib/google-sheets';
+import { supabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const [data, membros] = await Promise.all([getPresencas(), getMembros()]);
+    const [data, { data: clientesRows }] = await Promise.all([
+      getPresencas(),
+      supabase.from('clientes').select('nome, situacao'),
+    ]);
 
-    // Build set of inactive doctor names (normalized) to filter out
-    const inativos = new Set(
-      membros
-        .filter(m => m.situacao.toLowerCase().includes('inativo'))
+    // Build set of active doctor names from Supabase (source of truth)
+    const ativosSet = new Set(
+      (clientesRows ?? [])
+        .filter(m => m.situacao === 'Ativo')
         .map(m => m.nome.toLowerCase().trim())
     );
 
     const medicosAtivos = data.medicos.filter(
-      m => !inativos.has(m.toLowerCase().trim())
+      m => ativosSet.has(m.toLowerCase().trim())
     );
 
     const totalSessoes = data.sessoes.length;
