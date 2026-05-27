@@ -185,7 +185,7 @@ export default function QuizTreinamentoClient({ token, nome, clinica, ferramenta
         </div>
       )}
 
-      {error && <p className="text-red-400 text-xs">{error}</p>}
+      {error && <p className="text-[#F59E0B] text-xs">{error}</p>}
 
       <div className="flex gap-3 pt-2">
         {step > 0 && (

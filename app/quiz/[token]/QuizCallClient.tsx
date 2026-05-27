@@ -186,7 +186,7 @@ export default function QuizCallClient({ token, nome, clinica, tipoCall }: Props
         </div>
       )}
 
-      {error && <p className="text-red-400 text-xs">{error}</p>}
+      {error && <p className="text-[#F59E0B] text-xs">{error}</p>}
 
       {/* Navigation */}
       <div className="flex gap-3 pt-2">

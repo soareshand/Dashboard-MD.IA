@@ -154,7 +154,7 @@ export default function QuizClient({ token, initial }: { token: string; initial:
         {step === 6 && <Step6 form={form} update={update} />}
       </div>
 
-      {error && <p className="text-red-400 text-sm mt-4 text-center">{error}</p>}
+      {error && <p className="text-[#F59E0B] text-sm mt-4 text-center">{error}</p>}
 
       <div className="flex gap-3 mt-8">
         {step > 1 && (

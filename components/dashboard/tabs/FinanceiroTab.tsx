@@ -72,13 +72,13 @@ function FinStatusBadge({ status }: { status: string }) {
   return (
     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
       s === 'pago'
-        ? 'bg-green-900/40 text-green-400 border border-green-700/30'
+        ? 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border border-[rgba(59,158,245,0.2)]'
         : s === 'pago parcial'
-        ? 'bg-yellow-900/40 text-yellow-400 border border-yellow-700/30'
+        ? 'bg-[rgba(139,92,246,0.1)] text-[#8B5CF6] border border-[rgba(139,92,246,0.25)]'
         : s === 'permuta'
-        ? 'bg-purple-900/40 text-purple-400 border border-purple-700/30'
+        ? 'bg-[rgba(139,92,246,0.1)] text-[#8B5CF6] border border-[rgba(139,92,246,0.25)]'
         : s === 'em aberto'
-        ? 'bg-red-900/40 text-red-400 border border-red-700/30'
+        ? 'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border border-[rgba(245,158,11,0.2)]'
         : 'bg-[#1A1A2E] text-[#A0A0B0] border border-[rgba(74,144,226,0.15)]'
     }`}>
       {status || '—'}
@@ -227,7 +227,7 @@ function ContratoModal({
           </div>
         </div>
 
-        {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
+        {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
           {isEdit && (
@@ -236,8 +236,8 @@ function ContratoModal({
               disabled={saving}
               className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
                 confirmDelete
-                  ? 'bg-red-600 text-white'
-                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+                  ? 'bg-[#F59E0B] text-[#08080F]'
+                  : 'border border-[rgba(245,158,11,0.4)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
               }`}
             >
               {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
@@ -374,7 +374,7 @@ function RenovacaoModal({
           </div>
         </div>
 
-        {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
+        {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
           {isEdit && (
@@ -383,8 +383,8 @@ function RenovacaoModal({
               disabled={saving}
               className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
                 confirmDelete
-                  ? 'bg-red-600 text-white'
-                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+                  ? 'bg-[#F59E0B] text-[#08080F]'
+                  : 'border border-[rgba(245,158,11,0.4)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
               }`}
             >
               {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}

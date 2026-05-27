@@ -200,7 +200,7 @@ function ContatoModal({
           </div>
         </div>
 
-        {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
+        {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
           {isEdit && (
@@ -209,8 +209,8 @@ function ContatoModal({
               disabled={saving}
               className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
                 confirmDelete
-                  ? 'bg-red-600 text-white'
-                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+                  ? 'bg-[#F59E0B] text-[#08080F]'
+                  : 'border border-[rgba(245,158,11,0.4)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
               }`}
             >
               {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
@@ -301,10 +301,10 @@ function RenovacaoBadge({ entrada }: { entrada: string | null }) {
   const { dataRenovacao, diasRestantes, status } = getRenovacaoInfo(entrada);
   if (status === 'sem-data') return <span className="text-[#A0A0B0] text-xs">—</span>;
   const styles = {
-    vencida:    'bg-red-900/50 text-red-300 border-red-700/40',
-    urgente:    'bg-red-900/30 text-red-400 border-red-700/30',
-    atencao:    'bg-yellow-900/30 text-yellow-400 border-yellow-700/30',
-    'em-breve': 'bg-blue-900/20 text-blue-300 border-blue-700/20',
+    vencida:    'bg-[rgba(245,158,11,0.15)] text-[#F59E0B] border-[rgba(245,158,11,0.4)]',
+    urgente:    'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border-[rgba(245,158,11,0.3)]',
+    atencao:    'bg-[rgba(139,92,246,0.1)] text-[#8B5CF6] border-[rgba(139,92,246,0.3)]',
+    'em-breve': 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border-[rgba(59,158,245,0.2)]',
     ok:         'bg-[#1A1A2E] text-[#A0A0B0] border-[rgba(74,144,226,0.15)]',
     'sem-data': '',
   };
@@ -334,9 +334,9 @@ function ContatoStatusBadge({ status }: { status: string }) {
   const isAtencao = s.includes('aten');
   return (
     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-      isOk ? 'bg-green-900/30 text-green-400 border border-green-700/20' :
-      isAtencao ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-700/20' :
-      'bg-red-900/30 text-red-400 border border-red-700/20'
+      isOk ? 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border border-[rgba(59,158,245,0.2)]' :
+      isAtencao ? 'bg-[rgba(139,92,246,0.1)] text-[#8B5CF6] border border-[rgba(139,92,246,0.25)]' :
+      'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border border-[rgba(245,158,11,0.2)]'
     }`}>
       {status || 'OK'}
     </span>
@@ -345,7 +345,7 @@ function ContatoStatusBadge({ status }: { status: string }) {
 
 function DiasBar({ dias }: { dias: number }) {
   const pct = Math.min((dias / 60) * 100, 100);
-  const color = dias > 30 ? '#E74C3C' : dias > 15 ? '#C9A84C' : '#4A90E2';
+  const color = dias > 30 ? '#F59E0B' : dias > 15 ? '#8B5CF6' : '#3B9EF5';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-[#1A1A2E] rounded-full overflow-hidden">
@@ -505,7 +505,7 @@ function MembroModal({
           </div>
         </div>
 
-        {error && <p className="text-red-400 text-xs mt-4">{error}</p>}
+        {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
           {isEdit && (
@@ -514,8 +514,8 @@ function MembroModal({
               disabled={saving}
               className={`py-2.5 px-4 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 ${
                 confirmDelete
-                  ? 'bg-red-600 text-white'
-                  : 'border border-red-800/50 text-red-400 hover:bg-red-900/20'
+                  ? 'bg-[#F59E0B] text-[#08080F]'
+                  : 'border border-[rgba(245,158,11,0.4)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
               }`}
             >
               {confirmDelete ? 'Confirmar exclusão' : 'Excluir'}
@@ -781,8 +781,8 @@ export default function ClientesTab() {
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs border ${
                           inativo
-                            ? 'bg-red-900/30 text-red-400 border-red-700/20'
-                            : 'bg-green-900/30 text-green-400 border-green-700/20'
+                            ? 'bg-[rgba(245,158,11,0.1)] text-[#F59E0B] border-[rgba(245,158,11,0.2)]'
+                            : 'bg-[rgba(59,158,245,0.1)] text-[#3B9EF5] border-[rgba(59,158,245,0.2)]'
                         }`}>
                           {m.situacao || 'Ativo'}
                         </span>

@@ -345,11 +345,10 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
           </form>
         ) : (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-[#1B4332] border border-green-700/30">
-              <span className="text-2xl">✅</span>
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(59,158,245,0.08)] border border-[rgba(59,158,245,0.2)]">
               <div>
-                <p className="text-green-400 font-medium text-sm">Link gerado!</p>
-                <p className="text-green-300/70 text-xs mt-0.5">
+                <p className="text-[#3B9EF5] font-medium text-sm">Link gerado!</p>
+                <p className="text-[#93C5FD]/70 text-xs mt-0.5">
                   <TabIcon id={quizType} active={false} />{' '}
                   {TABS.find(t => t.id === quizType)?.label}
                   {quizType === 'call' && tipoCall ? ` · ${tipoCall}` : ''}

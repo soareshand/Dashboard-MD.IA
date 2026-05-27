@@ -22,7 +22,7 @@ export function TabLoader() {
 export function TabError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
-      <p className="text-red-400 text-sm">{message}</p>
+      <p className="text-[#F59E0B] text-sm">{message}</p>
       <button onClick={onRetry} className="btn-glow px-4 py-2 rounded-xl text-white text-sm">
         Tentar novamente
       </button>

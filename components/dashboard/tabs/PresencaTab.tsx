@@ -101,7 +101,7 @@ export default function PresencaTab() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {data.recentSessoes.map((s, i) => {
             const taxa = s.total > 0 ? Math.round((s.presentes / s.total) * 100) : 0;
-            const color = taxa >= 70 ? '#3B9EF5' : taxa >= 40 ? '#8B5CF6' : '#E74C3C';
+            const color = taxa >= 70 ? '#3B9EF5' : taxa >= 40 ? '#8B5CF6' : '#F59E0B';
             const isConfirming = deletingSessao === s.sessao;
             return (
               <div key={i} className="relative bg-[#12122A] rounded-xl p-3 text-center border border-[rgba(59,158,245,0.1)] group">
@@ -111,8 +111,8 @@ export default function PresencaTab() {
                   title={isConfirming ? 'Confirmar exclusão' : 'Excluir sessão'}
                   className={`absolute top-1.5 right-1.5 text-xs leading-none w-5 h-5 rounded flex items-center justify-center transition-all ${
                     isConfirming
-                      ? 'bg-red-600 text-white'
-                      : 'opacity-0 group-hover:opacity-100 text-[#555570] hover:text-red-400 hover:bg-red-900/20'
+                      ? 'bg-[#F59E0B] text-[#08080F]'
+                      : 'opacity-0 group-hover:opacity-100 text-[#555570] hover:text-[#F59E0B] hover:bg-[rgba(245,158,11,0.1)]'
                   }`}
                 >
                   {isConfirming ? '✓' : '×'}
@@ -125,10 +125,10 @@ export default function PresencaTab() {
                     ✕
                   </button>
                 )}
-                <p className={`text-xs font-mono mb-1 ${isConfirming ? 'text-red-400' : 'text-[#A0A0B0]'}`}>{s.sessao}</p>
+                <p className={`text-xs font-mono mb-1 ${isConfirming ? 'text-[#F59E0B]' : 'text-[#A0A0B0]'}`}>{s.sessao}</p>
                 <p className="text-xl font-bold font-orbitron" style={{ color }}>{taxa}%</p>
                 <p className="text-[#A0A0B0] text-xs mt-1">{s.presentes}/{s.total}</p>
-                {isConfirming && <p className="text-red-400 text-[10px] mt-1">Excluir?</p>}
+                {isConfirming && <p className="text-[#F59E0B] text-[10px] mt-1">Excluir?</p>}
               </div>
             );
           })}
@@ -153,8 +153,8 @@ export default function PresencaTab() {
                 <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)] transition-colors">
                   <td className="px-4 py-3 text-[#A0A0B0] text-xs">{i + 1}</td>
                   <td className="px-4 py-3 text-white font-medium">{m.medico}</td>
-                  <td className="px-4 py-3 text-center text-green-400 font-mono">{m.presencas}</td>
-                  <td className="px-4 py-3 text-center text-red-400 font-mono">{m.faltas}</td>
+                  <td className="px-4 py-3 text-center text-[#3B9EF5] font-mono">{m.presencas}</td>
+                  <td className="px-4 py-3 text-center text-[#F59E0B] font-mono">{m.faltas}</td>
                   <td className="px-4 py-3 w-48"><TaxaBar taxa={m.taxa} /></td>
                 </tr>
               ))}

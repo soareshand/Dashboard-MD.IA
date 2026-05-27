@@ -130,13 +130,13 @@ export default function RegistrarPresencaModal({ medicos, onClose, onSuccess }: 
         <div className="px-6 pb-3 shrink-0 flex items-center gap-2 flex-wrap">
           <button
             onClick={() => marcarTodos('Presente')}
-            className="px-3 py-1.5 rounded-lg text-xs font-sora bg-green-900/30 text-green-400 border border-green-700/30 hover:bg-green-900/50 transition-all"
+            className="px-3 py-1.5 rounded-lg text-xs font-sora bg-[rgba(59,158,245,0.08)] text-[#3B9EF5] border border-[rgba(59,158,245,0.2)] hover:bg-[rgba(59,158,245,0.15)] transition-all"
           >
             ✓ Todos Presentes
           </button>
           <button
             onClick={() => marcarTodos('Faltou')}
-            className="px-3 py-1.5 rounded-lg text-xs font-sora bg-red-900/20 text-red-400 border border-red-700/20 hover:bg-red-900/40 transition-all"
+            className="px-3 py-1.5 rounded-lg text-xs font-sora bg-[rgba(245,158,11,0.08)] text-[#F59E0B] border border-[rgba(245,158,11,0.2)] hover:bg-[rgba(245,158,11,0.15)] transition-all"
           >
             ✕ Todos Faltaram
           </button>
@@ -159,13 +159,13 @@ export default function RegistrarPresencaModal({ medicos, onClose, onSuccess }: 
                 onClick={() => toggle(medico)}
                 className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-sora transition-all border ${
                   presente
-                    ? 'bg-green-900/20 border-green-700/30 text-green-300'
+                    ? 'bg-[rgba(59,158,245,0.08)] border-[rgba(59,158,245,0.2)] text-[#3B9EF5]'
                     : 'bg-[#12122A] border-[rgba(74,144,226,0.1)] text-[#A0A0B0] hover:border-[rgba(74,144,226,0.3)]'
                 }`}
               >
                 <span className="text-left">{medico}</span>
                 <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
-                  presente ? 'bg-green-900/40 text-green-400' : 'bg-red-900/20 text-red-400'
+                  presente ? 'bg-[rgba(59,158,245,0.12)] text-[#3B9EF5]' : 'bg-[rgba(245,158,11,0.1)] text-[#F59E0B]'
                 }`}>
                   {presente ? 'Presente' : 'Faltou'}
                 </span>
@@ -176,7 +176,7 @@ export default function RegistrarPresencaModal({ medicos, onClose, onSuccess }: 
 
         {/* Footer */}
         <div className="p-6 pt-4 shrink-0 space-y-3 border-t border-[rgba(74,144,226,0.1)]">
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && <p className="text-[#F59E0B] text-xs">{error}</p>}
           <button
             onClick={handleSubmit}
             disabled={loading || !sessaoFormatada}

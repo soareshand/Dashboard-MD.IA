@@ -29,7 +29,7 @@ Two public surfaces, no authentication:
 - `quiz_renovacao_responses` — NPS renovation quiz answers (snake_case columns)
 - `quiz_call_responses` — NPS call quality answers
 - `quiz_treinamento_responses` — NPS training quality answers
-- `clientes` — member registry (`situacao`, `nome`, `grupo`, `entrada`, `saida`, `cpf`, `endereco`, `cep`, `estado`, `telefone`, `email`, `data_nascimento`)
+- `clientes` — member registry (`situacao`, `nome`, `clinica`, `grupo`, `entrada`, `saida`, `cpf`, `endereco`, `cep`, `estado`, `telefone`, `email`, `data_nascimento`)
 - `contratos` — contracts (`medico`, `status_contrato`, `valor`, `status_financeiro`, `nota_fiscal`, `observacoes`)
 - `renovacoes` — renewals (`data`, `medico`, `status_contrato`, `valor`, `status_financeiro`)
 - `contatos` — Monitoramento de Contato (`medico`, `frequencia_ideal`, `ultimo_contato`, `proximo_contato`, `tipo_interacao`, `status`)
@@ -38,7 +38,7 @@ Two public surfaces, no authentication:
 1. CS generates link via dashboard modal → `POST /api/generate-link` → inserts into `tokens` → returns `quizUrl`
 2. Doctor opens link → server reads token status from Supabase → if valid+pending, renders appropriate quiz client
 3. Doctor submits → `POST /api/submit-quiz` (or `submit-nps-call` / `submit-nps-treinamento`) → inserts response row, marks token `respondido`
-4. Dashboard polls `GET /api/dashboard-data` every 30s → aggregates KPIs from `quiz_renovacao_responses`
+4. Dashboard polls `GET /api/dashboard-data` every 30s → aggregates KPIs from `quiz_renovacao_responses`. Response shape: `{ kpis, toolAverages, objetivoDistribuicao, resultadosPercebidos, recentResponses, lastUpdated }`. `resultadosPercebidos` has `crescimentoPacientes`, `reducaoTempo`, `investimentoRetorno` — each with counts per answer variant.
 
 ## Key files
 
@@ -46,10 +46,10 @@ Two public surfaces, no authentication:
 - **`lib/quiz-config.ts`** — The only file to edit when adding/removing rated tools. Each `ToolItem` `id` is a camelCase key that must match the `mapRow()` output in `dashboard-data/route.ts` and correspond to a snake_case column in `quiz_renovacao_responses`.
 - **`app/api/dashboard-data/route.ts`** — Contains `mapRow()` that converts snake_case DB columns to the camelCase keys expected by `TOOL_ITEMS`. Keep this in sync with `quiz_renovacao_responses` schema.
 - **`app/quiz/[token]/QuizClient.tsx`** — 6-step renovation quiz form. `OBJETIVOS_OPTIONS` and `DESAFIOS_OPTIONS` arrays at the top control predefined button options in Step 2.
-- **`components/quiz/OptionSelector.tsx`** — Renders predefined option buttons + a purple "✏️ Outro" button that reveals a textarea for free text.
+- **`components/quiz/OptionSelector.tsx`** — Renders predefined option buttons + a purple "✏️ Outro" button that reveals a textarea for free text. Accepts optional `multi?: boolean` prop — when true, multiple options can be toggled and the value is stored as a comma-separated string (`"A, B, C"`). Single-select (default) stores one value or the free-text string directly.
 - **`app/dashboard/DashboardClient.tsx`** — Dashboard with 30s polling; `isEmbed` prop hides header.
-- **`components/dashboard/GenerateLinkModal.tsx`** — Generates quiz links and shows a pre-built WhatsApp message (3 templates: renovação, pós-call, pós-treinamento) with the doctor's first name and the quiz URL embedded.
-- **`components/dashboard/tabs/ClientesTab.tsx`** — Member registry with full CRUD via `MembroModal` (includes `estado` dropdown for Brazilian states). Monitoramento de Contato sub-tab has full CRUD via `ContatoModal` (médico is a dropdown of active members; próximo contato is auto-calculated from frequência + último contato). Members table supports filter by Ativo/Inativo and name search. Inactive members' contatos are filtered out server-side in `clientes-data`.
+- **`components/dashboard/GenerateLinkModal.tsx`** — Generates quiz links and shows a pre-built WhatsApp message (3 templates: renovação, pós-call, pós-treinamento). Renovação: dropdown of active doctors (from `clientes-data`), auto-fills clinic. Pós-call/treinamento: Médico/Equipe toggle — Médico shows doctor dropdown (auto-fills clinic); Equipe shows text input + clinic dropdown from existing clientes. Greeting uses "Dr./Dra. + first name" for médico flows, plain name for equipe.
+- **`components/dashboard/tabs/ClientesTab.tsx`** — Member registry with full CRUD via `MembroModal` (includes `clinica`, `estado` dropdown for Brazilian states). Members table shows 6 columns only (Situação, Grupo, Nome, Entrada, Saída, Renovação) — all other fields (CPF, telefone, etc.) remain accessible via the edit modal. Monitoramento de Contato sub-tab has full CRUD via `ContatoModal` (médico is a dropdown of active members; próximo contato is auto-calculated from frequência + último contato). Members table supports filter by Ativo/Inativo and name search. Inactive members' contatos are filtered out server-side in `clientes-data`.
 - **`components/dashboard/tabs/FinanceiroTab.tsx`** — Contracts and renewals with full CRUD via `ContratoModal` / `RenovacaoModal`.
 
 **CRUD API pattern:** Each entity has `POST /api/{entity}` (create) and `PUT /api/{entity}/[id]` (update). All routes validate required fields and return `{ success: true, data }` or `{ error }`. Active CRUD entities: `clientes`, `contratos`, `renovacoes`, `contatos`.
