@@ -60,7 +60,7 @@ function EmptyState({ label }: { label: string }) {
 }
 
 function stripEmoji(s: string) {
-  return s.replace(/^[✅❌⚠️🔴🟡🟢]\s*/u, '').trim();
+  return s.replace(/^(?:✅|❌|⚠️|🔴|🟡|🟢)\s*/, '').trim();
 }
 
 // ── Renovação sub-tab ─────────────────────────────────────────────────────────
