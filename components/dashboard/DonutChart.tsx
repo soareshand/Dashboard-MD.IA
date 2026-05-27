@@ -7,21 +7,6 @@ interface DonutChartProps {
   data: { name: string; value: number; color: string }[];
 }
 
-const RADIAN = Math.PI / 180;
-function CustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
-  cx: number; cy: number; midAngle: number; innerRadius: number; outerRadius: number; percent: number;
-}) {
-  if (percent < 0.05) return null;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} fontFamily="JetBrains Mono" fontWeight="bold">
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-}
-
 export default function DonutChart({ title, data }: DonutChartProps) {
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
@@ -39,17 +24,16 @@ export default function DonutChart({ title, data }: DonutChartProps) {
                 cy="50%"
                 innerRadius={55}
                 outerRadius={80}
-                paddingAngle={3}
+                paddingAngle={2}
                 dataKey="value"
-                labelLine={false}
-                label={CustomLabel as React.FC}
+                stroke="none"
               >
                 {data.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
+                  <Cell key={i} fill={entry.color} stroke="none" />
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{ background: '#1A1A2E', border: '1px solid rgba(74,144,226,0.3)', borderRadius: 8, color: '#fff', fontSize: 12 }}
+                contentStyle={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 8, color: '#111827', fontSize: 12 }}
                 formatter={(value: number, name: string) => [`${value} (${total > 0 ? Math.round(value / total * 100) : 0}%)`, name]}
               />
             </PieChart>

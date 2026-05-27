@@ -88,6 +88,7 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
   const r = 80, sw = 26;
   const c = 2 * Math.PI * r;
   const gap = 6;
+  const [hoveredSeg, setHoveredSeg] = useState<string | null>(null);
 
   const segs = [
     { label: 'Sim', value: dist.Sim, color: '#3B9EF5' },
@@ -126,14 +127,21 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
         </svg>
         <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-2">
           {segs.map(seg => (
-            <div key={seg.label} className="relative flex items-center gap-1.5 cursor-default group">
+            <div
+              key={seg.label}
+              className="relative flex items-center gap-1.5 cursor-default"
+              onMouseEnter={() => setHoveredSeg(seg.label)}
+              onMouseLeave={() => setHoveredSeg(null)}
+            >
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
               <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.label}</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                <div className="bg-[#1A1A2E] border border-[rgba(74,144,226,0.3)] rounded-lg px-2.5 py-1 text-xs text-white font-mono whitespace-nowrap shadow-lg">
-                  {seg.value} ({total > 0 ? Math.round(seg.value / total * 100) : 0}%)
+              {hoveredSeg === seg.label && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-20 whitespace-nowrap">
+                  <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-lg px-2.5 py-1 text-xs text-[#111827] font-mono shadow-lg">
+                    {seg.value} ({total > 0 ? Math.round(seg.value / total * 100) : 0}%)
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
