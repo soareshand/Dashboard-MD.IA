@@ -3,10 +3,15 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+function isoToDdMmYyyy(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
 export async function GET() {
   try {
     const [{ data: presencaRows }, { data: clientesRows }] = await Promise.all([
-      supabase.from('presencas').select('medico, sessao, status'),
+      supabase.from('presencas').select('medico, sessao, status').order('sessao', { ascending: true }),
       supabase.from('clientes').select('nome, situacao'),
     ]);
 
@@ -16,25 +21,24 @@ export async function GET() {
       .sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
     const grid: Record<string, Record<string, string>> = {};
+    const sessoesOrdenadas: string[] = [];
     const sessoesSet = new Set<string>();
 
     for (const row of (presencaRows ?? [])) {
-      sessoesSet.add(row.sessao);
+      const sessao = isoToDdMmYyyy(row.sessao);
+      if (!sessoesSet.has(sessao)) {
+        sessoesSet.add(sessao);
+        sessoesOrdenadas.push(sessao);
+      }
       if (!grid[row.medico]) grid[row.medico] = {};
-      grid[row.medico][row.sessao] = row.status;
+      grid[row.medico][sessao] = row.status;
     }
 
-    const sessoes = Array.from(sessoesSet).sort((a, b) => {
-      const [da, ma, ya] = a.split('/').map(Number);
-      const [db, mb, yb] = b.split('/').map(Number);
-      return new Date(ya, ma - 1, da).getTime() - new Date(yb, mb - 1, db).getTime();
-    });
-
-    const totalSessoes = sessoes.length;
+    const totalSessoes = sessoesOrdenadas.length;
 
     const medicoStats = medicosAtivos.map(medico => {
-      const presencas = sessoes.filter(s => grid[medico]?.[s] === 'Presente').length;
-      const faltas = sessoes.filter(s => grid[medico]?.[s] === 'Faltou').length;
+      const presencas = sessoesOrdenadas.filter(s => grid[medico]?.[s] === 'Presente').length;
+      const faltas = sessoesOrdenadas.filter(s => grid[medico]?.[s] === 'Faltou').length;
       const taxa = totalSessoes > 0 ? Math.round((presencas / totalSessoes) * 100) : 0;
       return { medico, presencas, faltas, taxa };
     });
@@ -43,7 +47,7 @@ export async function GET() {
       ? Math.round(medicoStats.reduce((s, m) => s + m.taxa, 0) / medicoStats.length)
       : 0;
 
-    const recentSessoes = sessoes.slice(-6).reverse().map(sessao => {
+    const recentSessoes = sessoesOrdenadas.slice(-6).reverse().map(sessao => {
       const presentes = medicosAtivos.filter(m => grid[m]?.[sessao] === 'Presente').length;
       const faltaram = medicosAtivos.filter(m => grid[m]?.[sessao] === 'Faltou').length;
       return { sessao, presentes, faltaram, total: presentes + faltaram };
@@ -54,7 +58,7 @@ export async function GET() {
       medicoStats: medicoStats.sort((a, b) => b.taxa - a.taxa),
       recentSessoes,
       medicos: medicosAtivos,
-      sessoes,
+      sessoes: sessoesOrdenadas,
       grid,
     });
   } catch (err) {
