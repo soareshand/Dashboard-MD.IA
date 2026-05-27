@@ -204,6 +204,7 @@ export default function PresencaTab() {
               const taxa = s.total > 0 ? Math.round((s.presentes / s.total) * 100) : 0;
               const color = taxa >= 50 ? '#3B9EF5' : '#F59E0B';
               const isConfirming = deletingSessao === s.sessao;
+              const presentesMedicos = data.medicos.filter(m => data.grid[m]?.[s.sessao] === 'Presente');
               return (
                 <div key={i} className="relative bg-[#12122A] rounded-xl p-3 text-center border border-[rgba(59,158,245,0.1)] group">
                   <button
@@ -230,6 +231,20 @@ export default function PresencaTab() {
                   <p className="text-xl font-bold font-orbitron" style={{ color }}>{taxa}%</p>
                   <p className="text-[#A0A0B0] text-xs mt-1">{s.presentes}/{s.total}</p>
                   {isConfirming && <p className="text-[#F59E0B] text-[10px] mt-1">Excluir?</p>}
+
+                  {/* Tooltip com presentes */}
+                  {!isConfirming && presentesMedicos.length > 0 && (
+                    <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-48 bg-[#0D0D20] border border-[rgba(59,158,245,0.25)] rounded-xl p-3 text-left shadow-xl">
+                      <p className="text-[10px] font-semibold text-[#3B9EF5] uppercase tracking-wider mb-1.5">
+                        Presentes ({presentesMedicos.length})
+                      </p>
+                      <div className="space-y-0.5 max-h-40 overflow-y-auto">
+                        {presentesMedicos.map(m => (
+                          <p key={m} className="text-xs text-white truncate">{m}</p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
