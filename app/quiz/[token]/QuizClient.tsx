@@ -110,7 +110,7 @@ export default function QuizClient({ token, initial }: { token: string; initial:
     if (step === 4) return TOOL_ITEMS.every(t => form[t.id as keyof FormData] !== null);
     if (step === 5) {
       if (!form.pretendeRenovar) return false;
-      if (form.pretendeRenovar === 'Não' && !form.motivoNaoRenovar.trim()) return false;
+      if (form.pretendeRenovar.includes('Não') && !form.motivoNaoRenovar.trim()) return false;
       if (!form.indicaria) return false;
       return true;
     }

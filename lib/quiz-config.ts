@@ -14,7 +14,7 @@ export const TOOL_ITEMS: ToolItem[] = [
   { id: 'notaGerenteIA', label: 'Gerente de IA (Etiquetas)', emoji: '🏷️' },
   { id: 'notaAutomacoes', label: 'Automações de Experiência', emoji: '⚡' },
   { id: 'notaDashboard', label: 'Dashboard', emoji: '📊' },
-  { id: 'notaCRM', label: 'Ferramenta CRM InfiniteGear', emoji: '', useLogo: 'infinitegear' },
+  { id: 'notaCRM', label: 'Ferramenta CRM', emoji: '📇' },
   { id: 'notaTreinamentosCRM', label: 'Treinamentos do CRM', emoji: '🎯' },
   { id: 'notaSuporteEquipe', label: 'Suporte da equipe', emoji: '🤝' },
   { id: 'notaMentoriaGestao', label: 'Mentoria na gestão da clínica', emoji: '💼' },
