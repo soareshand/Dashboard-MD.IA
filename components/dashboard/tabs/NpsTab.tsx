@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import KpiCard from '@/components/dashboard/KpiCard';
 import BarChart from '@/components/dashboard/BarChart';
@@ -62,6 +62,59 @@ function EmptyState({ label }: { label: string }) {
 
 function stripEmoji(s: string) {
   return s.replace(/^(?:✅|❌|⚠️|🔴|🟡|🟢)\s*/, '').trim();
+}
+
+function formatDate(iso: string) {
+  if (!iso) return '-';
+  try {
+    return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(iso));
+  } catch { return iso; }
+}
+
+function MField({ label, value }: { label: string; value: string | number | null | undefined }) {
+  const display = value === null || value === undefined || value === '' ? '—' : String(value);
+  return (
+    <div className="flex gap-2">
+      <span className="text-[#A0A0B0] text-xs w-44 flex-shrink-0">{label}:</span>
+      <span className="text-white text-xs flex-1">{display}</span>
+    </div>
+  );
+}
+
+function MSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="mb-5">
+      <h4 className="font-orbitron text-xs text-[#6EC6FF] uppercase tracking-wider mb-2">{title}</h4>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function DetailModal({ title, subtitle, onClose, children }: {
+  title: string; subtitle: string; onClose: () => void; children: ReactNode;
+}) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="card-gradient-border w-full max-w-lg max-h-[85vh] overflow-y-auto p-6">
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h3 className="font-orbitron text-lg font-bold text-white">{title}</h3>
+            <p className="text-[#A0A0B0] text-sm">{subtitle}</p>
+          </div>
+          <button onClick={onClose} className="text-[#A0A0B0] hover:text-white text-xl transition-colors ml-4 flex-shrink-0">✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
 }
 
 // ── Renovação sub-tab ─────────────────────────────────────────────────────────
@@ -263,10 +316,36 @@ interface CallData {
   }[];
 }
 
+function CallDetailModal({ row, onClose }: { row: CallData['recent'][0]; onClose: () => void }) {
+  return (
+    <DetailModal title={row.nome} subtitle={`${row.clinica} · ${formatDate(row.timestamp)}`} onClose={onClose}>
+      <MSection title="Identificação">
+        <MField label="Nome" value={row.nome} />
+        <MField label="Clínica" value={row.clinica} />
+        <MField label="Tipo de Call" value={row.tipoCall} />
+        <MField label="Respondente" value={row.respondente} />
+      </MSection>
+      <MSection title="Avaliação">
+        <MField label="Nota da Call" value={`${row.notaCall}/5 — ${SCALE_LABELS[row.notaCall]}`} />
+        <MField label="Objetivos alcançados" value={row.necessidadeResolvida} />
+        <MField label="Nota do CS" value={`${row.notaCS}/5 — ${SCALE_LABELS[row.notaCS]}`} />
+      </MSection>
+      {String(row.observacoes || '').trim() && (
+        <MSection title="Observações">
+          <p className="text-white text-xs leading-relaxed bg-[#12122A] rounded-xl p-3 border border-[rgba(74,144,226,0.15)]">
+            {row.observacoes}
+          </p>
+        </MSection>
+      )}
+    </DetailModal>
+  );
+}
+
 function CallSubTab() {
   const [data, setData] = useState<CallData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selected, setSelected] = useState<CallData['recent'][0] | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -373,7 +452,7 @@ function CallSubTab() {
             </thead>
             <tbody>
               {data.recent.map((r, i) => (
-                <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)]">
+                <tr key={i} onClick={() => setSelected(r)} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)] cursor-pointer">
                   <td className="px-5 py-3">
                     <p className="text-white font-medium">{r.nome}</p>
                     <p className="text-[#A0A0B0] text-xs">{r.clinica}</p>
@@ -391,6 +470,7 @@ function CallSubTab() {
           </table>
         </div>
       </div>
+      {selected && <CallDetailModal row={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
@@ -408,10 +488,36 @@ interface TreinamentoData {
   }[];
 }
 
+function TreinamentoDetailModal({ row, onClose }: { row: TreinamentoData['recent'][0]; onClose: () => void }) {
+  return (
+    <DetailModal title={row.nome} subtitle={`${row.clinica} · ${formatDate(row.timestamp)}`} onClose={onClose}>
+      <MSection title="Identificação">
+        <MField label="Nome" value={row.nome} />
+        <MField label="Clínica" value={row.clinica} />
+        <MField label="Ferramenta" value={row.ferramenta} />
+        <MField label="Respondente" value={row.respondente} />
+      </MSection>
+      <MSection title="Avaliação">
+        <MField label="Nota do Treinamento" value={`${row.notaTreinamento}/5 — ${SCALE_LABELS[row.notaTreinamento]}`} />
+        <MField label="Clareza do Conteúdo" value={`${row.notaClareza}/5 — ${SCALE_LABELS[row.notaClareza]}`} />
+        <MField label="Segurança para usar" value={row.segurancaUso} />
+      </MSection>
+      {String(row.observacoes || '').trim() && (
+        <MSection title="Observações">
+          <p className="text-white text-xs leading-relaxed bg-[#12122A] rounded-xl p-3 border border-[rgba(139,92,246,0.15)]">
+            {row.observacoes}
+          </p>
+        </MSection>
+      )}
+    </DetailModal>
+  );
+}
+
 function TreinamentoSubTab() {
   const [data, setData] = useState<TreinamentoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selected, setSelected] = useState<TreinamentoData['recent'][0] | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -518,7 +624,7 @@ function TreinamentoSubTab() {
             </thead>
             <tbody>
               {data.recent.map((r, i) => (
-                <tr key={i} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)]">
+                <tr key={i} onClick={() => setSelected(r)} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)] cursor-pointer">
                   <td className="px-5 py-3">
                     <p className="text-white font-medium">{r.nome}</p>
                     <p className="text-[#A0A0B0] text-xs">{r.clinica}</p>
@@ -536,6 +642,7 @@ function TreinamentoSubTab() {
           </table>
         </div>
       </div>
+      {selected && <TreinamentoDetailModal row={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
