@@ -650,7 +650,8 @@ export async function registrarPresenca(
 
   let colIndex = headerRow.indexOf(data);
   const isNewColumn = colIndex === -1;
-  if (isNewColumn) colIndex = headerRow.length;
+  // Column A (index 0) is always reserved for doctor names; dates start at B (index 1)
+  if (isNewColumn) colIndex = Math.max(1, headerRow.length);
 
   const colLetter = colIndexToLetter(colIndex);
   const updates: { range: string; values: string[][] }[] = [];
