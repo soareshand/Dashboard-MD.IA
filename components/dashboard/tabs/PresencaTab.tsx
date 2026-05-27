@@ -197,32 +197,33 @@ export default function PresencaTab() {
       </div>
 
       {/* Month/year filter */}
-      {mesesDisponiveis.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-[#A0A0B0] uppercase tracking-wider">Filtrar por mês:</span>
-          <div className="flex flex-wrap gap-1.5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-[#A0A0B0] uppercase tracking-wider">Filtrar por mês:</span>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => setFiltroMes('')}
+            className={`px-3 py-1 rounded-lg text-xs font-sora transition-all ${
+              filtroMes === '' ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white border border-[rgba(74,144,226,0.2)] hover:border-[rgba(74,144,226,0.5)]'
+            }`}
+          >
+            Todos
+          </button>
+          {mesesDisponiveis.map(mes => (
             <button
-              onClick={() => setFiltroMes('')}
+              key={mes}
+              onClick={() => setFiltroMes(mes)}
               className={`px-3 py-1 rounded-lg text-xs font-sora transition-all ${
-                filtroMes === '' ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white border border-[rgba(74,144,226,0.2)] hover:border-[rgba(74,144,226,0.5)]'
+                filtroMes === mes ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white border border-[rgba(74,144,226,0.2)] hover:border-[rgba(74,144,226,0.5)]'
               }`}
             >
-              Todos
+              {formatMesAno(mes)}
             </button>
-            {mesesDisponiveis.map(mes => (
-              <button
-                key={mes}
-                onClick={() => setFiltroMes(mes)}
-                className={`px-3 py-1 rounded-lg text-xs font-sora transition-all ${
-                  filtroMes === mes ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white border border-[rgba(74,144,226,0.2)] hover:border-[rgba(74,144,226,0.5)]'
-                }`}
-              >
-                {formatMesAno(mes)}
-              </button>
-            ))}
-          </div>
+          ))}
+          {mesesDisponiveis.length === 0 && (
+            <span className="text-xs text-[#555570] italic">nenhuma sessão registrada ainda</span>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Sessões */}
       {recentSessoesFiltradas.length > 0 && (
