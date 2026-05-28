@@ -71,7 +71,7 @@ export async function GET() {
       supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos').eq('situacao', 'Ativo'),
       supabase.from('presencas').select('medico, sessao, status'),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
-      supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nota_crm, nota_automacoes, nota_suporte'),
+      supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nps'),
       supabase.from('quiz_mensal_equipe_responses').select('clinica, timestamp, nota_crm, nota_automacoes, nota_suporte'),
       supabase.from('quiz_call_responses').select('nome, timestamp, nota_call, nota_cs'),
       supabase.from('quiz_treinamento_responses').select('nome, timestamp, nota_treinamento, nota_clareza'),
@@ -107,10 +107,19 @@ export async function GET() {
       (quizRows ?? []) as Array<Record<string, unknown>>,
       [...NOTA_KEYS]
     );
-    const medicoByMedico = buildLatestAvgMap(
-      (mensalMedicoRows ?? []) as Array<Record<string, unknown>>,
-      ['nota_crm', 'nota_automacoes', 'nota_suporte']
-    );
+    // Médico quiz uses nps (0-10) — scale to 0-5 for consistency
+    const medicoByMedico = new Map<string, number>();
+    {
+      const latest = new Map<string, { ts: Date; nps: number }>();
+      for (const r of (mensalMedicoRows ?? []) as Array<Record<string, unknown>>) {
+        const nome = String(r.nome ?? '');
+        if (!nome) continue;
+        const ts = new Date(String(r.timestamp ?? 0));
+        const existing = latest.get(nome);
+        if (!existing || ts > existing.ts) latest.set(nome, { ts, nps: Number(r.nps) || 0 });
+      }
+      latest.forEach((v, k) => medicoByMedico.set(k, Math.round(v.nps / 2 * 10) / 10));
+    }
     const equipeByClinica = buildLatestAvgMap(
       (mensalEquipeRows ?? []) as Array<Record<string, unknown>>,
       ['nota_crm', 'nota_automacoes', 'nota_suporte'],
