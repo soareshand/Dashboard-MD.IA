@@ -41,11 +41,10 @@ function calcScore(opts: {
   if (opts.totalProdutos > 0) s += (opts.produtosAtivos / opts.totalProdutos) * 2.5;
   // NPS: max 2.5 pts
   if (opts.npsMedia !== null) s += (opts.npsMedia / 5) * 2.5;
-  // Presença: max 2 pts
-  if (opts.taxaPresenca !== null) s += (opts.taxaPresenca / 100) * 2;
+  // Presença: max 1 pt
+  if (opts.taxaPresenca !== null) s += (opts.taxaPresenca / 100) * 1;
   // Contato: max 1 pt
-  if (opts.contatoStatus === 'Em dia' || opts.contatoStatus === 'OK') s += 1;
-  else if (opts.contatoStatus === 'Atenção') s += 0.5;
+  if (opts.contatoStatus === 'Em dia' || opts.contatoStatus === 'OK' || opts.contatoStatus === 'Atenção') s += 1;
   // Renovação: max 1 pt
   if (opts.diasRenovacao !== null) {
     if (opts.diasRenovacao > 90) s += 1;
