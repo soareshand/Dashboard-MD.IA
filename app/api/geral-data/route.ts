@@ -40,12 +40,14 @@ export async function GET() {
       { data: clientesRows },
       { data: presencaRows },
       { data: quizRows },
+      { data: mensalRows },
       { data: contatoRows },
       { data: catalogRows },
     ] = await Promise.all([
       supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos').eq('situacao', 'Ativo'),
       supabase.from('presencas').select('medico, sessao, status'),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
+      supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nota_crm, nota_automacoes, nota_suporte'),
       supabase.from('contatos').select('medico, proximo_contato'),
       supabase.from('produtos_catalogo').select('id, nome, ordem').order('ordem'),
     ]);
@@ -73,15 +75,39 @@ export async function GET() {
       });
     });
 
-    // Quiz: last NPS per medico (sorted by timestamp desc)
-    const quizByMedico = new Map<string, number>();
+    // Quiz: most recent NPS per medico — from renovation OR monthly quiz
+    const renovByMedico = new Map<string, { ts: Date; avg: number }>();
     const sortedQuiz = [...(quizRows ?? [])].sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     for (const r of sortedQuiz) {
-      if (!quizByMedico.has(r.nome)) {
+      if (!renovByMedico.has(r.nome)) {
         const avg = NOTA_KEYS.reduce((s, k) => s + (Number((r as Record<string, unknown>)[k]) || 0), 0) / NOTA_KEYS.length;
-        quizByMedico.set(r.nome, Math.round(avg * 10) / 10);
+        renovByMedico.set(r.nome, { ts: new Date(r.timestamp), avg: Math.round(avg * 10) / 10 });
+      }
+    }
+
+    const mensalByMedico = new Map<string, { ts: Date; avg: number }>();
+    for (const r of (mensalRows ?? [])) {
+      const ts = new Date(r.timestamp);
+      const existing = mensalByMedico.get(r.nome);
+      if (!existing || ts > existing.ts) {
+        const avg = ((Number(r.nota_crm) || 0) + (Number(r.nota_automacoes) || 0) + (Number(r.nota_suporte) || 0)) / 3;
+        mensalByMedico.set(r.nome, { ts, avg: Math.round(avg * 10) / 10 });
+      }
+    }
+
+    const quizByMedico = new Map<string, number>();
+    const allQuizNames = new Set([...renovByMedico.keys(), ...mensalByMedico.keys()]);
+    for (const nome of allQuizNames) {
+      const renov = renovByMedico.get(nome);
+      const mensal = mensalByMedico.get(nome);
+      if (renov && mensal) {
+        quizByMedico.set(nome, mensal.ts > renov.ts ? mensal.avg : renov.avg);
+      } else if (renov) {
+        quizByMedico.set(nome, renov.avg);
+      } else if (mensal) {
+        quizByMedico.set(nome, mensal.avg);
       }
     }
 
