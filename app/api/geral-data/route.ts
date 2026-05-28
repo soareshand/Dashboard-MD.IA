@@ -134,7 +134,7 @@ export async function GET() {
     {
       const latest = new Map<string, { ts: Date; nps: number }>();
       for (const r of (mensalEquipeRows ?? []) as Array<Record<string, unknown>>) {
-        const clinicaKey = String(r.clinica ?? '').trim();
+        const clinicaKey = String(r.clinica ?? '').trim().toLowerCase();
         if (!clinicaKey) continue;
         const ts = new Date(String(r.timestamp ?? 0));
         const existing = latest.get(clinicaKey);
@@ -204,9 +204,10 @@ export async function GET() {
 
       const npsRenovacao = renovByMedico.get(m.nome) ?? null;
       const npsMedico = medicoByMedico.get(m.nome) ?? null;
-      const npsEquipe = m.clinica ? (equipeByClinica.get(m.clinica) ?? null) : null;
-      const npsCall = callByMedico.get(m.nome) ?? (m.clinica ? callByClinica.get(m.clinica) : null) ?? null;
-      const npsTreinamento = treinaByMedico.get(m.nome) ?? (m.clinica ? treinaByClinica.get(m.clinica) : null) ?? null;
+      const clinicaNorm = m.clinica?.trim().toLowerCase() ?? '';
+      const npsEquipe = clinicaNorm ? (equipeByClinica.get(clinicaNorm) ?? null) : null;
+      const npsCall = callByMedico.get(m.nome) ?? (clinicaNorm ? callByClinica.get(m.clinica!) : null) ?? null;
+      const npsTreinamento = treinaByMedico.get(m.nome) ?? (clinicaNorm ? treinaByClinica.get(m.clinica!) : null) ?? null;
 
       const availableNps = [npsRenovacao, npsMedico, npsEquipe, npsCall, npsTreinamento].filter((v): v is number => v !== null);
       const npsMedia = availableNps.length > 0
