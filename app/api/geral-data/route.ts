@@ -151,9 +151,10 @@ export async function GET() {
     );
 
     // Contrato: most recent status per medico (already ordered by created_at desc)
+    // Keys are lowercased to allow case-insensitive matching with clientes.nome
     const contratoByMedico = new Map<string, string>();
     for (const c of (contratoRows ?? []) as Array<Record<string, unknown>>) {
-      const nome = String(c.medico ?? '').trim();
+      const nome = String(c.medico ?? '').trim().toLowerCase();
       if (nome && !contratoByMedico.has(nome)) {
         contratoByMedico.set(nome, String(c.status_contrato ?? ''));
       }
@@ -191,7 +192,7 @@ export async function GET() {
 
       const presenca = presencaByMedico.get(m.nome);
       const contatoStatus = contatoByMedico.get(m.nome) ?? null;
-      const statusContrato = contratoByMedico.get(m.nome) ?? null;
+      const statusContrato = contratoByMedico.get(m.nome.toLowerCase()) ?? null;
 
       const npsRenovacao = renovByMedico.get(m.nome) ?? null;
       const npsMedico = medicoByMedico.get(m.nome) ?? null;
