@@ -21,7 +21,7 @@ export default function BarChart({ data }: { data: BarItem[] }) {
           const pct = max > 0 ? (item.avg / max) * 100 : 0;
           return (
             <div key={item.id} className="flex items-center gap-4">
-              <p className="w-40 text-xs text-[#6B7A8D] shrink-0 leading-tight font-sora">
+              <p className="w-40 text-xs text-[#a2a2b2] shrink-0 leading-tight font-sora">
                 {item.label}
               </p>
               <div
@@ -56,7 +56,7 @@ export default function BarChart({ data }: { data: BarItem[] }) {
               </div>
               <div className="w-12 shrink-0 text-right">
                 <span className="font-orbitron font-bold text-sm text-white">{item.avg}</span>
-                <span className="text-[#374151] text-xs">/5</span>
+                <span className="text-[#a2a2b2] text-xs">/5</span>
               </div>
             </div>
           );

@@ -54,9 +54,9 @@ export default function KpiCard({ icon, title, value, subtitle }: KpiCardProps) 
       >
         {svgIcon ?? <span className="text-lg">{icon}</span>}
       </div>
-      <p className="text-[11px] text-[#4B5E72] uppercase tracking-[0.12em] font-sora mt-0.5">{title}</p>
+      <p className="text-[11px] text-[#a2a2b2] uppercase tracking-[0.12em] font-sora mt-0.5">{title}</p>
       <p className="text-3xl font-orbitron font-bold leading-none text-white">{value}</p>
-      {subtitle && <p className="text-[11px] text-[#374151] mt-0.5">{subtitle}</p>}
+      {subtitle && <p className="text-[11px] text-[#a2a2b2] mt-0.5">{subtitle}</p>}
     </div>
   );
 }
