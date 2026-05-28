@@ -206,10 +206,10 @@ function SummaryKpis({ cards }: { cards: CardData[] }) {
   const criticos = cards.filter(c => c.score < 5).length;
 
   const kpis = [
-    { label: 'Total Ativos', value: String(total), sub: 'clínicas', color: '#A0A0B0' },
-    { label: 'Saudáveis', value: String(saudaveis), sub: 'score ≥ 8', color: '#3B9EF5' },
-    { label: 'Em Atenção', value: String(atencao), sub: 'score 5–7.9', color: '#8B5CF6' },
-    { label: 'Críticos', value: String(criticos), sub: 'score < 5', color: '#F59E0B' },
+    { label: 'Clínicas Ativas', value: String(total), sub: '', color: '#A0A0B0' },
+    { label: 'Saudáveis', value: String(saudaveis), sub: '', color: '#3B9EF5' },
+    { label: 'Em Atenção', value: String(atencao), sub: '', color: '#8B5CF6' },
+    { label: 'Críticos', value: String(criticos), sub: '', color: '#F59E0B' },
   ];
 
   return (
@@ -221,10 +221,7 @@ function SummaryKpis({ cards }: { cards: CardData[] }) {
         {kpis.map(k => (
           <div key={k.label} className="card-gradient-border p-4 flex flex-col gap-1">
             <span className="text-[10px] uppercase tracking-wider font-medium" style={{ color: k.color }}>{k.label}</span>
-            <div className="flex items-baseline gap-1">
-              <span className="font-orbitron text-2xl font-bold text-white">{k.value}</span>
-              <span className="text-[10px] text-[#404060] font-mono">{k.sub}</span>
-            </div>
+            <span className="font-orbitron text-2xl font-bold text-white">{k.value}</span>
           </div>
         ))}
       </div>
@@ -294,7 +291,6 @@ export default function GeralTab() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-orbitron text-xl font-bold text-white">Visão Geral das Clínicas</h2>
-          <p className="text-[#404060] text-sm mt-1">Health Score · somente membros ativos · score 0–10</p>
         </div>
         <button
           onClick={fetchData}
