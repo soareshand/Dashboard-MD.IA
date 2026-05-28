@@ -154,34 +154,99 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
   );
 }
 
+function ScoreGauge({ score }: { score: number }) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  const W = 220, H = 126;
+  const cx = W / 2, cy = H;
+  const R = 88, strokeW = 13;
+  const totalLen = Math.PI * R;
+  const progress = Math.min(score / 10, 1);
+  const offset = animated ? totalLen * (1 - progress) : totalLen;
+  const color = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
+
+  const NUM_TICKS = 30;
+  const ticks = Array.from({ length: NUM_TICKS + 1 }, (_, i) => {
+    const t = i / NUM_TICKS;
+    const angle = Math.PI * (1 - t);
+    const rIn = R + strokeW / 2 + 3;
+    const rOut = rIn + (i % 6 === 0 ? 11 : 6);
+    return {
+      x1: cx + rIn * Math.cos(angle),
+      y1: cy - rIn * Math.sin(angle),
+      x2: cx + rOut * Math.cos(angle),
+      y2: cy - rOut * Math.sin(angle),
+      active: t <= progress,
+      major: i % 6 === 0,
+    };
+  });
+
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
+      <path
+        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 0 ${cx + R} ${cy}`}
+        fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={strokeW} strokeLinecap="round"
+      />
+      <path
+        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 0 ${cx + R} ${cy}`}
+        fill="none" stroke={color} strokeWidth={strokeW} strokeLinecap="round"
+        strokeDasharray={totalLen} strokeDashoffset={offset}
+        style={{
+          transition: animated ? 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1), stroke 0.6s ease' : 'none',
+          filter: `drop-shadow(0 0 10px ${color}60)`,
+        }}
+      />
+      {ticks.map((tick, i) => (
+        <line key={i}
+          x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2}
+          stroke={tick.active ? `${color}BB` : 'rgba(255,255,255,0.09)'}
+          strokeWidth={tick.major ? 2 : 1.2} strokeLinecap="round"
+        />
+      ))}
+      <text x={cx} y={cy - 32} textAnchor="middle" fill="white" fontSize="36" fontWeight="bold" fontFamily="'Orbitron', monospace">
+        {score.toFixed(1)}
+      </text>
+      <text x={cx} y={cy - 12} textAnchor="middle" fill="#50507A" fontSize="10" letterSpacing="2" fontFamily="monospace">
+        MÉDIA SCORE
+      </text>
+    </svg>
+  );
+}
+
 function SummaryKpis({ cards }: { cards: CardData[] }) {
   const total = cards.length;
   const avgScore = total > 0 ? Math.round((cards.reduce((s, c) => s + c.score, 0) / total) * 10) / 10 : 0;
   const saudaveis = cards.filter(c => c.score >= 8).length;
   const atencao = cards.filter(c => c.score >= 5 && c.score < 8).length;
   const criticos = cards.filter(c => c.score < 5).length;
-  const aniversariantesHoje = cards.filter(c => c.isAniversarioHoje).length;
 
   const kpis = [
-    { label: 'Média Score', value: `${avgScore}`, sub: '/ 10', color: '#A0A0B0' },
     { label: 'Total Ativos', value: String(total), sub: 'clínicas', color: '#A0A0B0' },
     { label: 'Saudáveis', value: String(saudaveis), sub: 'score ≥ 8', color: '#3B9EF5' },
     { label: 'Em Atenção', value: String(atencao), sub: 'score 5–7.9', color: '#8B5CF6' },
     { label: 'Críticos', value: String(criticos), sub: 'score < 5', color: '#F59E0B' },
-    ...(aniversariantesHoje > 0 ? [{ label: 'Aniversário Hoje', value: String(aniversariantesHoje), sub: '🎉', color: '#3B9EF5' }] : []),
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      {kpis.map(k => (
-        <div key={k.label} className="card-gradient-border p-4 flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider font-medium" style={{ color: k.color }}>{k.label}</span>
-          <div className="flex items-baseline gap-1">
-            <span className="font-orbitron text-2xl font-bold text-white">{k.value}</span>
-            <span className="text-[10px] text-[#404060] font-mono">{k.sub}</span>
+    <div className="flex gap-4 items-stretch">
+      <div className="card-gradient-border flex items-center justify-center px-6 py-5 flex-shrink-0">
+        <ScoreGauge score={avgScore} />
+      </div>
+      <div className="grid grid-cols-2 gap-3 flex-1 min-w-0">
+        {kpis.map(k => (
+          <div key={k.label} className="card-gradient-border p-4 flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider font-medium" style={{ color: k.color }}>{k.label}</span>
+            <div className="flex items-baseline gap-1">
+              <span className="font-orbitron text-2xl font-bold text-white">{k.value}</span>
+              <span className="text-[10px] text-[#404060] font-mono">{k.sub}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
