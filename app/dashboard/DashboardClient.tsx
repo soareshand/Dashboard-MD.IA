@@ -22,7 +22,7 @@ const TABS = [
 ] as const;
 
 function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; size?: number }) {
-  const color = active ? '#3B9EF5' : '#4B5E72';
+  const color = active ? '#3B9EF5' : '#ffffff';
   const s = { stroke: color, strokeWidth: '1.8', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
   if (id === 'geral') return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
@@ -178,9 +178,9 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
                 )}
 
                 <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'}`}>
-                  <SidebarIcon id={tab.id} active={active} size={featured ? 30 : 26} />
+                  <SidebarIcon id={tab.id} active={active} size={featured ? 36 : 30} />
                 </span>
-                <span className={`font-sora font-semibold leading-none tracking-wide ${featured ? 'text-[13px]' : 'text-[11px]'} ${active ? 'text-white' : ''}`}>
+                <span className={`font-sora font-semibold leading-none tracking-wide ${featured ? 'text-[15px]' : 'text-[13px]'} ${active ? 'text-white' : 'text-[#a2a2b2]'}`}>
                   {tab.label}
                 </span>
 
