@@ -54,7 +54,7 @@ function ScoreRing({ score }: { score: number }) {
 function MetricChip({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[9px] text-[#404060] uppercase tracking-wider font-medium">{label}</span>
+      <span className="text-[9px] text-[#a2a2b2] uppercase tracking-wider font-medium">{label}</span>
       <span className="text-xs font-semibold leading-none" style={{ color }}>{value}</span>
     </div>
   );
@@ -75,7 +75,7 @@ function RenovacaoPill({ dias }: { dias: number | null }) {
 }
 
 function quizColor(v: number | null) {
-  if (v === null) return '#404060';
+  if (v === null) return '#a2a2b2';
   return v >= 4 ? '#3B9EF5' : v >= 2.5 ? '#8B5CF6' : '#F59E0B';
 }
 
@@ -95,14 +95,14 @@ function QuizBreakdown({ renovacao, medico, equipe, call, treinamento }: {
   ];
   return (
     <div className="space-y-1.5">
-      <span className="text-[9px] text-[#404060] uppercase tracking-wider font-medium">NPS por Quiz</span>
+      <span className="text-[9px] text-[#a2a2b2] uppercase tracking-wider font-medium">NPS por Quiz</span>
       <div className="flex gap-1.5">
         {items.map(item => (
           <div key={item.label}
             className="flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-lg"
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
           >
-            <span className="text-[8px] text-center leading-tight" style={{ color: '#404060' }}>{item.label}</span>
+            <span className="text-[8px] text-center leading-tight" style={{ color: '#a2a2b2' }}>{item.label}</span>
             <span className="text-sm font-orbitron font-bold" style={{ color: quizColor(item.value) }}>
               {item.value !== null ? item.value.toFixed(1) : '—'}
             </span>
@@ -147,10 +147,10 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
             {card.clinica || card.nome}
           </h3>
           {card.clinica && (
-            <p className="text-[#6060A0] text-xs mt-0.5 truncate">{card.nome}</p>
+            <p className="text-[#a2a2b2] text-xs mt-0.5 truncate">{card.nome}</p>
           )}
           {card.grupo && (
-            <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] text-[#404060] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] uppercase tracking-wider">
+            <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] text-[#a2a2b2] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] uppercase tracking-wider">
               {card.grupo}
             </span>
           )}
@@ -235,7 +235,7 @@ function ScoreGauge({ score }: { score: number }) {
         <span className="font-orbitron font-bold text-white leading-none" style={{ fontSize: '2.2rem' }}>
           {score.toFixed(1)}
         </span>
-        <span className="font-mono text-[10px] tracking-[2px] mt-1" style={{ color: '#50507A' }}>
+        <span className="font-mono text-[10px] tracking-[2px] mt-1" style={{ color: '#a2a2b2' }}>
           MÉDIA SCORE
         </span>
       </div>
@@ -339,7 +339,7 @@ export default function GeralTab() {
         </div>
         <button
           onClick={fetchData}
-          className="p-2 rounded-xl border border-[rgba(74,144,226,0.2)] text-[#404060] hover:text-white hover:border-[#4A90E2] transition-all flex-shrink-0"
+          className="p-2 rounded-xl border border-[rgba(74,144,226,0.2)] text-[#a2a2b2] hover:text-white hover:border-[#4A90E2] transition-all flex-shrink-0"
           title="Atualizar"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -382,7 +382,7 @@ export default function GeralTab() {
 
       {/* Cards grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#404060] text-sm">Nenhuma clínica encontrada.</div>
+        <div className="text-center py-16 text-[#a2a2b2] text-sm">Nenhuma clínica encontrada.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(card => (
