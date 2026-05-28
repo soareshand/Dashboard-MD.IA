@@ -34,7 +34,7 @@ function ScoreRing({ score }: { score: number }) {
   const r = 34;
   const circ = 2 * Math.PI * r;
   const dash = Math.min(score / 10, 1) * circ;
-  const color = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
+  const color = score >= 7 ? '#3B9EF5' : score >= 4 ? '#8B5CF6' : '#F59E0B';
   return (
     <div className="relative w-[88px] h-[88px] flex-shrink-0 flex items-center justify-center">
       <svg width="88" height="88" viewBox="0 0 88 88" className="absolute" style={{ transform: 'rotate(-90deg)' }}>
@@ -116,7 +116,7 @@ function QuizBreakdown({ renovacao, medico, equipe, call, treinamento }: {
 
 function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: number }) {
   const score = card.score;
-  const scoreColor = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
+  const scoreColor = score >= 7 ? '#3B9EF5' : score >= 4 ? '#8B5CF6' : '#F59E0B';
 
   const presColor = card.taxaPresenca === null ? '#a2a2b2'
     : card.taxaPresenca >= 75 ? '#3B9EF5' : card.taxaPresenca >= 50 ? '#8B5CF6' : '#F59E0B';
@@ -210,7 +210,7 @@ function ScoreGauge({ score }: { score: number }) {
   const cx = W / 2, cy = H;
   const R = 88, strokeW = 13;
   const progress = Math.min(score / 10, 1);
-  const color = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
+  const color = score >= 7 ? '#3B9EF5' : score >= 4 ? '#8B5CF6' : '#F59E0B';
 
   const NUM_TICKS = 30;
   const ticks = Array.from({ length: NUM_TICKS + 1 }, (_, i) => {
@@ -254,9 +254,9 @@ function ScoreGauge({ score }: { score: number }) {
 function SummaryKpis({ cards }: { cards: CardData[] }) {
   const total = cards.length;
   const avgScore = total > 0 ? Math.round((cards.reduce((s, c) => s + c.score, 0) / total) * 10) / 10 : 0;
-  const saudaveis = cards.filter(c => c.score >= 8).length;
-  const atencao = cards.filter(c => c.score >= 5 && c.score < 8).length;
-  const criticos = cards.filter(c => c.score < 5).length;
+  const saudaveis = cards.filter(c => c.score >= 7).length;
+  const atencao = cards.filter(c => c.score >= 4 && c.score < 7).length;
+  const criticos = cards.filter(c => c.score < 4).length;
 
   const kpis = [
     { label: 'Clínicas Ativas', value: String(total), sub: '', color: '#A0A0B0' },
@@ -332,9 +332,9 @@ export default function GeralTab() {
       return c.nome.toLowerCase().includes(q) || (c.clinica ?? '').toLowerCase().includes(q);
     })
     .filter(c => {
-      if (filtro === 'saudavel') return c.score >= 8;
-      if (filtro === 'atencao') return c.score >= 5 && c.score < 8;
-      if (filtro === 'critico') return c.score < 5;
+      if (filtro === 'saudavel') return c.score >= 7;
+      if (filtro === 'atencao') return c.score >= 4 && c.score < 7;
+      if (filtro === 'critico') return c.score < 4;
       return true;
     });
 

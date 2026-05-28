@@ -37,10 +37,10 @@ function calcScore(opts: {
   statusContrato: string | null;
 }): number {
   let s = 0;
-  // Produtos ativos: max 2.5 pts
-  if (opts.totalProdutos > 0) s += (opts.produtosAtivos / opts.totalProdutos) * 2.5;
-  // NPS: max 2.5 pts
-  if (opts.npsMedia !== null) s += (opts.npsMedia / 5) * 2.5;
+  // Produtos ativos: max 3 pts
+  if (opts.totalProdutos > 0) s += (opts.produtosAtivos / opts.totalProdutos) * 3;
+  // NPS: max 3 pts
+  if (opts.npsMedia !== null) s += (opts.npsMedia / 5) * 3;
   // Presença: max 1 pt
   if (opts.taxaPresenca !== null) s += (opts.taxaPresenca / 100) * 1;
   // Contato: max 1 pt
