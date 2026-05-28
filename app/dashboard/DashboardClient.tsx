@@ -21,8 +21,8 @@ const TABS = [
   { id: 'tarefas',    label: 'Tarefas',      icon: '✅', featured: false },
 ] as const;
 
-function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; size?: number }) {
-  const color = active ? '#3B9EF5' : '#ffffff';
+function SidebarIcon({ id, active, size = 26, inactiveColor = '#ffffff' }: { id: string; active: boolean; size?: number; inactiveColor?: string }) {
+  const color = active ? '#3B9EF5' : inactiveColor;
   const s = { stroke: color, strokeWidth: '1.8', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' };
   if (id === 'geral') return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
@@ -133,8 +133,22 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
   return (
     <div className="flex min-h-screen bg-[#080812]">
 
-      {/* ── Sidebar ── */}
-      <aside className="w-[220px] flex-shrink-0 flex flex-col min-h-screen bg-[#06061A] border-r border-[rgba(59,158,245,0.18)] sticky top-0 h-screen">
+      {/* ── Mobile top header ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-[#06061A] border-b border-[rgba(59,158,245,0.18)]">
+        <div className="flex items-center gap-2.5">
+          <Image src="/MD.IA_Logotipo-removebg-preview.png" alt="MD.IA" width={38} height={38} className="rounded-lg object-contain flex-shrink-0" />
+          <div className="flex flex-col leading-none">
+            <span className="font-orbitron text-[9px] font-bold text-[#3B9EF5] tracking-widest uppercase">MD.IA</span>
+            <span className="font-orbitron text-[18px] font-bold text-white tracking-wide mt-0.5">HUB</span>
+          </div>
+        </div>
+        <button onClick={() => openModal()} className="btn-glow px-3 py-1.5 rounded-xl text-white font-sora font-semibold text-xs">
+          + Gerar Link
+        </button>
+      </div>
+
+      {/* ── Sidebar (desktop only) ── */}
+      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col min-h-screen bg-[#06061A] border-r border-[rgba(59,158,245,0.18)] sticky top-0 h-screen">
 
         {/* Logo */}
         <div className="px-5 py-5 border-b border-[rgba(59,158,245,0.12)]">
@@ -197,8 +211,8 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
       </aside>
 
       {/* ── Main content ── */}
-      <main className="flex-1 overflow-auto min-h-screen">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+      <main className="flex-1 overflow-auto min-h-screen mt-[62px] md:mt-0">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-5 md:py-8 pb-24 md:pb-8">
           {activeTab === 'nps' && (
             <div className="flex justify-end mb-5">
               <button onClick={() => openModal()} className="btn-glow px-4 py-2.5 rounded-xl text-white font-sora font-semibold text-sm">
@@ -209,6 +223,30 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
           <TabContent activeTab={activeTab} onOpenModal={openModal} />
         </div>
       </main>
+
+      {/* ── Mobile bottom navigation ── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#06061A] border-t border-[rgba(59,158,245,0.18)]">
+        <div className="flex items-stretch">
+          {TABS.map(tab => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-all relative"
+              >
+                {active && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2px] bg-[#3B9EF5] rounded-full" />
+                )}
+                <SidebarIcon id={tab.id} active={active} size={20} inactiveColor="#a2a2b2" />
+                <span className={`font-sora text-[8px] leading-none ${active ? 'text-[#3B9EF5]' : 'text-[#a2a2b2]'}`}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} />}
     </div>
