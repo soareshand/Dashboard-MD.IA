@@ -2,8 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 
+interface ModalPrefill {
+  quizType?: QuizType;
+  nome?: string;
+  clinica?: string;
+}
+
 interface GenerateLinkModalProps {
   onClose: () => void;
+  initialData?: ModalPrefill;
 }
 
 type QuizType = 'renovacao' | 'call' | 'treinamento' | 'mensal_medico' | 'mensal_equipe';
@@ -51,12 +58,14 @@ const TIPOS_CALL = ['Onboarding', 'Ongoing', 'Suporte'];
 const BTN_ACTIVE = { background: 'linear-gradient(135deg, #2563EB, #3B9EF5)' };
 const INP = 'w-full bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all';
 
-export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
-  const [quizType, setQuizType] = useState<QuizType>('renovacao');
-  const [participante, setParticipante] = useState<Participante>('medico');
-  const [nome, setNome] = useState('');
+export default function GenerateLinkModal({ onClose, initialData }: GenerateLinkModalProps) {
+  const [quizType, setQuizType] = useState<QuizType>(initialData?.quizType ?? 'renovacao');
+  const [participante, setParticipante] = useState<Participante>(
+    initialData?.quizType === 'mensal_equipe' ? 'equipe' : 'medico'
+  );
+  const [nome, setNome] = useState(initialData?.nome ?? '');
   const [genero, setGenero] = useState<Genero>('Dr.');
-  const [clinica, setClinica] = useState('');
+  const [clinica, setClinica] = useState(initialData?.clinica ?? '');
   const [tipoCall, setTipoCall] = useState('');
   const [ferramenta, setFerramenta] = useState('');
   const [loading, setLoading] = useState(false);

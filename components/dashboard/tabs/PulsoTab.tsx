@@ -9,6 +9,12 @@ interface DueItem {
   ultimoEnvio: string | null;
 }
 
+export interface ModalPrefill {
+  quizType: 'mensal_medico' | 'mensal_equipe';
+  nome?: string;
+  clinica?: string;
+}
+
 interface RecentResponse {
   nome: string;
   clinica: string;
@@ -42,20 +48,21 @@ function diasLabel(dias: number | null) {
 }
 
 function DueCard({
-  title, subtitle, accentColor, items, onGerarLink,
+  title, subtitle, accentColor, items, quizType, onGerarLink,
 }: {
   title: string;
   subtitle: string;
   accentColor: string;
   items: DueItem[];
-  onGerarLink: () => void;
+  quizType: 'mensal_medico' | 'mensal_equipe';
+  onGerarLink: (data: ModalPrefill) => void;
 }) {
   return (
     <div className="card-gradient-border flex flex-col gap-4">
       <div className="px-5 pt-5 flex items-start justify-between gap-3">
         <div>
           <h3 className="font-orbitron text-sm font-bold text-white">{title}</h3>
-          <p className="text-[10px] text-[#6060A0] mt-0.5 uppercase tracking-wider">{subtitle}</p>
+          <p className="text-[10px] text-white mt-0.5 uppercase tracking-wider">{subtitle}</p>
         </div>
         <div
           className="px-2.5 py-1 rounded-full text-xs font-orbitron font-bold"
@@ -77,7 +84,7 @@ function DueCard({
               className="flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-sora font-semibold truncate">
+                <p className="text-[#a2a2b2] text-xs font-sora font-semibold truncate">
                   {item.nome ?? item.clinica}
                 </p>
                 {item.nome && item.clinica && (
@@ -91,7 +98,7 @@ function DueCard({
                 </p>
               </div>
               <button
-                onClick={onGerarLink}
+                onClick={() => onGerarLink({ quizType, nome: item.nome, clinica: item.clinica })}
                 className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-sora font-semibold text-white transition-all"
                 style={{ background: `${accentColor}25`, border: `1px solid ${accentColor}40` }}
               >
@@ -148,7 +155,7 @@ function RecentList({ items, emptyText }: { items: RecentResponse[]; emptyText: 
   );
 }
 
-export default function PulsoTab({ onOpenModal }: { onOpenModal: () => void }) {
+export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPrefill) => void }) {
   const [data, setData] = useState<PulsoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -186,7 +193,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: () => void }) {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={onOpenModal}
+            onClick={() => onOpenModal()}
             className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-xs"
           >
             + Gerar Link
@@ -230,6 +237,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: () => void }) {
                 subtitle="Frequência trimestral"
                 accentColor="#3B9EF5"
                 items={data.dueMedico}
+                quizType="mensal_medico"
                 onGerarLink={onOpenModal}
               />
               <DueCard
@@ -237,6 +245,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: () => void }) {
                 subtitle="Frequência mensal"
                 accentColor="#8B5CF6"
                 items={data.dueEquipe}
+                quizType="mensal_equipe"
                 onGerarLink={onOpenModal}
               />
             </div>

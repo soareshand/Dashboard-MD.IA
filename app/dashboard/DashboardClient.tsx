@@ -9,7 +9,7 @@ import FinanceiroTab from '@/components/dashboard/tabs/FinanceiroTab';
 import ClientesTab from '@/components/dashboard/tabs/ClientesTab';
 import PresencaTab from '@/components/dashboard/tabs/PresencaTab';
 import TarefasTab from '@/components/dashboard/tabs/TarefasTab';
-import PulsoTab from '@/components/dashboard/tabs/PulsoTab';
+import PulsoTab, { type ModalPrefill } from '@/components/dashboard/tabs/PulsoTab';
 
 const TABS = [
   { id: 'geral',      label: 'Geral',        icon: '❤️', featured: true  },
@@ -68,7 +68,7 @@ function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; s
 
 type TabId = typeof TABS[number]['id'];
 
-function TabContent({ activeTab, onOpenModal }: { activeTab: TabId; onOpenModal: () => void }) {
+function TabContent({ activeTab, onOpenModal }: { activeTab: TabId; onOpenModal: (d?: ModalPrefill) => void }) {
   return (
     <>
       {activeTab === 'geral'      && <GeralTab />}
@@ -85,6 +85,12 @@ function TabContent({ activeTab, onOpenModal }: { activeTab: TabId; onOpenModal:
 export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
   const [activeTab, setActiveTab] = useState<TabId>('geral');
   const [showModal, setShowModal] = useState(false);
+  const [modalInitialData, setModalInitialData] = useState<ModalPrefill | undefined>(undefined);
+
+  function openModal(data?: ModalPrefill) {
+    setModalInitialData(data);
+    setShowModal(true);
+  }
 
   /* ── Embed mode: compact top-bar + horizontal tabs ── */
   if (isEmbed) {
@@ -95,7 +101,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
             <Image src="/MD.IA_Logotipo-removebg-preview.png" alt="MD.IA" width={36} height={36} className="rounded-xl object-contain" />
             <h1 className="font-orbitron text-sm font-bold text-white">Painel CS — MD.IA</h1>
           </div>
-          <button onClick={() => setShowModal(true)} className="btn-glow px-3 py-1.5 rounded-xl text-white font-sora font-semibold text-xs">
+          <button onClick={() => openModal()} className="btn-glow px-3 py-1.5 rounded-xl text-white font-sora font-semibold text-xs">
             + Gerar Link
           </button>
         </div>
@@ -116,9 +122,9 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
           </div>
         </div>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <TabContent activeTab={activeTab} onOpenModal={() => setShowModal(true)} />
+          <TabContent activeTab={activeTab} onOpenModal={openModal} />
         </main>
-        {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} />}
+        {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} />}
       </div>
     );
   }
@@ -194,16 +200,16 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
         <div className="max-w-6xl mx-auto px-6 py-8">
           {activeTab === 'nps' && (
             <div className="flex justify-end mb-5">
-              <button onClick={() => setShowModal(true)} className="btn-glow px-4 py-2.5 rounded-xl text-white font-sora font-semibold text-sm">
+              <button onClick={() => openModal()} className="btn-glow px-4 py-2.5 rounded-xl text-white font-sora font-semibold text-sm">
                 + Gerar Novo Link
               </button>
             </div>
           )}
-          <TabContent activeTab={activeTab} onOpenModal={() => setShowModal(true)} />
+          <TabContent activeTab={activeTab} onOpenModal={openModal} />
         </div>
       </main>
 
-      {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} />}
+      {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} />}
     </div>
   );
 }
