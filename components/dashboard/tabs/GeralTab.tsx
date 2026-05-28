@@ -41,10 +41,7 @@ function ScoreRing({ score }: { score: number }) {
           style={{ filter: `drop-shadow(0 0 6px ${color}90)` }}
         />
       </svg>
-      <div className="flex flex-col items-center z-10">
-        <span className="font-orbitron font-bold text-lg leading-none" style={{ color }}>{score.toFixed(1)}</span>
-        <span className="text-[10px] text-[#404060] font-mono leading-none mt-0.5">/10</span>
-      </div>
+      <span className="font-orbitron font-bold text-lg leading-none z-10" style={{ color }}>{score.toFixed(1)}</span>
     </div>
   );
 }
@@ -179,21 +176,25 @@ function ScoreGauge({ score }: { score: number }) {
   });
 
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'hidden' }}>
-      {ticks.map((tick, i) => (
-        <line key={i}
-          x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2}
-          stroke={tick.active ? `${color}BB` : 'rgba(255,255,255,0.09)'}
-          strokeWidth={tick.major ? 3.5 : 2} strokeLinecap="round"
-        />
-      ))}
-      <text x={cx} y={cy - 32} textAnchor="middle" fill="white" fontSize="36" fontWeight="bold" fontFamily="'Orbitron', monospace">
-        {score.toFixed(1)}
-      </text>
-      <text x={cx} y={cy - 12} textAnchor="middle" fill="#50507A" fontSize="10" letterSpacing="2" fontFamily="monospace">
-        MÉDIA SCORE
-      </text>
-    </svg>
+    <div className="relative" style={{ width: W, height: H }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'hidden' }}>
+        {ticks.map((tick, i) => (
+          <line key={i}
+            x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2}
+            stroke={tick.active ? `${color}BB` : 'rgba(255,255,255,0.09)'}
+            strokeWidth={tick.major ? 3.5 : 2} strokeLinecap="round"
+          />
+        ))}
+      </svg>
+      <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center" style={{ bottom: '22px' }}>
+        <span className="font-orbitron font-bold text-white leading-none" style={{ fontSize: '2.2rem' }}>
+          {score.toFixed(1)}
+        </span>
+        <span className="font-mono text-[10px] tracking-[2px] mt-1" style={{ color: '#50507A' }}>
+          MÉDIA SCORE
+        </span>
+      </div>
+    </div>
   );
 }
 
