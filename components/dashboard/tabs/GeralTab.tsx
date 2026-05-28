@@ -166,8 +166,8 @@ function ScoreGauge({ score }: { score: number }) {
   const ticks = Array.from({ length: NUM_TICKS + 1 }, (_, i) => {
     const t = i / NUM_TICKS;
     const angle = Math.PI * (1 - t);
-    const rIn = R + strokeW / 2 + 3;
-    const rOut = rIn + (i % 6 === 0 ? 11 : 6);
+    const rIn = R + strokeW / 2 + 2;
+    const rOut = rIn + (i % 6 === 0 ? 18 : 11);
     return {
       x1: cx + rIn * Math.cos(angle),
       y1: cy - rIn * Math.sin(angle),
@@ -184,7 +184,7 @@ function ScoreGauge({ score }: { score: number }) {
         <line key={i}
           x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2}
           stroke={tick.active ? `${color}BB` : 'rgba(255,255,255,0.09)'}
-          strokeWidth={tick.major ? 2 : 1.2} strokeLinecap="round"
+          strokeWidth={tick.major ? 3.5 : 2} strokeLinecap="round"
         />
       ))}
       <text x={cx} y={cy - 32} textAnchor="middle" fill="white" fontSize="36" fontWeight="bold" fontFamily="'Orbitron', monospace">
