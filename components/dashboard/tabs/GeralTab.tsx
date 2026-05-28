@@ -11,7 +11,8 @@ interface CardData {
   produtosAtivos: number;
   npsMedia: number | null;
   npsRenovacao: number | null;
-  npsMensal: number | null;
+  npsMedico: number | null;
+  npsEquipe: number | null;
   npsCall: number | null;
   npsTreinamento: number | null;
   presencas: number | null;
@@ -78,17 +79,19 @@ function quizColor(v: number | null) {
   return v >= 4 ? '#3B9EF5' : v >= 2.5 ? '#8B5CF6' : '#F59E0B';
 }
 
-function QuizBreakdown({ renovacao, mensal, call, treinamento }: {
+function QuizBreakdown({ renovacao, medico, equipe, call, treinamento }: {
   renovacao: number | null;
-  mensal: number | null;
+  medico: number | null;
+  equipe: number | null;
   call: number | null;
   treinamento: number | null;
 }) {
   const items = [
-    { label: 'Renovação', value: renovacao },
-    { label: 'Mensal', value: mensal },
-    { label: 'Pós-Call', value: call },
-    { label: 'Treinamento', value: treinamento },
+    { label: 'Renov.', value: renovacao },
+    { label: 'Médico', value: medico },
+    { label: 'Equipe', value: equipe },
+    { label: 'Call', value: call },
+    { label: 'Treino', value: treinamento },
   ];
   return (
     <div className="space-y-1.5">
@@ -178,7 +181,8 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
 
       <QuizBreakdown
         renovacao={card.npsRenovacao}
-        mensal={card.npsMensal}
+        medico={card.npsMedico}
+        equipe={card.npsEquipe}
         call={card.npsCall}
         treinamento={card.npsTreinamento}
       />

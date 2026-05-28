@@ -11,16 +11,18 @@ const NOTA_KEYS = [
 
 function buildLatestAvgMap(
   rows: Array<Record<string, unknown>>,
-  keys: string[]
+  keys: string[],
+  keyField = 'nome'
 ): Map<string, number> {
   const latest = new Map<string, { ts: Date; avg: number }>();
   for (const r of rows) {
-    const nome = String(r.nome ?? '');
+    const key = String(r[keyField] ?? '');
+    if (!key) continue;
     const ts = new Date(String(r.timestamp ?? 0));
-    const existing = latest.get(nome);
+    const existing = latest.get(key);
     if (!existing || ts > existing.ts) {
       const avg = keys.reduce((s, k) => s + (Number(r[k]) || 0), 0) / keys.length;
-      latest.set(nome, { ts, avg: Math.round(avg * 10) / 10 });
+      latest.set(key, { ts, avg: Math.round(avg * 10) / 10 });
     }
   }
   const result = new Map<string, number>();
@@ -59,7 +61,8 @@ export async function GET() {
       { data: clientesRows },
       { data: presencaRows },
       { data: quizRows },
-      { data: mensalRows },
+      { data: mensalMedicoRows },
+      { data: mensalEquipeRows },
       { data: callRows },
       { data: treinaRows },
       { data: contatoRows },
@@ -69,6 +72,7 @@ export async function GET() {
       supabase.from('presencas').select('medico, sessao, status'),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
       supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nota_crm, nota_automacoes, nota_suporte'),
+      supabase.from('quiz_mensal_equipe_responses').select('clinica, timestamp, nota_crm, nota_automacoes, nota_suporte'),
       supabase.from('quiz_call_responses').select('nome, timestamp, nota_call, nota_cs'),
       supabase.from('quiz_treinamento_responses').select('nome, timestamp, nota_treinamento, nota_clareza'),
       supabase.from('contatos').select('medico, proximo_contato'),
@@ -103,9 +107,14 @@ export async function GET() {
       (quizRows ?? []) as Array<Record<string, unknown>>,
       [...NOTA_KEYS]
     );
-    const mensalByMedico = buildLatestAvgMap(
-      (mensalRows ?? []) as Array<Record<string, unknown>>,
+    const medicoByMedico = buildLatestAvgMap(
+      (mensalMedicoRows ?? []) as Array<Record<string, unknown>>,
       ['nota_crm', 'nota_automacoes', 'nota_suporte']
+    );
+    const equipeByClinica = buildLatestAvgMap(
+      (mensalEquipeRows ?? []) as Array<Record<string, unknown>>,
+      ['nota_crm', 'nota_automacoes', 'nota_suporte'],
+      'clinica'
     );
     const callByMedico = buildLatestAvgMap(
       (callRows ?? []) as Array<Record<string, unknown>>,
@@ -150,11 +159,12 @@ export async function GET() {
       const contatoStatus = contatoByMedico.get(m.nome) ?? null;
 
       const npsRenovacao = renovByMedico.get(m.nome) ?? null;
-      const npsMensal = mensalByMedico.get(m.nome) ?? null;
+      const npsMedico = medicoByMedico.get(m.nome) ?? null;
+      const npsEquipe = m.clinica ? (equipeByClinica.get(m.clinica) ?? null) : null;
       const npsCall = callByMedico.get(m.nome) ?? null;
       const npsTreinamento = treinaByMedico.get(m.nome) ?? null;
 
-      const availableNps = [npsRenovacao, npsMensal, npsCall, npsTreinamento].filter((v): v is number => v !== null);
+      const availableNps = [npsRenovacao, npsMedico, npsEquipe, npsCall, npsTreinamento].filter((v): v is number => v !== null);
       const npsMedia = availableNps.length > 0
         ? Math.round((availableNps.reduce((s, v) => s + v, 0) / availableNps.length) * 10) / 10
         : null;
@@ -174,7 +184,8 @@ export async function GET() {
         produtosAtivos,
         npsMedia,
         npsRenovacao,
-        npsMensal,
+        npsMedico,
+        npsEquipe,
         npsCall,
         npsTreinamento,
         presencas: presenca?.presencas ?? null,
