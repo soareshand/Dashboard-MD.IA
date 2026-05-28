@@ -380,7 +380,7 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               disabled={loading || !metaValid}
               className="w-full py-3 rounded-xl btn-glow text-white font-sora font-semibold text-sm disabled:opacity-60"
             >
-              {loading ? 'Gerando…' : `Gerar Link — ${TABS.find(t => t.id === quizType)?.label}`}
+              {loading ? 'Gerando…' : `Gerar Link — ${ALL_TABS.find(t => t.id === quizType)?.label}`}
             </button>
           </form>
         ) : (

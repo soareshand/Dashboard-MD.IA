@@ -3,8 +3,12 @@ import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const MEDICO_INTERVAL_DAYS = 85; // quarterly with 5-day grace
-const EQUIPE_INTERVAL_DAYS = 25; // monthly with 5-day grace
+const MEDICO_INTERVAL_DAYS = 85;
+const EQUIPE_INTERVAL_DAYS = 25;
+
+function diasDesde(hoje: Date, d: Date): number {
+  return Math.floor((hoje.getTime() - d.getTime()) / 86400000);
+}
 
 export async function GET() {
   try {
@@ -44,15 +48,11 @@ export async function GET() {
       }
     }
 
-    function diasDesde(d: Date): number {
-      return Math.floor((hoje.getTime() - d.getTime()) / 86400000);
-    }
-
     // Médico due list — one entry per active doctor
     const dueMedico = activeClientes
       .map(m => {
         const last = latestMedico.get(m.nome);
-        const diasSemEnvio = last ? diasDesde(last) : null;
+        const diasSemEnvio = last ? diasDesde(hoje, last) : null;
         const due = !last || diasSemEnvio! >= MEDICO_INTERVAL_DAYS;
         return { nome: m.nome, clinica: m.clinica ?? '', diasSemEnvio, ultimoEnvio: last ? last.toISOString().split('T')[0] : null, due };
       })
@@ -67,7 +67,7 @@ export async function GET() {
     const dueEquipe = clinicasUnicas
       .map(clinica => {
         const last = latestEquipe.get(clinica);
-        const diasSemEnvio = last ? diasDesde(last) : null;
+        const diasSemEnvio = last ? diasDesde(hoje, last) : null;
         const due = !last || diasSemEnvio! >= EQUIPE_INTERVAL_DAYS;
         return { clinica, diasSemEnvio, ultimoEnvio: last ? last.toISOString().split('T')[0] : null, due };
       })
