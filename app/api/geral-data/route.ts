@@ -66,7 +66,7 @@ export async function GET() {
       { data: presencaRows },
       { data: quizRows },
       { data: mensalMedicoRows },
-      { data: mensalEquipeRows },
+      { data: mensalEquipeRows, error: equipeErr },
       { data: callRows, error: callErr },
       { data: treinaRows, error: treinaErr },
       { data: contatoRows },
@@ -77,7 +77,7 @@ export async function GET() {
       supabase.from('presencas').select('medico, sessao, status'),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
       supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nps'),
-      supabase.from('quiz_mensal_equipe_responses').select('clinica, timestamp, nota_crm, nota_automacoes, nota_suporte'),
+      supabase.from('quiz_mensal_equipe_responses').select('clinica, timestamp, nps'),
       supabase.from('quiz_call_responses').select('*'),
       supabase.from('quiz_treinamento_responses').select('*'),
       supabase.from('contatos').select('medico, proximo_contato'),
@@ -87,6 +87,7 @@ export async function GET() {
 
     if (callErr) console.error('[geral-data] quiz_call_responses error:', callErr);
     if (treinaErr) console.error('[geral-data] quiz_treinamento_responses error:', treinaErr);
+    if (equipeErr) console.error('[geral-data] quiz_mensal_equipe_responses error:', equipeErr);
 
     const clientes = clientesRows ?? [];
     const totalProdutos = (catalogRows ?? []).length;
@@ -129,11 +130,18 @@ export async function GET() {
       }
       latest.forEach((v, k) => medicoByMedico.set(k, Math.round(v.nps / 2 * 10) / 10));
     }
-    const equipeByClinica = buildLatestAvgMap(
-      (mensalEquipeRows ?? []) as Array<Record<string, unknown>>,
-      ['nota_crm', 'nota_automacoes', 'nota_suporte'],
-      'clinica'
-    );
+    const equipeByClinica = new Map<string, number>();
+    {
+      const latest = new Map<string, { ts: Date; nps: number }>();
+      for (const r of (mensalEquipeRows ?? []) as Array<Record<string, unknown>>) {
+        const clinicaKey = String(r.clinica ?? '').trim();
+        if (!clinicaKey) continue;
+        const ts = new Date(String(r.timestamp ?? 0));
+        const existing = latest.get(clinicaKey);
+        if (!existing || ts > existing.ts) latest.set(clinicaKey, { ts, nps: Number(r.nps) || 0 });
+      }
+      latest.forEach((v, k) => equipeByClinica.set(k, Math.round(v.nps / 2 * 10) / 10));
+    }
     const callAll = (callRows ?? []) as Array<Record<string, unknown>>;
     const callByMedico = buildLatestAvgMap(callAll, ['nota_call', 'nota_cs']);
     const callByClinica = buildLatestAvgMap(
