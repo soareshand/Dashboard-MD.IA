@@ -100,10 +100,12 @@ function ContratoBadge({ status }: { status: string }) {
 
 function ContratoModal({
   initial,
+  membrosAtivos,
   onSave,
   onClose,
 }: {
   initial: (ContratoForm & { id?: string }) | null;
+  membrosAtivos: { nome: string; clinica: string | null }[];
   onSave: () => void;
   onClose: () => void;
 }) {
@@ -181,7 +183,14 @@ function ContratoModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
             <label className={lbl}>Médico *</label>
-            <input value={form.medico} onChange={e => set('medico', e.target.value)} placeholder="Nome do médico" className={inp} />
+            <select value={form.medico} onChange={e => set('medico', e.target.value)} className={inp + ' cursor-pointer'}>
+              <option value="">Selecione o médico…</option>
+              {membrosAtivos.map(m => (
+                <option key={m.nome} value={m.nome}>
+                  {m.clinica ? `${m.clinica} — ${m.nome}` : m.nome}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className={lbl}>Status do Contrato</label>
@@ -258,10 +267,12 @@ function ContratoModal({
 
 function RenovacaoModal({
   initial,
+  membrosAtivos,
   onSave,
   onClose,
 }: {
   initial: (RenovacaoForm & { id?: string }) | null;
+  membrosAtivos: { nome: string; clinica: string | null }[];
   onSave: () => void;
   onClose: () => void;
 }) {
@@ -341,9 +352,16 @@ function RenovacaoModal({
             <label className={lbl}>Data</label>
             <input type="date" value={form.data} onChange={e => set('data', e.target.value)} className={inp} />
           </div>
-          <div>
+          <div className="sm:col-span-2">
             <label className={lbl}>Médico *</label>
-            <input value={form.medico} onChange={e => set('medico', e.target.value)} placeholder="Nome do médico" className={inp} />
+            <select value={form.medico} onChange={e => set('medico', e.target.value)} className={inp + ' cursor-pointer'}>
+              <option value="">Selecione o médico…</option>
+              {membrosAtivos.map(m => (
+                <option key={m.nome} value={m.nome}>
+                  {m.clinica ? `${m.clinica} — ${m.nome}` : m.nome}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className={lbl}>Status do Contrato</label>
@@ -406,6 +424,7 @@ function RenovacaoModal({
 
 export default function FinanceiroTab() {
   const [data, setData] = useState<FinanceiroData | null>(null);
+  const [membrosAtivos, setMembrosAtivos] = useState<{ nome: string; clinica: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTable, setActiveTable] = useState<'contratos' | 'renovacoes'>('contratos');
@@ -414,9 +433,20 @@ export default function FinanceiroTab() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/financeiro-data');
-      if (!res.ok) throw new Error('Erro ao carregar dados financeiros.');
-      setData(await res.json());
+      const [finRes, clientesRes] = await Promise.all([
+        fetch('/api/financeiro-data'),
+        fetch('/api/clientes-data'),
+      ]);
+      if (!finRes.ok) throw new Error('Erro ao carregar dados financeiros.');
+      setData(await finRes.json());
+      if (clientesRes.ok) {
+        const cd = await clientesRes.json();
+        const ativos = (cd.membros ?? [])
+          .filter((m: { situacao: string }) => m.situacao === 'Ativo')
+          .map((m: { nome: string; clinica: string | null }) => ({ nome: m.nome, clinica: m.clinica }))
+          .sort((a: { nome: string }, b: { nome: string }) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        setMembrosAtivos(ativos);
+      }
       setError('');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
@@ -598,6 +628,7 @@ export default function FinanceiroTab() {
       {contratoModal !== false && (
         <ContratoModal
           initial={contratoModal}
+          membrosAtivos={membrosAtivos}
           onSave={fetchData}
           onClose={() => setContratoModal(false)}
         />
@@ -605,6 +636,7 @@ export default function FinanceiroTab() {
       {renovacaoModal !== false && (
         <RenovacaoModal
           initial={renovacaoModal}
+          membrosAtivos={membrosAtivos}
           onSave={fetchData}
           onClose={() => setRenovacaoModal(false)}
         />
