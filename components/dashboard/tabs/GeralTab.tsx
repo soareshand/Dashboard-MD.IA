@@ -155,18 +155,11 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const [animated, setAnimated] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 60);
-    return () => clearTimeout(t);
-  }, []);
 
   const W = 220, H = 126;
   const cx = W / 2, cy = H;
   const R = 88, strokeW = 13;
-  const totalLen = Math.PI * R;
   const progress = Math.min(score / 10, 1);
-  const offset = animated ? totalLen * (1 - progress) : totalLen;
   const color = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
 
   const NUM_TICKS = 30;
@@ -187,19 +180,6 @@ function ScoreGauge({ score }: { score: number }) {
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'hidden' }}>
-      <path
-        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 0 ${cx + R} ${cy}`}
-        fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={strokeW} strokeLinecap="butt"
-      />
-      <path
-        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 0 ${cx + R} ${cy}`}
-        fill="none" stroke={color} strokeWidth={strokeW} strokeLinecap="round"
-        strokeDasharray={totalLen} strokeDashoffset={offset}
-        style={{
-          transition: animated ? 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1), stroke 0.6s ease' : 'none',
-          filter: `drop-shadow(0 0 10px ${color}60)`,
-        }}
-      />
       {ticks.map((tick, i) => (
         <line key={i}
           x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2}
@@ -357,13 +337,6 @@ export default function GeralTab() {
         </div>
       </div>
 
-      {/* Score legend */}
-      <div className="flex items-center gap-4 text-[10px] text-[#404060]">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#3B9EF5]" /> Saudável (≥ 8)</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#8B5CF6]" /> Atenção (5–7.9)</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F59E0B]" /> Crítico (&lt; 5)</span>
-        <span className="text-[#303050] hidden sm:block">Score = Produtos(30%) + NPS(30%) + Presença(20%) + Contato(10%) + Renovação(10%)</span>
-      </div>
 
       {/* Cards grid */}
       {filtered.length === 0 ? (
