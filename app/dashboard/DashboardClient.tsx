@@ -9,6 +9,7 @@ import FinanceiroTab from '@/components/dashboard/tabs/FinanceiroTab';
 import ClientesTab from '@/components/dashboard/tabs/ClientesTab';
 import PresencaTab from '@/components/dashboard/tabs/PresencaTab';
 import TarefasTab from '@/components/dashboard/tabs/TarefasTab';
+import PulsoTab from '@/components/dashboard/tabs/PulsoTab';
 
 const TABS = [
   { id: 'geral',      label: 'Geral',        icon: '❤️', featured: true  },
@@ -17,6 +18,7 @@ const TABS = [
   { id: 'clientes',   label: 'Clientes',     icon: '👥', featured: false },
   { id: 'presenca',   label: 'Presenças',    icon: '📅', featured: false },
   { id: 'tarefas',    label: 'Tarefas',      icon: '✅', featured: false },
+  { id: 'pulso',      label: 'Pulso',        icon: '💬', featured: false },
 ] as const;
 
 function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; size?: number }) {
@@ -50,6 +52,12 @@ function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; s
       <rect x="16" y="3" width="5" height="18" rx="1.5" />
     </svg>
   );
+  if (id === 'pulso') return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <polyline points="7 11 9 9 11 13 13 8 15 11 17 11"/>
+    </svg>
+  );
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...s}>
       <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
@@ -60,7 +68,7 @@ function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; s
 
 type TabId = typeof TABS[number]['id'];
 
-function TabContent({ activeTab }: { activeTab: TabId }) {
+function TabContent({ activeTab, onOpenModal }: { activeTab: TabId; onOpenModal: () => void }) {
   return (
     <>
       {activeTab === 'geral'      && <GeralTab />}
@@ -69,6 +77,7 @@ function TabContent({ activeTab }: { activeTab: TabId }) {
       {activeTab === 'clientes'   && <ClientesTab />}
       {activeTab === 'presenca'   && <PresencaTab />}
       {activeTab === 'tarefas'    && <TarefasTab />}
+      {activeTab === 'pulso'      && <PulsoTab onOpenModal={onOpenModal} />}
     </>
   );
 }
@@ -107,7 +116,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
           </div>
         </div>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <TabContent activeTab={activeTab} />
+          <TabContent activeTab={activeTab} onOpenModal={() => setShowModal(true)} />
         </main>
         {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} />}
       </div>
@@ -190,7 +199,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
               </button>
             </div>
           )}
-          <TabContent activeTab={activeTab} />
+          <TabContent activeTab={activeTab} onOpenModal={() => setShowModal(true)} />
         </div>
       </main>
 

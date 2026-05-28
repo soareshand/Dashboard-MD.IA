@@ -6,7 +6,7 @@ interface GenerateLinkModalProps {
   onClose: () => void;
 }
 
-type QuizType = 'renovacao' | 'call' | 'treinamento';
+type QuizType = 'renovacao' | 'call' | 'treinamento' | 'mensal_medico' | 'mensal_equipe';
 type Genero = 'Dr.' | 'Dra.';
 type Participante = 'medico' | 'equipe';
 
@@ -15,20 +15,31 @@ interface MedicoOpcao {
   clinica: string;
 }
 
-const TABS: { id: QuizType; label: string }[] = [
-  { id: 'renovacao',   label: 'Renovação'       },
-  { id: 'call',        label: 'Pós-Call'         },
-  { id: 'treinamento', label: 'Pós-Treinamento'  },
+const TABS_ROW1: { id: QuizType; label: string }[] = [
+  { id: 'renovacao',   label: 'Renovação'      },
+  { id: 'call',        label: 'Pós-Call'        },
+  { id: 'treinamento', label: 'Pós-Treino'      },
 ];
+const TABS_ROW2: { id: QuizType; label: string }[] = [
+  { id: 'mensal_medico', label: 'Pulso Médico' },
+  { id: 'mensal_equipe', label: 'Pulso Equipe' },
+];
+const ALL_TABS = [...TABS_ROW1, ...TABS_ROW2];
 
 function TabIcon({ id, active }: { id: QuizType; active: boolean }) {
   const c = active ? '#ffffff' : '#6B7A8D';
-  const s = { width: 17, height: 17, viewBox: '0 0 24 24' as const, fill: 'none' as const, stroke: c, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  const s = { width: 15, height: 15, viewBox: '0 0 24 24' as const, fill: 'none' as const, stroke: c, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   if (id === 'renovacao') return (
     <svg {...s}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
   );
   if (id === 'call') return (
     <svg {...s}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l1-1a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
+  );
+  if (id === 'mensal_medico') return (
+    <svg {...s}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+  );
+  if (id === 'mensal_equipe') return (
+    <svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   );
   return (
     <svg {...s}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -99,6 +110,9 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
     setClinica('');
     setError('');
     setResult(null);
+    // For Pulso types, force the right participante
+    if (tab === 'mensal_medico') setParticipante('medico');
+    if (tab === 'mensal_equipe') setParticipante('equipe');
   }
 
   function handleParticipanteChange(p: Participante) {
@@ -140,14 +154,20 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
   }
 
   function buildWhatsAppMessage(url: string): string {
-    const isMedicoFlow = quizType === 'renovacao' || participante === 'medico';
-    const saudacao = isMedicoFlow ? `${genero} ${getPrimeiroNome(nome)}` : nome.trim().split(' ')[0];
+    const isMed = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico';
+    const saudacao = isMed ? `${genero} ${getPrimeiroNome(nome)}` : nome.trim().split(' ')[0];
     if (quizType === 'call') {
       return `Olá, ${saudacao}! 👋\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação é essencial para melhorarmos cada vez mais! 🙏\n\n🔗 ${url}`;
     }
     if (quizType === 'treinamento') {
       const tool = ferramenta.trim() || 'a ferramenta';
       return `Olá, ${saudacao}! 👋\n\nObrigado pela disponibilidade no treinamento de ${tool}! Queremos saber como foi a sua experiência.\n\nPreparamos um formulário rápido — leva menos de 2 minutinhos. Sua avaliação nos ajuda a oferecer treinamentos cada vez melhores! 🙏\n\n🔗 ${url}`;
+    }
+    if (quizType === 'mensal_medico') {
+      return `Olá, ${saudacao}! Tudo bem?\n\nTodo mês acompanhamos de perto a evolução da sua clínica, e adoraríamos ouvir você!\n\nPreparamos uma avaliação rápida — são apenas 4 perguntinhas, leva menos de 2 minutinhos. Seu feedback faz toda a diferença para continuarmos evoluindo juntos. 🙏\n\n🔗 ${url}`;
+    }
+    if (quizType === 'mensal_equipe') {
+      return `Olá, ${saudacao}! 👋\n\nTodo mês colhemos o feedback da equipe para garantir que tudo está funcionando bem e identificar onde podemos melhorar.\n\nPreparamos uma avaliação rápida — são apenas 4 perguntinhas, leva menos de 2 minutinhos. 🙏\n\n🔗 ${url}`;
     }
     return `Olá, ${saudacao}! Tudo bem?\n\nPassando para avisar que a sua mentoria da MD.IA já está chegando ao fim. Preparei um formulário onde gostaríamos de ouvir a sua experiência ao longo da jornada — seus objetivos, resultados percebidos, avaliação das ferramentas e mentorias, além da intenção de renovação.\n\nSegue o link: ${url}\n\nO seu retorno é muito importante para nós e nos ajuda a evoluir cada vez mais. Qualquer dúvida, estou à disposição. Muito obrigado!`;
   }
@@ -159,10 +179,12 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
     setTimeout(() => setCopiedMsg(false), 2000);
   }
 
-  const isMedicoFlow = quizType === 'renovacao' || participante === 'medico';
+  const isMedicoFlow = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico';
 
   const metaValid =
     quizType === 'renovacao' ||
+    quizType === 'mensal_medico' ||
+    quizType === 'mensal_equipe' ||
     (quizType === 'call' && tipoCall !== '') ||
     (quizType === 'treinamento' && ferramenta.trim() !== '');
 
@@ -178,28 +200,46 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
         </div>
 
         {/* Type tabs */}
-        <div className="flex gap-1 bg-[#0D0D1A] rounded-xl p-1 mb-5">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-sora transition-all ${
-                quizType === tab.id ? 'text-white shadow-md' : 'text-[#A0A0B0] hover:text-white'
-              }`}
-              style={quizType === tab.id ? BTN_ACTIVE : {}}
-            >
-              <TabIcon id={tab.id} active={quizType === tab.id} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
+        <div className="space-y-1 mb-5">
+          <div className="flex gap-1 bg-[#0D0D1A] rounded-xl p-1">
+            {TABS_ROW1.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-sora transition-all ${
+                  quizType === tab.id ? 'text-white shadow-md' : 'text-[#A0A0B0] hover:text-white'
+                }`}
+                style={quizType === tab.id ? BTN_ACTIVE : {}}
+              >
+                <TabIcon id={tab.id} active={quizType === tab.id} />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 bg-[#0D0D1A] rounded-xl p-1">
+            {TABS_ROW2.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-sora transition-all ${
+                  quizType === tab.id ? 'text-white shadow-md' : 'text-[#A0A0B0] hover:text-white'
+                }`}
+                style={quizType === tab.id ? { background: 'linear-gradient(135deg, #6D28D9, #8B5CF6)' } : {}}
+              >
+                <TabIcon id={tab.id} active={quizType === tab.id} />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Participante toggle — só para call e treinamento */}
-            {quizType !== 'renovacao' && (
+            {/* Participante toggle — só para call e treinamento (pulso tem tipo fixo) */}
+            {quizType !== 'renovacao' && quizType !== 'mensal_medico' && quizType !== 'mensal_equipe' && (
               <div>
                 <label className="text-xs text-[#A0A0B0] mb-1.5 block">Participante</label>
                 <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)]">
@@ -349,11 +389,12 @@ export default function GenerateLinkModal({ onClose }: GenerateLinkModalProps) {
               <div>
                 <p className="text-[#3B9EF5] font-medium text-sm">Link gerado!</p>
                 <p className="text-[#93C5FD]/70 text-xs mt-0.5">
-                  <TabIcon id={quizType} active={false} />{' '}
-                  {TABS.find(t => t.id === quizType)?.label}
+                  {ALL_TABS.find(t => t.id === quizType)?.label}
                   {quizType === 'call' && tipoCall ? ` · ${tipoCall}` : ''}
                   {quizType === 'treinamento' && ferramenta ? ` · ${ferramenta}` : ''}
-                  {quizType !== 'renovacao' ? ` · ${participante === 'medico' ? 'Médico(a)' : 'Equipe'}` : ''}
+                  {quizType !== 'renovacao' && quizType !== 'mensal_medico' && quizType !== 'mensal_equipe'
+                    ? ` · ${participante === 'medico' ? 'Médico(a)' : 'Equipe'}`
+                    : ''}
                 </p>
               </div>
             </div>
