@@ -186,7 +186,7 @@ function ScoreGauge({ score }: { score: number }) {
           />
         ))}
       </svg>
-      <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center" style={{ bottom: '22px' }}>
+      <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center" style={{ bottom: '4px' }}>
         <span className="font-orbitron font-bold text-white leading-none" style={{ fontSize: '2.2rem' }}>
           {score.toFixed(1)}
         </span>
