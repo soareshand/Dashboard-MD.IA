@@ -25,7 +25,7 @@ function npsColor(n: number) {
 }
 
 function npsLabel(n: number) {
-  return n >= 9 ? 'Promotor 🌟' : n >= 7 ? 'Neutro 🙂' : 'Detrator 🚩';
+  return n >= 9 ? 'Promotor' : n >= 7 ? 'Neutro' : 'Detrator';
 }
 
 function conditionalQuestion(nps: number) {

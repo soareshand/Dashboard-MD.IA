@@ -6,12 +6,12 @@ import ProgressBar from '@/components/quiz/ProgressBar';
 const TOTAL_STEPS = 4;
 
 const RESULTADO_OPTIONS = [
-  { emoji: '📈', label: 'Faturamento' },
-  { emoji: '📅', label: 'Agenda mais cheia' },
-  { emoji: '🚫', label: 'Menos no-show' },
-  { emoji: '👥', label: 'Equipe mais organizada' },
-  { emoji: '⏱', label: 'Menos tempo operacional' },
-  { emoji: '😐', label: 'Não percebi evolução ainda' },
+  'Faturamento',
+  'Agenda mais cheia',
+  'Menos no-show',
+  'Equipe mais organizada',
+  'Menos tempo operacional',
+  'Não percebi evolução ainda',
 ];
 
 const ROTATING_QUESTIONS = [
@@ -26,7 +26,7 @@ function npsColor(n: number) {
 }
 
 function npsLabel(n: number) {
-  return n >= 9 ? 'Promotor 🌟' : n >= 7 ? 'Neutro 🙂' : 'Detrator 🚩';
+  return n >= 9 ? 'Promotor' : n >= 7 ? 'Neutro' : 'Detrator';
 }
 
 function conditionalQuestion(nps: number) {
@@ -97,7 +97,7 @@ export default function QuizMensalMedicoClient({
   const temOutro = resultadoSelecionado.includes('Outro');
 
   function toggleResultado(val: string) {
-    const EXCLUSIVE = '😐 Não percebi evolução ainda';
+    const EXCLUSIVE = 'Não percebi evolução ainda';
     if (val === EXCLUSIVE) {
       setResultadoSelecionado(prev => prev.includes(EXCLUSIVE) ? [] : [EXCLUSIVE]);
       return;
@@ -211,8 +211,7 @@ export default function QuizMensalMedicoClient({
             <p className="text-[#6060A0] text-xs mt-1.5">Pode marcar mais de uma opção.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {RESULTADO_OPTIONS.map(opt => {
-              const val = `${opt.emoji} ${opt.label}`;
+            {RESULTADO_OPTIONS.map(val => {
               const isSelected = resultadoSelecionado.includes(val);
               return (
                 <button
@@ -240,7 +239,7 @@ export default function QuizMensalMedicoClient({
               }`}
               style={temOutro ? { background: 'linear-gradient(135deg, #7C3AED, #8B5CF6)' } : {}}
             >
-              ✏️ Outro
+              Outro
             </button>
           </div>
           {temOutro && (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 
 interface DueItem {
   nome?: string;
@@ -15,18 +16,57 @@ export interface ModalPrefill {
   clinica?: string;
 }
 
-interface RecentResponse {
+interface MedicoResponse {
   nome: string;
   clinica: string;
   nps: number;
+  nps_resposta: string;
+  resultado_percebido: string;
+  resultado_percebido_outro: string;
+  pergunta_rotativa: number | null;
+  pergunta_rotativa_resposta: string;
+  timestamp: string;
+}
+
+interface EquipeResponse {
+  nome: string;
+  clinica: string;
+  nps: number;
+  nps_resposta: string;
+  nota_crm: number | null;
+  nota_automacoes: number | null;
+  nota_suporte: number | null;
+  pergunta_rotativa: number | null;
+  pergunta_rotativa_resposta: string;
   timestamp: string;
 }
 
 interface PulsoData {
   dueMedico: DueItem[];
   dueEquipe: DueItem[];
-  recentMedico: RecentResponse[];
-  recentEquipe: RecentResponse[];
+  recentMedico: MedicoResponse[];
+  recentEquipe: EquipeResponse[];
+}
+
+const ROTATING_MEDICO = [
+  'Qual problema da sua clínica ainda tira seu sono?',
+  'Se pudéssemos criar uma nova automação pra você, qual seria?',
+  'Qual conteúdo ou treinamento faria diferença para o time da sua clínica?',
+  'O que seu time de recepção mais precisa de apoio hoje?',
+];
+
+const ROTATING_EQUIPE = [
+  'O que mais travou o trabalho de vocês este mês?',
+  'Se pudéssemos automatizar uma tarefa do dia a dia, qual seria?',
+  'Qual treinamento faria diferença para a equipe hoje?',
+  'Como está a comunicação entre vocês e a equipe MD.IA?',
+];
+
+const PILLAR_SCALE = ['Muito ruim', 'Ruim', 'Regular', 'Bom', 'Excelente'];
+
+function getRotatingQuestion(questions: string[], month: number | null): string {
+  if (!month) return '—';
+  return questions[(month - 1) % 4];
 }
 
 function npsColor(n: number) {
@@ -37,8 +77,26 @@ function npsCategory(n: number) {
   return n >= 9 ? 'Promotor' : n >= 7 ? 'Neutro' : 'Detrator';
 }
 
+function npsConditionalMedico(nps: number) {
+  if (nps >= 9) return 'O que mais gerou resultado para você e sua clínica este mês?';
+  if (nps >= 7) return 'O que precisaria melhorar para você nos dar um 10?';
+  return 'O que está te frustrando hoje? Queremos entender.';
+}
+
+function npsConditionalEquipe(nps: number) {
+  if (nps >= 9) return 'O que tem funcionado melhor no dia a dia de vocês?';
+  if (nps >= 7) return 'O que poderia ser melhor no nosso suporte ou nas ferramentas?';
+  return 'O que está travando o trabalho de vocês? Pode ser direto.';
+}
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+}
+
+function formatDateFull(iso: string) {
+  try {
+    return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(iso));
+  } catch { return iso; }
 }
 
 function diasLabel(dias: number | null) {
@@ -46,6 +104,131 @@ function diasLabel(dias: number | null) {
   if (dias === 0) return 'Hoje';
   return `Há ${dias} dia${dias === 1 ? '' : 's'}`;
 }
+
+// ── Detail modal ──────────────────────────────────────────────────────────────
+
+function MField({ label, value }: { label: string; value: string | number | null | undefined }) {
+  const display = value === null || value === undefined || value === '' ? '—' : String(value);
+  return (
+    <div className="flex gap-2">
+      <span className="text-[#A0A0B0] text-xs w-48 flex-shrink-0">{label}:</span>
+      <span className="text-white text-xs flex-1 leading-relaxed">{display}</span>
+    </div>
+  );
+}
+
+function MSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="mb-5">
+      <h4 className="font-orbitron text-xs text-[#6EC6FF] uppercase tracking-wider mb-2">{title}</h4>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function DetailModal({ title, subtitle, onClose, children }: {
+  title: string; subtitle: string; onClose: () => void; children: ReactNode;
+}) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="card-gradient-border w-full max-w-lg max-h-[85vh] overflow-y-auto p-6">
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h3 className="font-orbitron text-lg font-bold text-white">{title}</h3>
+            <p className="text-[#A0A0B0] text-sm">{subtitle}</p>
+          </div>
+          <button onClick={onClose} className="text-[#A0A0B0] hover:text-white text-xl transition-colors ml-4 flex-shrink-0">✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MedicoDetailModal({ row, onClose }: { row: MedicoResponse; onClose: () => void }) {
+  return (
+    <DetailModal
+      title={row.nome}
+      subtitle={`${row.clinica} · ${formatDateFull(row.timestamp)}`}
+      onClose={onClose}
+    >
+      <MSection title="NPS">
+        <MField label="Nota" value={`${row.nps}/10 — ${npsCategory(row.nps)}`} />
+        <div className="flex gap-2 mt-1">
+          <span className="text-[#A0A0B0] text-xs w-48 flex-shrink-0">{npsConditionalMedico(row.nps)}:</span>
+          <span className="text-white text-xs flex-1 leading-relaxed">{row.nps_resposta || '—'}</span>
+        </div>
+      </MSection>
+      <MSection title="Resultado Percebido">
+        <MField label="Selecionados" value={row.resultado_percebido || '—'} />
+        {row.resultado_percebido_outro && (
+          <MField label="Outro (campo livre)" value={row.resultado_percebido_outro} />
+        )}
+      </MSection>
+      {row.pergunta_rotativa && (
+        <MSection title="Pergunta do Mês">
+          <div className="flex gap-2">
+            <span className="text-[#A0A0B0] text-xs w-48 flex-shrink-0">
+              {getRotatingQuestion(ROTATING_MEDICO, row.pergunta_rotativa)}:
+            </span>
+            <span className="text-white text-xs flex-1 leading-relaxed">
+              {row.pergunta_rotativa_resposta || '—'}
+            </span>
+          </div>
+        </MSection>
+      )}
+    </DetailModal>
+  );
+}
+
+function EquipeDetailModal({ row, onClose }: { row: EquipeResponse; onClose: () => void }) {
+  function pillarLabel(val: number | null) {
+    if (val === null) return '—';
+    return `${val}/5 — ${PILLAR_SCALE[val - 1]}`;
+  }
+  return (
+    <DetailModal
+      title={row.nome}
+      subtitle={`${row.clinica} · ${formatDateFull(row.timestamp)}`}
+      onClose={onClose}
+    >
+      <MSection title="NPS">
+        <MField label="Nota" value={`${row.nps}/10 — ${npsCategory(row.nps)}`} />
+        <div className="flex gap-2 mt-1">
+          <span className="text-[#A0A0B0] text-xs w-48 flex-shrink-0">{npsConditionalEquipe(row.nps)}:</span>
+          <span className="text-white text-xs flex-1 leading-relaxed">{row.nps_resposta || '—'}</span>
+        </div>
+      </MSection>
+      <MSection title="Avaliação dos Pilares">
+        <MField label="CRM" value={pillarLabel(row.nota_crm)} />
+        <MField label="Automações e IA" value={pillarLabel(row.nota_automacoes)} />
+        <MField label="Suporte MD.IA" value={pillarLabel(row.nota_suporte)} />
+      </MSection>
+      {row.pergunta_rotativa && (
+        <MSection title="Pergunta do Mês">
+          <div className="flex gap-2">
+            <span className="text-[#A0A0B0] text-xs w-48 flex-shrink-0">
+              {getRotatingQuestion(ROTATING_EQUIPE, row.pergunta_rotativa)}:
+            </span>
+            <span className="text-white text-xs flex-1 leading-relaxed">
+              {row.pergunta_rotativa_resposta || '—'}
+            </span>
+          </div>
+        </MSection>
+      )}
+    </DetailModal>
+  );
+}
+
+// ── DueCard ───────────────────────────────────────────────────────────────────
 
 function DueCard({
   title, subtitle, accentColor, items, quizType, onGerarLink,
@@ -74,7 +257,7 @@ function DueCard({
 
       {items.length === 0 ? (
         <div className="px-5 pb-5 text-center text-[#3B9EF5] text-sm">
-          ✅ Todas em dia!
+          Todas em dia!
         </div>
       ) : (
         <div className="px-5 pb-5 space-y-2 max-h-64 overflow-y-auto scrollbar-blue">
@@ -112,35 +295,35 @@ function DueCard({
   );
 }
 
+// ── Recent lists ──────────────────────────────────────────────────────────────
+
 function NpsBar({ value }: { value: number }) {
   const color = npsColor(value);
   return (
     <div className="flex items-center gap-2">
-      <div
-        className="font-orbitron font-bold text-sm w-6 text-center"
-        style={{ color }}
-      >
+      <div className="font-orbitron font-bold text-sm w-6 text-center" style={{ color }}>
         {value}
       </div>
       <div className="flex-1 h-1.5 rounded-full bg-[rgba(255,255,255,0.05)]">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${(value / 10) * 100}%`, background: color }}
-        />
+        <div className="h-full rounded-full transition-all" style={{ width: `${(value / 10) * 100}%`, background: color }} />
       </div>
       <span className="text-[10px] text-[#50507A]">{npsCategory(value)}</span>
     </div>
   );
 }
 
-function RecentList({ items, emptyText }: { items: RecentResponse[]; emptyText: string }) {
+function MedicoRecentList({ items, onSelect }: { items: MedicoResponse[]; onSelect: (r: MedicoResponse) => void }) {
   if (items.length === 0) {
-    return <p className="text-[#404060] text-sm text-center py-4">{emptyText}</p>;
+    return <p className="text-[#404060] text-sm text-center py-4">Nenhuma resposta de médicos ainda.</p>;
   }
   return (
     <div className="space-y-2">
       {items.map((r, i) => (
-        <div key={i} className="py-3 px-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] space-y-2">
+        <div
+          key={i}
+          onClick={() => onSelect(r)}
+          className="py-3 px-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] space-y-2 cursor-pointer hover:bg-[rgba(59,158,245,0.05)] hover:border-[rgba(59,158,245,0.15)] transition-all"
+        >
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-white text-xs font-sora font-semibold truncate">{r.nome}</p>
@@ -155,11 +338,41 @@ function RecentList({ items, emptyText }: { items: RecentResponse[]; emptyText: 
   );
 }
 
+function EquipeRecentList({ items, onSelect }: { items: EquipeResponse[]; onSelect: (r: EquipeResponse) => void }) {
+  if (items.length === 0) {
+    return <p className="text-[#404060] text-sm text-center py-4">Nenhuma resposta de equipes ainda.</p>;
+  }
+  return (
+    <div className="space-y-2">
+      {items.map((r, i) => (
+        <div
+          key={i}
+          onClick={() => onSelect(r)}
+          className="py-3 px-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] space-y-2 cursor-pointer hover:bg-[rgba(139,92,246,0.05)] hover:border-[rgba(139,92,246,0.15)] transition-all"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-xs font-sora font-semibold truncate">{r.nome}</p>
+              {r.clinica && <p className="text-[#6060A0] text-[10px] truncate">{r.clinica}</p>}
+            </div>
+            <span className="text-[10px] text-[#404060] whitespace-nowrap">{formatDate(r.timestamp)}</span>
+          </div>
+          <NpsBar value={r.nps} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Main tab ──────────────────────────────────────────────────────────────────
+
 export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPrefill) => void }) {
   const [data, setData] = useState<PulsoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeRecent, setActiveRecent] = useState<'medico' | 'equipe'>('medico');
+  const [selectedMedico, setSelectedMedico] = useState<MedicoResponse | null>(null);
+  const [selectedEquipe, setSelectedEquipe] = useState<EquipeResponse | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -273,14 +486,17 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPr
             </div>
             <div className="card-gradient-border p-5">
               {activeRecent === 'medico' ? (
-                <RecentList items={data.recentMedico} emptyText="Nenhuma resposta de médicos ainda." />
+                <MedicoRecentList items={data.recentMedico} onSelect={setSelectedMedico} />
               ) : (
-                <RecentList items={data.recentEquipe} emptyText="Nenhuma resposta de equipes ainda." />
+                <EquipeRecentList items={data.recentEquipe} onSelect={setSelectedEquipe} />
               )}
             </div>
           </div>
         </>
       )}
+
+      {selectedMedico && <MedicoDetailModal row={selectedMedico} onClose={() => setSelectedMedico(null)} />}
+      {selectedEquipe && <EquipeDetailModal row={selectedEquipe} onClose={() => setSelectedEquipe(null)} />}
     </div>
   );
 }

@@ -25,8 +25,8 @@ export async function GET() {
       supabase.from('clientes').select('nome, clinica').eq('situacao', 'Ativo'),
       supabase.from('tokens').select('cliente_nome, clinica, created_at').eq('quiz_type', 'mensal_medico').order('created_at', { ascending: false }),
       supabase.from('tokens').select('clinica, created_at').eq('quiz_type', 'mensal_equipe').order('created_at', { ascending: false }),
-      supabase.from('quiz_mensal_medico_responses').select('nome, clinica, nps, timestamp').order('timestamp', { ascending: false }).limit(10),
-      supabase.from('quiz_mensal_equipe_responses').select('nome, clinica, nps, timestamp').order('timestamp', { ascending: false }).limit(10),
+      supabase.from('quiz_mensal_medico_responses').select('*').order('timestamp', { ascending: false }).limit(10),
+      supabase.from('quiz_mensal_equipe_responses').select('*').order('timestamp', { ascending: false }).limit(10),
     ]);
 
     const activeClientes = clientes ?? [];
