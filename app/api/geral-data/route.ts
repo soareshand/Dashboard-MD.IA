@@ -16,7 +16,7 @@ function buildLatestAvgMap(
 ): Map<string, number> {
   const latest = new Map<string, { ts: Date; avg: number }>();
   for (const r of rows) {
-    const key = String(r[keyField] ?? '');
+    const key = String(r[keyField] ?? '').trim();
     if (!key) continue;
     const ts = new Date(String(r.timestamp ?? 0));
     const existing = latest.get(key);
@@ -63,8 +63,8 @@ export async function GET() {
       { data: quizRows },
       { data: mensalMedicoRows },
       { data: mensalEquipeRows },
-      { data: callRows },
-      { data: treinaRows },
+      { data: callRows, error: callErr },
+      { data: treinaRows, error: treinaErr },
       { data: contatoRows },
       { data: catalogRows },
     ] = await Promise.all([
@@ -73,11 +73,14 @@ export async function GET() {
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
       supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nps'),
       supabase.from('quiz_mensal_equipe_responses').select('clinica, timestamp, nota_crm, nota_automacoes, nota_suporte'),
-      supabase.from('quiz_call_responses').select('nome, timestamp, nota_call, nota_cs'),
-      supabase.from('quiz_treinamento_responses').select('nome, timestamp, nota_treinamento, nota_clareza'),
+      supabase.from('quiz_call_responses').select('*'),
+      supabase.from('quiz_treinamento_responses').select('*'),
       supabase.from('contatos').select('medico, proximo_contato'),
       supabase.from('produtos_catalogo').select('id, nome, ordem').order('ordem'),
     ]);
+
+    if (callErr) console.error('[geral-data] quiz_call_responses error:', callErr);
+    if (treinaErr) console.error('[geral-data] quiz_treinamento_responses error:', treinaErr);
 
     const clientes = clientesRows ?? [];
     const totalProdutos = (catalogRows ?? []).length;
@@ -112,7 +115,7 @@ export async function GET() {
     {
       const latest = new Map<string, { ts: Date; nps: number }>();
       for (const r of (mensalMedicoRows ?? []) as Array<Record<string, unknown>>) {
-        const nome = String(r.nome ?? '');
+        const nome = String(r.nome ?? '').trim();
         if (!nome) continue;
         const ts = new Date(String(r.timestamp ?? 0));
         const existing = latest.get(nome);
@@ -125,13 +128,20 @@ export async function GET() {
       ['nota_crm', 'nota_automacoes', 'nota_suporte'],
       'clinica'
     );
-    const callByMedico = buildLatestAvgMap(
-      (callRows ?? []) as Array<Record<string, unknown>>,
-      ['nota_call', 'nota_cs']
+    const callAll = (callRows ?? []) as Array<Record<string, unknown>>;
+    const callByMedico = buildLatestAvgMap(callAll, ['nota_call', 'nota_cs']);
+    const callByClinica = buildLatestAvgMap(
+      callAll.filter(r => String(r.respondente ?? '') === 'Equipe da clínica'),
+      ['nota_call', 'nota_cs'],
+      'clinica'
     );
-    const treinaByMedico = buildLatestAvgMap(
-      (treinaRows ?? []) as Array<Record<string, unknown>>,
-      ['nota_treinamento', 'nota_clareza']
+
+    const treinaAll = (treinaRows ?? []) as Array<Record<string, unknown>>;
+    const treinaByMedico = buildLatestAvgMap(treinaAll, ['nota_treinamento', 'nota_clareza']);
+    const treinaByClinica = buildLatestAvgMap(
+      treinaAll.filter(r => String(r.respondente ?? '') === 'Equipe da clínica'),
+      ['nota_treinamento', 'nota_clareza'],
+      'clinica'
     );
 
     // Contato status per medico (computed from proximo_contato)
@@ -170,8 +180,8 @@ export async function GET() {
       const npsRenovacao = renovByMedico.get(m.nome) ?? null;
       const npsMedico = medicoByMedico.get(m.nome) ?? null;
       const npsEquipe = m.clinica ? (equipeByClinica.get(m.clinica) ?? null) : null;
-      const npsCall = callByMedico.get(m.nome) ?? null;
-      const npsTreinamento = treinaByMedico.get(m.nome) ?? null;
+      const npsCall = callByMedico.get(m.nome) ?? (m.clinica ? callByClinica.get(m.clinica) : null) ?? null;
+      const npsTreinamento = treinaByMedico.get(m.nome) ?? (m.clinica ? treinaByClinica.get(m.clinica) : null) ?? null;
 
       const availableNps = [npsRenovacao, npsMedico, npsEquipe, npsCall, npsTreinamento].filter((v): v is number => v !== null);
       const npsMedia = availableNps.length > 0
