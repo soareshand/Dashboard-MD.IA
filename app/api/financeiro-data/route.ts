@@ -16,7 +16,7 @@ export async function GET() {
     const cList = contratos ?? [];
     const rList = renovacoes ?? [];
 
-    const pagos = cList.filter(c => c.status_financeiro?.toLowerCase() === 'pago');
+    const pagos = cList.filter(c => ['pago', 'permuta'].includes(c.status_financeiro?.toLowerCase() ?? ''));
     const emAberto = cList.filter(c => c.status_financeiro?.toLowerCase() === 'em aberto');
     const mrr = cList.reduce((s, c) => s + (Number(c.valor) || 0), 0);
 
