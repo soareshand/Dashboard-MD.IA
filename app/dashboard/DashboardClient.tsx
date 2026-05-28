@@ -142,13 +142,14 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
             <Image
               src="/MD.IA_Logotipo-removebg-preview.png"
               alt="MD.IA"
-              width={52}
-              height={52}
+              width={64}
+              height={64}
               className="rounded-xl object-contain flex-shrink-0"
             />
-            <div className="flex flex-col">
-              <span className="font-orbitron text-[11px] font-bold text-[#3B9EF5] tracking-widest uppercase leading-none">MD.IA</span>
-              <span className="font-orbitron text-sm font-bold text-white tracking-wide leading-snug mt-0.5">Painel CS</span>
+            <div className="flex flex-col leading-none">
+              <span className="font-orbitron text-[11px] font-bold text-[#3B9EF5] tracking-widest uppercase">MD.IA</span>
+              <span className="font-orbitron text-[26px] font-bold text-white tracking-wide mt-0.5">HUB</span>
+              <span className="font-orbitron text-[8.5px] font-normal text-white tracking-[0.06em] mt-0.5">Customer Success</span>
             </div>
           </div>
         </div>
