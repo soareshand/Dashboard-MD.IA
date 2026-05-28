@@ -84,11 +84,11 @@ function DueCard({
               className="flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-[#a2a2b2] text-xs font-sora font-semibold truncate">
+                <p className="text-white text-xs font-sora font-semibold truncate">
                   {item.nome ?? item.clinica}
                 </p>
                 {item.nome && item.clinica && (
-                  <p className="text-[#6060A0] text-[10px] truncate">{item.clinica}</p>
+                  <p className="text-[#a2a2b2] text-[10px] truncate">{item.clinica}</p>
                 )}
                 <p
                   className="text-[10px] mt-0.5 font-medium"
@@ -228,7 +228,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPr
         <>
           {/* Pendências */}
           <div>
-            <h3 className="text-xs font-sora font-semibold text-[#6060A0] uppercase tracking-widest mb-3">
+            <h3 className="text-xs font-sora font-semibold text-white uppercase tracking-widest mb-3">
               Pendências de Envio
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -254,7 +254,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPr
           {/* Respostas Recentes */}
           <div>
             <div className="flex items-center gap-4 mb-3">
-              <h3 className="text-xs font-sora font-semibold text-[#6060A0] uppercase tracking-widest">
+              <h3 className="text-xs font-sora font-semibold text-white uppercase tracking-widest">
                 Respostas Recentes
               </h3>
               <div className="card-gradient-border p-0.5 flex gap-0.5 rounded-lg">
