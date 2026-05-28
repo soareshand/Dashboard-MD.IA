@@ -188,6 +188,7 @@ function ContratoModal({
             <select value={form.statusContrato} onChange={e => set('statusContrato', e.target.value)} className={inp + ' cursor-pointer'}>
               <option value="Enviado">Enviado</option>
               <option value="Assinado">Assinado</option>
+              <option value="Não precisa">Não precisa</option>
             </select>
           </div>
           <div>
@@ -349,6 +350,7 @@ function RenovacaoModal({
             <select value={form.statusContrato} onChange={e => set('statusContrato', e.target.value)} className={inp + ' cursor-pointer'}>
               <option value="Enviado">Enviado</option>
               <option value="Assinado">Assinado</option>
+              <option value="Não precisa">Não precisa</option>
             </select>
           </div>
           <div>
@@ -500,7 +502,7 @@ export default function FinanceiroTab() {
                 </tr>
               </thead>
               <tbody>
-                {data.contratos.map(c => (
+                {[...data.contratos].sort((a, b) => a.medico.localeCompare(b.medico, 'pt-BR')).map(c => (
                   <tr key={c.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
                     <td className="px-4 py-3 text-white font-medium">{c.medico}</td>
                     <td className="px-4 py-3"><ContratoBadge status={c.status_contrato} /></td>
@@ -554,7 +556,7 @@ export default function FinanceiroTab() {
                 </tr>
               </thead>
               <tbody>
-                {data.renovacoes.map(r => (
+                {[...data.renovacoes].sort((a, b) => a.medico.localeCompare(b.medico, 'pt-BR')).map(r => (
                   <tr key={r.id} className="border-b border-[rgba(74,144,226,0.05)] hover:bg-[rgba(74,144,226,0.03)] transition-colors">
                     <td className="px-4 py-3 text-[#A0A0B0] font-mono text-xs">{toDisplay(r.data)}</td>
                     <td className="px-4 py-3 text-white font-medium">{r.medico}</td>
