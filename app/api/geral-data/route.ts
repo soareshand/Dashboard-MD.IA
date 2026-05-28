@@ -34,12 +34,13 @@ function calcScore(opts: {
   produtosAtivos: number; totalProdutos: number;
   npsMedia: number | null; taxaPresenca: number | null;
   contatoStatus: string | null; diasRenovacao: number | null;
+  statusContrato: string | null;
 }): number {
   let s = 0;
-  // Produtos ativos: max 3 pts
-  if (opts.totalProdutos > 0) s += (opts.produtosAtivos / opts.totalProdutos) * 3;
-  // NPS: max 3 pts
-  if (opts.npsMedia !== null) s += (opts.npsMedia / 5) * 3;
+  // Produtos ativos: max 2.5 pts
+  if (opts.totalProdutos > 0) s += (opts.produtosAtivos / opts.totalProdutos) * 2.5;
+  // NPS: max 2.5 pts
+  if (opts.npsMedia !== null) s += (opts.npsMedia / 5) * 2.5;
   // Presença: max 2 pts
   if (opts.taxaPresenca !== null) s += (opts.taxaPresenca / 100) * 2;
   // Contato: max 1 pt
@@ -52,6 +53,9 @@ function calcScore(opts: {
     else if (opts.diasRenovacao > 30) s += 0.5;
     else if (opts.diasRenovacao > 0) s += 0.25;
   }
+  // Contrato: max 1 pt — apenas Assinado ou Não precisa
+  const sc = (opts.statusContrato ?? '').toLowerCase();
+  if (sc === 'assinado' || sc === 'não precisa') s += 1;
   return Math.round(s * 10) / 10;
 }
 
@@ -67,6 +71,7 @@ export async function GET() {
       { data: treinaRows, error: treinaErr },
       { data: contatoRows },
       { data: catalogRows },
+      { data: contratoRows },
     ] = await Promise.all([
       supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos').eq('situacao', 'Ativo'),
       supabase.from('presencas').select('medico, sessao, status'),
@@ -77,6 +82,7 @@ export async function GET() {
       supabase.from('quiz_treinamento_responses').select('*'),
       supabase.from('contatos').select('medico, proximo_contato'),
       supabase.from('produtos_catalogo').select('id, nome, ordem').order('ordem'),
+      supabase.from('contratos').select('medico, status_contrato, created_at').order('created_at', { ascending: false }),
     ]);
 
     if (callErr) console.error('[geral-data] quiz_call_responses error:', callErr);
@@ -144,6 +150,15 @@ export async function GET() {
       'clinica'
     );
 
+    // Contrato: most recent status per medico (already ordered by created_at desc)
+    const contratoByMedico = new Map<string, string>();
+    for (const c of (contratoRows ?? []) as Array<Record<string, unknown>>) {
+      const nome = String(c.medico ?? '').trim();
+      if (nome && !contratoByMedico.has(nome)) {
+        contratoByMedico.set(nome, String(c.status_contrato ?? ''));
+      }
+    }
+
     // Contato status per medico (computed from proximo_contato)
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -176,6 +191,7 @@ export async function GET() {
 
       const presenca = presencaByMedico.get(m.nome);
       const contatoStatus = contatoByMedico.get(m.nome) ?? null;
+      const statusContrato = contratoByMedico.get(m.nome) ?? null;
 
       const npsRenovacao = renovByMedico.get(m.nome) ?? null;
       const npsMedico = medicoByMedico.get(m.nome) ?? null;
@@ -191,7 +207,7 @@ export async function GET() {
       const score = calcScore({
         produtosAtivos, totalProdutos,
         npsMedia, taxaPresenca: presenca?.taxa ?? null,
-        contatoStatus, diasRenovacao,
+        contatoStatus, diasRenovacao, statusContrato,
       });
 
       return {
@@ -210,6 +226,7 @@ export async function GET() {
         presencas: presenca?.presencas ?? null,
         taxaPresenca: presenca?.taxa ?? null,
         contatoStatus,
+        statusContrato,
         diasRenovacao,
         score,
         isAniversariante,

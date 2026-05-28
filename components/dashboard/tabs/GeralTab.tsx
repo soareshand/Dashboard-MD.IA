@@ -18,6 +18,7 @@ interface CardData {
   presencas: number | null;
   taxaPresenca: number | null;
   contatoStatus: string | null;
+  statusContrato: string | null;
   diasRenovacao: number | null;
   score: number;
   isAniversariante: boolean;
@@ -117,15 +118,17 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
   const score = card.score;
   const scoreColor = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
 
-  const presColor = card.taxaPresenca === null ? '#404060'
+  const presColor = card.taxaPresenca === null ? '#a2a2b2'
     : card.taxaPresenca >= 75 ? '#3B9EF5' : card.taxaPresenca >= 50 ? '#8B5CF6' : '#F59E0B';
   const contColor = card.contatoStatus === 'Em dia' || card.contatoStatus === 'OK' ? '#3B9EF5'
     : card.contatoStatus === 'Atenção' ? '#8B5CF6'
     : card.contatoStatus === 'Crítico' ? '#F59E0B'
-    : '#404060';
-  const prodColor = totalProdutos === 0 ? '#404060'
+    : '#a2a2b2';
+  const prodColor = totalProdutos === 0 ? '#a2a2b2'
     : card.produtosAtivos >= totalProdutos * 0.7 ? '#3B9EF5'
-    : card.produtosAtivos > 0 ? '#8B5CF6' : '#404060';
+    : card.produtosAtivos > 0 ? '#8B5CF6' : '#a2a2b2';
+  const sc = (card.statusContrato ?? '').toLowerCase();
+  const contratoColor = sc === 'assinado' ? '#3B9EF5' : sc === 'não precisa' ? '#8B5CF6' : '#a2a2b2';
 
   return (
     <div className="card-gradient-border p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
@@ -161,7 +164,7 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
       <div className="h-px bg-[rgba(74,144,226,0.1)]" />
 
       {/* Metrics */}
-      <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <MetricChip
           label="Produtos Ativos"
           value={totalProdutos > 0 ? `${card.produtosAtivos} / ${totalProdutos}` : '—'}
@@ -176,6 +179,11 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
           label="Contato"
           value={card.contatoStatus || '—'}
           color={contColor}
+        />
+        <MetricChip
+          label="Contrato"
+          value={card.statusContrato || '—'}
+          color={contratoColor}
         />
       </div>
 
