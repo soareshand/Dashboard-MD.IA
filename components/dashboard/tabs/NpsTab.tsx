@@ -41,7 +41,7 @@ function ScoreBar({ nota, count, max }: { nota: number; count: number; max: numb
     <div className="flex items-center gap-3">
       <div className="flex flex-col items-center w-8 shrink-0">
         <span className="font-orbitron font-bold text-sm" style={{ color }}>{nota}</span>
-        <span className="text-[9px] text-[#555570] text-center leading-tight">{SCALE_LABELS[nota]}</span>
+        <span className="text-[9px] text-[#a2a2b2] text-center leading-tight">{SCALE_LABELS[nota]}</span>
       </div>
       <div className="flex-1 h-4 bg-[#12122A] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
@@ -55,7 +55,7 @@ function EmptyState({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center h-48 gap-2 text-center">
       <p className="text-[#A0A0B0] text-sm">Nenhuma resposta de <strong>{label}</strong> ainda.</p>
-      <p className="text-[#555570] text-xs">Gere um link e envie para o médico após a próxima call.</p>
+      <p className="text-[#a2a2b2] text-xs">Gere um link e envie para o médico após a próxima call.</p>
     </div>
   );
 }
@@ -163,7 +163,7 @@ function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
             {segs.map(seg => (
               <div key={seg.name} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: seg.color, boxShadow: `0 0 8px ${seg.color}` }}/>
-                <span className="text-[11px] text-[#555570] font-sora whitespace-nowrap">{seg.name}</span>
+                <span className="text-[11px] text-[#a2a2b2] font-sora whitespace-nowrap">{seg.name}</span>
               </div>
             ))}
           </div>
@@ -210,7 +210,7 @@ function ColumnChart({ data }: { data: ResultadosPercebidos }) {
       <div className="space-y-6">
         {rows.map(row => (
           <div key={row.label}>
-            <p className="text-xs text-[#6B7A8D] font-sora mb-2">{row.label}</p>
+            <p className="text-xs text-[#a2a2b2] font-sora mb-2">{row.label}</p>
             <div className="flex rounded-full overflow-hidden w-full" style={{ height: '22px', background: 'rgba(8,8,20,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
               {row.total === 0
                 ? <div className="flex-1" style={{ background: 'rgba(255,255,255,0.03)' }} />
@@ -643,7 +643,7 @@ const SUB_TABS = [
 type SubTabId = typeof SUB_TABS[number]['id'];
 
 function SubTabIcon({ id, active }: { id: SubTabId; active: boolean }) {
-  const c = active ? '#ffffff' : '#5B6778';
+  const c = active ? '#ffffff' : '#a2a2b2';
   const s = { width: 17, height: 17, viewBox: '0 0 24 24' as const, fill: 'none' as const, stroke: c, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   if (id === 'renovacao') return <svg {...s}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>;
   if (id === 'call') return <svg {...s}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l1-1a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>;
@@ -665,7 +665,7 @@ export default function NpsTab() {
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-sora transition-all whitespace-nowrap ${
               active === t.id
                 ? 'text-white shadow-md'
-                : 'text-[#5B6778] hover:text-[#A0A0B0]'
+                : 'text-[#a2a2b2] hover:text-[#A0A0B0]'
             }`}
           >
             <SubTabIcon id={t.id} active={active === t.id} />
