@@ -56,6 +56,8 @@ export default function PresencaTab() {
   const [deletingSessao, setDeletingSessao] = useState<string | null>(null);
   const [deletingInProgress, setDeletingInProgress] = useState(false);
   const [filtroMes, setFiltroMes] = useState<string>('');
+  const [confirmZerar, setConfirmZerar] = useState(false);
+  const [zerandoAll, setZerandoAll] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -71,6 +73,17 @@ export default function PresencaTab() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  async function handleZerarTudo() {
+    setZerandoAll(true);
+    try {
+      await fetch('/api/presenca-clear', { method: 'POST' });
+      setConfirmZerar(false);
+      fetchData();
+    } finally {
+      setZerandoAll(false);
+    }
+  }
 
   async function handleDeleteSessao(sessao: string) {
     setDeletingInProgress(true);
@@ -155,6 +168,30 @@ export default function PresencaTab() {
           <KpiCard icon="users" title="Médicos Monitorados" value={kpisFiltrados.totalMedicos} />
         </div>
         <div className="ml-4 flex items-center gap-2 shrink-0">
+          {confirmZerar ? (
+            <>
+              <button
+                onClick={() => setConfirmZerar(false)}
+                className="px-3 py-2 rounded-xl text-[#a2a2b2] font-sora font-semibold text-sm border border-[rgba(255,255,255,0.1)] hover:text-white transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleZerarTudo}
+                disabled={zerandoAll}
+                className="px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm bg-[#F59E0B] hover:bg-[#D97706] transition-all disabled:opacity-50"
+              >
+                {zerandoAll ? 'Zerando...' : 'Confirmar zerar tudo'}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setConfirmZerar(true)}
+              className="px-4 py-2 rounded-xl text-[#F59E0B] font-sora font-semibold text-sm border border-[rgba(245,158,11,0.3)] hover:bg-[rgba(245,158,11,0.08)] transition-all"
+            >
+              Zerar presenças
+            </button>
+          )}
           <button
             onClick={() => setShowModal(true)}
             className="btn-glow px-4 py-2 rounded-xl text-white font-sora font-semibold text-sm"
