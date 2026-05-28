@@ -9,6 +9,25 @@ const NOTA_KEYS = [
   'nota_suporte_equipe', 'nota_mentoria_gestao',
 ] as const;
 
+function buildLatestAvgMap(
+  rows: Array<Record<string, unknown>>,
+  keys: string[]
+): Map<string, number> {
+  const latest = new Map<string, { ts: Date; avg: number }>();
+  for (const r of rows) {
+    const nome = String(r.nome ?? '');
+    const ts = new Date(String(r.timestamp ?? 0));
+    const existing = latest.get(nome);
+    if (!existing || ts > existing.ts) {
+      const avg = keys.reduce((s, k) => s + (Number(r[k]) || 0), 0) / keys.length;
+      latest.set(nome, { ts, avg: Math.round(avg * 10) / 10 });
+    }
+  }
+  const result = new Map<string, number>();
+  latest.forEach((v, k) => result.set(k, v.avg));
+  return result;
+}
+
 function calcScore(opts: {
   produtosAtivos: number; totalProdutos: number;
   npsMedia: number | null; taxaPresenca: number | null;
@@ -41,6 +60,8 @@ export async function GET() {
       { data: presencaRows },
       { data: quizRows },
       { data: mensalRows },
+      { data: callRows },
+      { data: treinaRows },
       { data: contatoRows },
       { data: catalogRows },
     ] = await Promise.all([
@@ -48,6 +69,8 @@ export async function GET() {
       supabase.from('presencas').select('medico, sessao, status'),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
       supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nota_crm, nota_automacoes, nota_suporte'),
+      supabase.from('quiz_call_responses').select('nome, timestamp, nota_call, nota_cs'),
+      supabase.from('quiz_treinamento_responses').select('nome, timestamp, nota_treinamento, nota_clareza'),
       supabase.from('contatos').select('medico, proximo_contato'),
       supabase.from('produtos_catalogo').select('id, nome, ordem').order('ordem'),
     ]);
@@ -75,41 +98,23 @@ export async function GET() {
       });
     });
 
-    // Quiz: most recent NPS per medico — from renovation OR monthly quiz
-    const renovByMedico = new Map<string, { ts: Date; avg: number }>();
-    const sortedQuiz = [...(quizRows ?? [])].sort((a, b) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    // Quiz: most recent average per medico, per quiz type
+    const renovByMedico = buildLatestAvgMap(
+      (quizRows ?? []) as Array<Record<string, unknown>>,
+      [...NOTA_KEYS]
     );
-    for (const r of sortedQuiz) {
-      if (!renovByMedico.has(r.nome)) {
-        const avg = NOTA_KEYS.reduce((s, k) => s + (Number((r as Record<string, unknown>)[k]) || 0), 0) / NOTA_KEYS.length;
-        renovByMedico.set(r.nome, { ts: new Date(r.timestamp), avg: Math.round(avg * 10) / 10 });
-      }
-    }
-
-    const mensalByMedico = new Map<string, { ts: Date; avg: number }>();
-    for (const r of (mensalRows ?? [])) {
-      const ts = new Date(r.timestamp);
-      const existing = mensalByMedico.get(r.nome);
-      if (!existing || ts > existing.ts) {
-        const avg = ((Number(r.nota_crm) || 0) + (Number(r.nota_automacoes) || 0) + (Number(r.nota_suporte) || 0)) / 3;
-        mensalByMedico.set(r.nome, { ts, avg: Math.round(avg * 10) / 10 });
-      }
-    }
-
-    const quizByMedico = new Map<string, number>();
-    const allQuizNames = new Set([...renovByMedico.keys(), ...mensalByMedico.keys()]);
-    for (const nome of allQuizNames) {
-      const renov = renovByMedico.get(nome);
-      const mensal = mensalByMedico.get(nome);
-      if (renov && mensal) {
-        quizByMedico.set(nome, mensal.ts > renov.ts ? mensal.avg : renov.avg);
-      } else if (renov) {
-        quizByMedico.set(nome, renov.avg);
-      } else if (mensal) {
-        quizByMedico.set(nome, mensal.avg);
-      }
-    }
+    const mensalByMedico = buildLatestAvgMap(
+      (mensalRows ?? []) as Array<Record<string, unknown>>,
+      ['nota_crm', 'nota_automacoes', 'nota_suporte']
+    );
+    const callByMedico = buildLatestAvgMap(
+      (callRows ?? []) as Array<Record<string, unknown>>,
+      ['nota_call', 'nota_cs']
+    );
+    const treinaByMedico = buildLatestAvgMap(
+      (treinaRows ?? []) as Array<Record<string, unknown>>,
+      ['nota_treinamento', 'nota_clareza']
+    );
 
     // Contato status per medico (computed from proximo_contato)
     const hoje = new Date();
@@ -142,8 +147,17 @@ export async function GET() {
       const isAniversarioHoje = isAniversariante && parseInt(partsNasc[2]) === diaAtual;
 
       const presenca = presencaByMedico.get(m.nome);
-      const npsMedia = quizByMedico.get(m.nome) ?? null;
       const contatoStatus = contatoByMedico.get(m.nome) ?? null;
+
+      const npsRenovacao = renovByMedico.get(m.nome) ?? null;
+      const npsMensal = mensalByMedico.get(m.nome) ?? null;
+      const npsCall = callByMedico.get(m.nome) ?? null;
+      const npsTreinamento = treinaByMedico.get(m.nome) ?? null;
+
+      const availableNps = [npsRenovacao, npsMensal, npsCall, npsTreinamento].filter((v): v is number => v !== null);
+      const npsMedia = availableNps.length > 0
+        ? Math.round((availableNps.reduce((s, v) => s + v, 0) / availableNps.length) * 10) / 10
+        : null;
 
       const score = calcScore({
         produtosAtivos, totalProdutos,
@@ -159,6 +173,10 @@ export async function GET() {
         entrada: m.entrada,
         produtosAtivos,
         npsMedia,
+        npsRenovacao,
+        npsMensal,
+        npsCall,
+        npsTreinamento,
         presencas: presenca?.presencas ?? null,
         taxaPresenca: presenca?.taxa ?? null,
         contatoStatus,

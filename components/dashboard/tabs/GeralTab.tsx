@@ -10,6 +10,10 @@ interface CardData {
   entrada: string | null;
   produtosAtivos: number;
   npsMedia: number | null;
+  npsRenovacao: number | null;
+  npsMensal: number | null;
+  npsCall: number | null;
+  npsTreinamento: number | null;
   presencas: number | null;
   taxaPresenca: number | null;
   contatoStatus: string | null;
@@ -69,12 +73,47 @@ function RenovacaoPill({ dias }: { dias: number | null }) {
   );
 }
 
+function quizColor(v: number | null) {
+  if (v === null) return '#404060';
+  return v >= 4 ? '#3B9EF5' : v >= 2.5 ? '#8B5CF6' : '#F59E0B';
+}
+
+function QuizBreakdown({ renovacao, mensal, call, treinamento }: {
+  renovacao: number | null;
+  mensal: number | null;
+  call: number | null;
+  treinamento: number | null;
+}) {
+  const items = [
+    { label: 'Renovação', value: renovacao },
+    { label: 'Mensal', value: mensal },
+    { label: 'Pós-Call', value: call },
+    { label: 'Treinamento', value: treinamento },
+  ];
+  return (
+    <div className="space-y-1.5">
+      <span className="text-[9px] text-[#404060] uppercase tracking-wider font-medium">NPS por Quiz</span>
+      <div className="flex gap-1.5">
+        {items.map(item => (
+          <div key={item.label}
+            className="flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
+          >
+            <span className="text-[8px] text-center leading-tight" style={{ color: '#404060' }}>{item.label}</span>
+            <span className="text-sm font-orbitron font-bold" style={{ color: quizColor(item.value) }}>
+              {item.value !== null ? item.value.toFixed(1) : '—'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: number }) {
   const score = card.score;
   const scoreColor = score >= 8 ? '#3B9EF5' : score >= 5 ? '#8B5CF6' : '#F59E0B';
 
-  const npsColor = card.npsMedia === null ? '#404060'
-    : card.npsMedia >= 4 ? '#3B9EF5' : card.npsMedia >= 2.5 ? '#8B5CF6' : '#F59E0B';
   const presColor = card.taxaPresenca === null ? '#404060'
     : card.taxaPresenca >= 75 ? '#3B9EF5' : card.taxaPresenca >= 50 ? '#8B5CF6' : '#F59E0B';
   const contColor = card.contatoStatus === 'Em dia' || card.contatoStatus === 'OK' ? '#3B9EF5'
@@ -119,28 +158,30 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
       <div className="h-px bg-[rgba(74,144,226,0.1)]" />
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-3 gap-x-4 gap-y-3">
         <MetricChip
           label="Produtos Ativos"
           value={totalProdutos > 0 ? `${card.produtosAtivos} / ${totalProdutos}` : '—'}
           color={prodColor}
         />
         <MetricChip
-          label="NPS Renovação"
-          value={card.npsMedia !== null ? `${card.npsMedia} / 5` : '—'}
-          color={npsColor}
-        />
-        <MetricChip
-          label="Presença Mentorias"
-          value={card.taxaPresenca !== null ? `${card.taxaPresenca}% · ${card.presencas} sess.` : '—'}
+          label="Presença"
+          value={card.taxaPresenca !== null ? `${card.taxaPresenca}%` : '—'}
           color={presColor}
         />
         <MetricChip
-          label="Monit. de Contato"
+          label="Contato"
           value={card.contatoStatus || '—'}
           color={contColor}
         />
       </div>
+
+      <QuizBreakdown
+        renovacao={card.npsRenovacao}
+        mensal={card.npsMensal}
+        call={card.npsCall}
+        treinamento={card.npsTreinamento}
+      />
 
       {card.diasRenovacao !== null && (
         <div>
