@@ -14,11 +14,11 @@ import PulsoTab, { type ModalPrefill } from '@/components/dashboard/tabs/PulsoTa
 const TABS = [
   { id: 'geral',      label: 'Geral',        icon: '❤️', featured: true  },
   { id: 'nps',        label: 'Avaliações',   icon: '📊', featured: false },
+  { id: 'pulso',      label: 'Pulso',        icon: '💬', featured: false },
   { id: 'financeiro', label: 'Financeiro',   icon: '💰', featured: false },
   { id: 'clientes',   label: 'Clientes',     icon: '👥', featured: false },
   { id: 'presenca',   label: 'Presenças',    icon: '📅', featured: false },
   { id: 'tarefas',    label: 'Tarefas',      icon: '✅', featured: false },
-  { id: 'pulso',      label: 'Pulso',        icon: '💬', featured: false },
 ] as const;
 
 function SidebarIcon({ id, active, size = 26 }: { id: string; active: boolean; size?: number }) {

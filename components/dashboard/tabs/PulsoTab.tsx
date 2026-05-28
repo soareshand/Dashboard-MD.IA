@@ -66,7 +66,7 @@ function DueCard({
         </div>
         <div
           className="px-2.5 py-1 rounded-full text-xs font-orbitron font-bold"
-          style={{ background: `${accentColor}18`, color: accentColor, border: `1px solid ${accentColor}30` }}
+          style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.35)' }}
         >
           {items.length} pendente{items.length !== 1 ? 's' : ''}
         </div>
@@ -77,7 +77,7 @@ function DueCard({
           ✅ Todas em dia!
         </div>
       ) : (
-        <div className="px-5 pb-5 space-y-2 max-h-64 overflow-y-auto">
+        <div className="px-5 pb-5 space-y-2 max-h-64 overflow-y-auto scrollbar-blue">
           {items.map((item, i) => (
             <div
               key={i}
@@ -100,7 +100,7 @@ function DueCard({
               <button
                 onClick={() => onGerarLink({ quizType, nome: item.nome, clinica: item.clinica })}
                 className="flex-shrink-0 px-2.5 py-1.5 rounded-lg text-[10px] font-sora font-semibold text-white transition-all"
-                style={{ background: `${accentColor}25`, border: `1px solid ${accentColor}40` }}
+                style={{ background: 'rgba(59,158,245,0.2)', border: '1px solid rgba(59,158,245,0.4)' }}
               >
                 Gerar Link
               </button>
@@ -187,7 +187,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPr
           <h2 className="font-orbitron text-xl font-bold text-white">Pulso Mensal</h2>
           {!loading && data && totalPendentes > 0 && (
             <p className="text-[#F59E0B] text-xs mt-1">
-              ⚠️ {totalPendentes} clínica{totalPendentes !== 1 ? 's' : ''} aguardando envio de quiz
+              {totalPendentes} clínica{totalPendentes !== 1 ? 's' : ''} aguardando envio de quiz
             </p>
           )}
         </div>
@@ -266,7 +266,7 @@ export default function PulsoTab({ onOpenModal }: { onOpenModal: (data?: ModalPr
                       activeRecent === t ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white'
                     }`}
                   >
-                    {t === 'medico' ? '👨‍⚕️ Médico' : '👥 Equipe'}
+                    {t === 'medico' ? 'Médico' : 'Equipe'}
                   </button>
                 ))}
               </div>

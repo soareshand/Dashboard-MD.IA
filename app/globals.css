@@ -37,6 +37,18 @@ html, body {
   border-radius: 3px;
 }
 
+/* Blue scrollbar for specific containers */
+.scrollbar-blue::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-blue::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-blue::-webkit-scrollbar-thumb {
+  background: #3B9EF5;
+  border-radius: 3px;
+}
+
 /* Card with gradient border — glass effect */
 .card-gradient-border {
   position: relative;
