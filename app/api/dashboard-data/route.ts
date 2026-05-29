@@ -37,9 +37,10 @@ function mapRow(r: Record<string, unknown>) {
 
 export async function GET() {
   try {
-    const [{ data: rows }, { data: tokens }] = await Promise.all([
+    const [{ data: rows }, { data: tokens }, { data: renovacoes }] = await Promise.all([
       supabase.from('quiz_renovacao_responses').select('*'),
       supabase.from('tokens').select('token, status'),
+      supabase.from('renovacoes').select('data, medico, status_contrato, valor'),
     ]);
 
     const responses = (rows ?? []).map(mapRow);
@@ -109,6 +110,21 @@ export async function GET() {
         };
       });
 
+    const hoje = new Date();
+    const hojeStr = hoje.toISOString().split('T')[0];
+    const trintaDiasStr = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const rList = (renovacoes ?? []).filter(r => r.data && r.status_contrato?.toLowerCase() !== 'assinado');
+    const alertasVencimento = {
+      vencidos: rList
+        .filter(r => r.data < hojeStr)
+        .sort((a, b) => b.data.localeCompare(a.data))
+        .map(r => ({ medico: r.medico, data: r.data, status: r.status_contrato, valor: r.valor })),
+      prestes: rList
+        .filter(r => r.data >= hojeStr && r.data <= trintaDiasStr)
+        .sort((a, b) => a.data.localeCompare(b.data))
+        .map(r => ({ medico: r.medico, data: r.data, status: r.status_contrato, valor: r.valor })),
+    };
+
     return NextResponse.json({
       kpis: {
         totalRespostas: total,
@@ -120,6 +136,7 @@ export async function GET() {
       objetivoDistribuicao,
       resultadosPercebidos,
       recentResponses,
+      alertasVencimento,
       lastUpdated: new Date().toISOString(),
     });
   } catch (err) {

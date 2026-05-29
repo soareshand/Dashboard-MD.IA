@@ -116,6 +116,18 @@ function DetailModal({ title, subtitle, onClose, children }: {
 
 // ── Renovação sub-tab ─────────────────────────────────────────────────────────
 
+interface AlertaItem {
+  medico: string;
+  data: string;
+  status: string | null;
+  valor: number | null;
+}
+
+interface AlertasVencimento {
+  vencidos: AlertaItem[];
+  prestes: AlertaItem[];
+}
+
 interface ResultadosPercebidos {
   crescimentoPacientes: { Sim: number; AindaNao: number; Nao: number };
   reducaoTempo: { Sim: number; AindaNao: number; Nao: number };
@@ -131,7 +143,70 @@ interface RenovacaoData {
     token: string; nome: string; clinica: string; timestamp: string;
     pretendeRenovar: string; npsMedia: number; statusToken: string; _full: Record<string, unknown>;
   }[];
+  alertasVencimento: AlertasVencimento;
   lastUpdated: string;
+}
+
+function formatDataBR(iso: string) {
+  if (!iso) return '-';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function AlertasVencimentoSection({ alertas }: { alertas: AlertasVencimento }) {
+  const { vencidos, prestes } = alertas;
+  if (vencidos.length === 0 && prestes.length === 0) return null;
+
+  function AlertCard({ title, items, color, bg, border }: {
+    title: string; items: AlertaItem[]; color: string; bg: string; border: string;
+  }) {
+    if (items.length === 0) return null;
+    return (
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: border, background: 'rgba(13,13,32,0.7)' }}>
+        <div className="px-4 pt-3 pb-2.5 border-b flex items-center gap-2" style={{ borderColor: border }}>
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
+          <h4 className="font-orbitron text-xs font-bold uppercase tracking-wider" style={{ color }}>{title}</h4>
+          <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-full ml-auto" style={{ background: bg, color }}>
+            {items.length}
+          </span>
+        </div>
+        <div className="max-h-48 overflow-y-auto divide-y" style={{ borderColor: border }}>
+          {items.map((item, i) => (
+            <div key={i} className="px-4 py-2.5 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-white text-xs font-medium truncate">{item.medico}</p>
+                <p className="text-[#a2a2b2] text-[11px]">{formatDataBR(item.data)}</p>
+              </div>
+              {item.status && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-sora shrink-0" style={{ background: bg, color }}>
+                  {item.status}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <AlertCard
+        title="Já Vencidos"
+        items={vencidos}
+        color="#EF4444"
+        bg="rgba(239,68,68,0.1)"
+        border="rgba(239,68,68,0.18)"
+      />
+      <AlertCard
+        title="Vencem em 30 dias"
+        items={prestes}
+        color="#F59E0B"
+        bg="rgba(245,158,11,0.1)"
+        border="rgba(245,158,11,0.18)"
+      />
+    </div>
+  );
 }
 
 function NeonDonut({ dist }: { dist: RenovacaoData['objetivoDistribuicao'] }) {
@@ -284,6 +359,7 @@ function RenovacaoSubTab() {
         <p className="text-xs text-[#A0A0B0]" suppressHydrationWarning>Atualizado {timeAgo(data.lastUpdated)}</p>
         <button onClick={fetchData} className="p-1.5 rounded-lg border border-[rgba(59,158,245,0.2)] text-[#A0A0B0] hover:text-white hover:border-[#3B9EF5] transition-all text-sm" title="Atualizar">↻</button>
       </div>
+      <AlertasVencimentoSection alertas={data.alertasVencimento} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon="clipboard" title="Total de Respostas" value={data.kpis.totalRespostas} />
         <KpiCard icon="check" title="Objetivo Alcançado" value={`${data.kpis.taxaObjetivoAlcancado}%`} subtitle="Sim + Parcialmente" />
