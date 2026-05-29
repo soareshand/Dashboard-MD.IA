@@ -68,7 +68,7 @@ function SidebarIcon({ id, active, size = 26, inactiveColor = '#ffffff' }: { id:
 
 type TabId = typeof TABS[number]['id'];
 
-function TabContent({ activeTab, onOpenModal }: { activeTab: TabId; onOpenModal: (d?: ModalPrefill) => void }) {
+function TabContent({ activeTab, onOpenModal, pulsoVersion }: { activeTab: TabId; onOpenModal: (d?: ModalPrefill) => void; pulsoVersion: number }) {
   return (
     <>
       {activeTab === 'geral'      && <GeralTab />}
@@ -123,7 +123,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
           </div>
         </div>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <TabContent activeTab={activeTab} onOpenModal={openModal} />
+          <TabContent activeTab={activeTab} onOpenModal={openModal} pulsoVersion={pulsoVersion} />
         </main>
         {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} onLinkGenerated={() => setPulsoVersion(v => v + 1)} />}
       </div>
@@ -221,7 +221,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
               </button>
             </div>
           )}
-          <TabContent activeTab={activeTab} onOpenModal={openModal} />
+          <TabContent activeTab={activeTab} onOpenModal={openModal} pulsoVersion={pulsoVersion} />
         </div>
       </main>
 
