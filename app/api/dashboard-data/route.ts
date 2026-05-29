@@ -37,11 +37,20 @@ function mapRow(r: Record<string, unknown>) {
 
 export async function GET() {
   try {
-    const [{ data: rows }, { data: tokens }, { data: clientesAtivos }] = await Promise.all([
+    const [{ data: rows }, { data: tokens }, { data: clientesAtivos }, { data: renovacoesRows }] = await Promise.all([
       supabase.from('quiz_renovacao_responses').select('*'),
       supabase.from('tokens').select('token, status'),
       supabase.from('clientes').select('nome, clinica, entrada').eq('situacao', 'Ativo'),
+      supabase.from('renovacoes').select('medico, data').order('data', { ascending: false }),
     ]);
+
+    // Most recent renewal date per medico (case-insensitive key)
+    const latestRenovacaoMap = new Map<string, string>();
+    for (const r of (renovacoesRows ?? [])) {
+      if (!r.data || !r.medico) continue;
+      const key = r.medico.trim().toLowerCase();
+      if (!latestRenovacaoMap.has(key)) latestRenovacaoMap.set(key, r.data);
+    }
 
     const responses = (rows ?? []).map(mapRow);
     const total = responses.length;
@@ -116,8 +125,10 @@ export async function GET() {
     const prestes: { medico: string; clinica: string; diasRenovacao: number }[] = [];
     for (const c of (clientesAtivos ?? [])) {
       if (!c.entrada) continue;
-      const entrada = new Date(c.entrada + 'T00:00:00');
-      const renovDate = new Date(entrada.getFullYear() + 1, entrada.getMonth(), entrada.getDate());
+      const renovStr = latestRenovacaoMap.get(c.nome.trim().toLowerCase());
+      const baseStr = renovStr && renovStr > c.entrada ? renovStr : c.entrada;
+      const base = new Date(baseStr + 'T00:00:00');
+      const renovDate = new Date(base.getFullYear() + 1, base.getMonth(), base.getDate());
       const dias = Math.ceil((renovDate.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
       if (dias < 0) {
         vencidos.push({ medico: c.nome, clinica: c.clinica ?? '', diasRenovacao: dias });

@@ -192,16 +192,16 @@ function AlertasVencimentoSection({ alertas }: { alertas: AlertasVencimento }) {
       <AlertCard
         title="Mentoria Vencida"
         items={vencidos}
-        color="#EF4444"
-        bg="rgba(239,68,68,0.1)"
-        border="rgba(239,68,68,0.18)"
+        color="#F59E0B"
+        bg="rgba(245,158,11,0.1)"
+        border="rgba(245,158,11,0.18)"
       />
       <AlertCard
         title="Vence em 30 dias"
         items={prestes}
-        color="#F59E0B"
-        bg="rgba(245,158,11,0.1)"
-        border="rgba(245,158,11,0.18)"
+        color="#8B5CF6"
+        bg="rgba(139,92,246,0.1)"
+        border="rgba(139,92,246,0.18)"
       />
     </div>
   );

@@ -71,6 +71,7 @@ export async function GET() {
       { data: contatoRows },
       { data: catalogRows },
       { data: contratoRows },
+      { data: renovacoesRows },
     ] = await Promise.all([
       supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos').eq('situacao', 'Ativo'),
       supabase.from('presencas').select('medico, sessao, status'),
@@ -82,7 +83,16 @@ export async function GET() {
       supabase.from('contatos').select('medico, proximo_contato'),
       supabase.from('produtos_catalogo').select('id, nome, ordem').order('ordem'),
       supabase.from('contratos').select('medico, status_contrato, created_at').order('created_at', { ascending: false }),
+      supabase.from('renovacoes').select('medico, data').order('data', { ascending: false }),
     ]);
+
+    // Most recent renewal date per medico (case-insensitive key)
+    const latestRenovacaoMap = new Map<string, string>();
+    for (const r of (renovacoesRows ?? [])) {
+      if (!r.data || !r.medico) continue;
+      const key = r.medico.trim().toLowerCase();
+      if (!latestRenovacaoMap.has(key)) latestRenovacaoMap.set(key, r.data);
+    }
 
     if (callErr) console.error('[geral-data] quiz_call_responses error:', callErr);
     if (treinaErr) console.error('[geral-data] quiz_treinamento_responses error:', treinaErr);
@@ -188,8 +198,10 @@ export async function GET() {
 
       let diasRenovacao: number | null = null;
       if (m.entrada) {
-        const entrada = new Date(m.entrada + 'T00:00:00');
-        const renov = new Date(entrada.getFullYear() + 1, entrada.getMonth(), entrada.getDate());
+        const renovStr = latestRenovacaoMap.get(m.nome.trim().toLowerCase());
+        const baseStr = renovStr && renovStr > m.entrada ? renovStr : m.entrada;
+        const base = new Date(baseStr + 'T00:00:00');
+        const renov = new Date(base.getFullYear() + 1, base.getMonth(), base.getDate());
         diasRenovacao = Math.ceil((renov.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
       }
 
