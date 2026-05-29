@@ -7,7 +7,7 @@ const MEDICO_INTERVAL_DAYS = 85;
 const EQUIPE_INTERVAL_DAYS = 25;
 
 function diasDesde(hoje: Date, d: Date): number {
-  return Math.floor((hoje.getTime() - d.getTime()) / 86400000);
+  return Math.max(0, Math.floor((hoje.getTime() - d.getTime()) / 86400000));
 }
 
 export async function GET() {
