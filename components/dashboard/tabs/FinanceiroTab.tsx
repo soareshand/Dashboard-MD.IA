@@ -30,7 +30,7 @@ interface FinanceiroData {
     contratosPagos: number;
     contratosEmAberto: number;
     mrr: number;
-    totalRenovacoesValor: number;
+    totalRenovacoes: number;
   };
   contratos: Contrato[];
   renovacoes: Renovacao[];
@@ -492,7 +492,7 @@ export default function FinanceiroTab() {
         <KpiCard icon="file" title="Total de Contratos" value={data.kpis.totalContratos} />
         <KpiCard icon="check" title="Pagos" value={data.kpis.contratosPagos} subtitle={`${Math.round(data.kpis.contratosPagos / total * 100)}% do total`} />
         <KpiCard icon="alert" title="Em Aberto" value={data.kpis.contratosEmAberto} />
-        <KpiCard icon="refresh" title="Total de Renovações" value={formatBRL(data.kpis.totalRenovacoesValor)} />
+        <KpiCard icon="refresh" title="Total de Renovações" value={data.kpis.totalRenovacoes} />
       </div>
 
       <div className="flex items-center justify-between gap-4 flex-wrap">

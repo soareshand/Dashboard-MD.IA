@@ -20,15 +20,13 @@ export async function GET() {
     const emAberto = cList.filter(c => c.status_financeiro?.toLowerCase() === 'em aberto');
     const mrr = cList.reduce((s, c) => s + (Number(c.valor) || 0), 0);
 
-    const totalRenovacoesValor = rList.reduce((s, r) => s + (Number(r.valor) || 0), 0);
-
     return NextResponse.json({
       kpis: {
         totalContratos: cList.length,
         contratosPagos: pagos.length,
         contratosEmAberto: emAberto.length,
         mrr,
-        totalRenovacoesValor,
+        totalRenovacoes: rList.length,
       },
       contratos: cList,
       renovacoes: rList,
