@@ -11,6 +11,7 @@ interface ModalPrefill {
 interface GenerateLinkModalProps {
   onClose: () => void;
   initialData?: ModalPrefill;
+  onLinkGenerated?: () => void;
 }
 
 type QuizType = 'renovacao' | 'call' | 'treinamento' | 'mensal_medico' | 'mensal_equipe';
@@ -58,7 +59,7 @@ const TIPOS_CALL = ['Onboarding', 'Ongoing', 'Suporte'];
 const BTN_ACTIVE = { background: 'linear-gradient(135deg, #2563EB, #3B9EF5)' };
 const INP = 'w-full bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#3B9EF5] transition-all';
 
-export default function GenerateLinkModal({ onClose, initialData }: GenerateLinkModalProps) {
+export default function GenerateLinkModal({ onClose, initialData, onLinkGenerated }: GenerateLinkModalProps) {
   const [quizType, setQuizType] = useState<QuizType>(initialData?.quizType ?? 'renovacao');
   const [participante, setParticipante] = useState<Participante>(
     initialData?.quizType === 'mensal_equipe' ? 'equipe' : 'medico'
@@ -144,6 +145,7 @@ export default function GenerateLinkModal({ onClose, initialData }: GenerateLink
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao gerar link.');
       setResult(data);
+      onLinkGenerated?.();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
     } finally {

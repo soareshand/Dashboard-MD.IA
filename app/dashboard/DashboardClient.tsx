@@ -77,7 +77,7 @@ function TabContent({ activeTab, onOpenModal }: { activeTab: TabId; onOpenModal:
       {activeTab === 'clientes'   && <ClientesTab />}
       {activeTab === 'presenca'   && <PresencaTab />}
       {activeTab === 'tarefas'    && <TarefasTab />}
-      {activeTab === 'pulso'      && <PulsoTab onOpenModal={onOpenModal} />}
+      {activeTab === 'pulso'      && <PulsoTab key={pulsoVersion} onOpenModal={onOpenModal} />}
     </>
   );
 }
@@ -86,6 +86,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
   const [activeTab, setActiveTab] = useState<TabId>('geral');
   const [showModal, setShowModal] = useState(false);
   const [modalInitialData, setModalInitialData] = useState<ModalPrefill | undefined>(undefined);
+  const [pulsoVersion, setPulsoVersion] = useState(0);
 
   function openModal(data?: ModalPrefill) {
     setModalInitialData(data);
@@ -124,7 +125,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <TabContent activeTab={activeTab} onOpenModal={openModal} />
         </main>
-        {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} />}
+        {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} onLinkGenerated={() => setPulsoVersion(v => v + 1)} />}
       </div>
     );
   }
@@ -248,7 +249,7 @@ export default function DashboardClient({ isEmbed }: { isEmbed: boolean }) {
         </div>
       </nav>
 
-      {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} />}
+      {showModal && <GenerateLinkModal onClose={() => setShowModal(false)} initialData={modalInitialData} onLinkGenerated={() => setPulsoVersion(v => v + 1)} />}
     </div>
   );
 }

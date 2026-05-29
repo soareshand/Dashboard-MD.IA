@@ -101,7 +101,7 @@ function formatDateFull(iso: string) {
 
 function diasLabel(dias: number | null) {
   if (dias === null) return 'Nunca enviado';
-  if (dias === 0) return 'Hoje';
+  if (dias === 0) return 'Link gerado';
   return `Há ${dias} dia${dias === 1 ? '' : 's'}`;
 }
 
@@ -275,7 +275,7 @@ function DueCard({
                 )}
                 <p
                   className="text-[10px] mt-0.5 font-medium"
-                  style={{ color: item.diasSemEnvio === null ? '#F59E0B' : item.diasSemEnvio > 90 ? '#F59E0B' : accentColor }}
+                  style={{ color: item.diasSemEnvio === null ? '#F59E0B' : item.diasSemEnvio === 0 ? '#3B9EF5' : item.diasSemEnvio > 90 ? '#F59E0B' : accentColor }}
                 >
                   {diasLabel(item.diasSemEnvio)}
                 </p>
