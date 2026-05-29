@@ -161,13 +161,13 @@ export default function PresencaTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="grid grid-cols-3 gap-4 flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="grid grid-cols-3 gap-3 sm:flex-1">
           <KpiCard icon="chart" title="Taxa Geral de Presença" value={`${kpisFiltrados.taxaGeral}%`} />
           <KpiCard icon="calendar" title="Total de Sessões" value={kpisFiltrados.totalSessoes} />
           <KpiCard icon="users" title="Médicos Monitorados" value={kpisFiltrados.totalMedicos} />
         </div>
-        <div className="ml-4 flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap sm:shrink-0">
           {confirmZerar ? (
             <>
               <button

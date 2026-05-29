@@ -266,7 +266,7 @@ function SummaryKpis({ cards }: { cards: CardData[] }) {
   ];
 
   return (
-    <div className="flex gap-4 items-stretch">
+    <div className="flex flex-col sm:flex-row gap-4 items-stretch">
       <div className="card-gradient-border flex items-center justify-center px-6 py-5 flex-shrink-0">
         <ScoreGauge score={avgScore} />
       </div>

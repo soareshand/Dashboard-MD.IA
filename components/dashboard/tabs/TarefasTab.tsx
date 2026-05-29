@@ -142,7 +142,8 @@ export default function TarefasTab() {
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 pb-1">
+      <div className="grid grid-cols-3 gap-4 min-w-[540px] sm:min-w-0">
         {COLUNAS.map(col => {
           const cards = tarefas.filter(t => t.fase === col.id);
           const isTarget = dragOverCol === col.id && draggedId !== null;
@@ -252,6 +253,7 @@ export default function TarefasTab() {
             </div>
           );
         })}
+      </div>
       </div>
 
       {/* New task modal */}
