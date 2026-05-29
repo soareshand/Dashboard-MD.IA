@@ -656,20 +656,20 @@ export default function NpsTab() {
   return (
     <div className="space-y-6">
       {/* Sub-navigation */}
-      <div className="flex gap-1 bg-[#06060E] rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-[#06060E] rounded-xl p-1">
         {SUB_TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setActive(t.id)}
             style={active === t.id ? { background: '#3B9EF5' } : {}}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-sora transition-all whitespace-nowrap ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-sora transition-all ${
               active === t.id
                 ? 'text-white shadow-md'
                 : 'text-[#a2a2b2] hover:text-[#A0A0B0]'
             }`}
           >
             <SubTabIcon id={t.id} active={active === t.id} />
-            <span>{t.label}</span>
+            <span className="truncate">{t.label}</span>
           </button>
         ))}
       </div>

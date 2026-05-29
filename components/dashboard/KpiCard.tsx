@@ -40,13 +40,13 @@ interface KpiCardProps {
 export default function KpiCard({ icon, title, value, subtitle }: KpiCardProps) {
   const svgIcon = ICONS[icon];
   return (
-    <div className="card-gradient-border p-5 flex flex-col gap-2 transition-all hover:-translate-y-1">
+    <div className="card-gradient-border p-3 sm:p-5 flex flex-col gap-1.5 sm:gap-2 transition-all hover:-translate-y-1">
       <div
-        className="h-px w-full mb-2"
+        className="h-px w-full mb-1 sm:mb-2"
         style={{ background: 'linear-gradient(90deg, #F59E0B 0%, #3B9EF5 55%, transparent 100%)' }}
       />
       <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+        className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0"
         style={{
           background: 'rgba(59, 158, 245, 0.06)',
           border: '1px solid rgba(59, 158, 245, 0.12)',
@@ -54,9 +54,9 @@ export default function KpiCard({ icon, title, value, subtitle }: KpiCardProps) 
       >
         {svgIcon ?? <span className="text-lg">{icon}</span>}
       </div>
-      <p className="text-[11px] text-[#a2a2b2] uppercase tracking-[0.12em] font-sora mt-0.5">{title}</p>
-      <p className="text-3xl font-orbitron font-bold leading-none text-white">{value}</p>
-      {subtitle && <p className="text-[11px] text-[#a2a2b2] mt-0.5">{subtitle}</p>}
+      <p className="text-[10px] sm:text-[11px] text-[#a2a2b2] uppercase tracking-[0.12em] font-sora mt-0.5">{title}</p>
+      <p className="text-xl sm:text-3xl font-orbitron font-bold leading-none text-white">{value}</p>
+      {subtitle && <p className="text-[10px] sm:text-[11px] text-[#a2a2b2] mt-0.5">{subtitle}</p>}
     </div>
   );
 }
