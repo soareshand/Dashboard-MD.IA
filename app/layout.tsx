@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: 'MD.IA — Avaliação de Mentoria',
   description: 'Sistema de avaliação e NPS da MD.IA',
   icons: {
-    icon: '/MD.IA_Logotipo-removebg-preview.png',
+    icon: '/MD.IA Logotipo.jpg',
   },
 };
 
