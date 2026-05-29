@@ -118,9 +118,8 @@ function DetailModal({ title, subtitle, onClose, children }: {
 
 interface AlertaItem {
   medico: string;
-  data: string;
-  status: string | null;
-  valor: number | null;
+  clinica: string;
+  diasRenovacao: number;
 }
 
 interface AlertasVencimento {
@@ -147,15 +146,16 @@ interface RenovacaoData {
   lastUpdated: string;
 }
 
-function formatDataBR(iso: string) {
-  if (!iso) return '-';
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-
 function AlertasVencimentoSection({ alertas }: { alertas: AlertasVencimento }) {
   const { vencidos, prestes } = alertas;
   if (vencidos.length === 0 && prestes.length === 0) return null;
+
+  function diasLabel(dias: number) {
+    if (dias === 0) return 'Vence hoje';
+    if (dias > 0) return `Vence em ${dias} dia${dias === 1 ? '' : 's'}`;
+    const d = Math.abs(dias);
+    return `Venceu há ${d} dia${d === 1 ? '' : 's'}`;
+  }
 
   function AlertCard({ title, items, color, bg, border }: {
     title: string; items: AlertaItem[]; color: string; bg: string; border: string;
@@ -170,18 +170,16 @@ function AlertasVencimentoSection({ alertas }: { alertas: AlertasVencimento }) {
             {items.length}
           </span>
         </div>
-        <div className="max-h-48 overflow-y-auto divide-y" style={{ borderColor: border }}>
+        <div className="max-h-52 overflow-y-auto divide-y" style={{ borderColor: border }}>
           {items.map((item, i) => (
             <div key={i} className="px-4 py-2.5 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-white text-xs font-medium truncate">{item.medico}</p>
-                <p className="text-[#a2a2b2] text-[11px]">{formatDataBR(item.data)}</p>
+                <p className="text-[#a2a2b2] text-[11px] truncate">{item.clinica}</p>
               </div>
-              {item.status && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-sora shrink-0" style={{ background: bg, color }}>
-                  {item.status}
-                </span>
-              )}
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-sora shrink-0 whitespace-nowrap" style={{ background: bg, color }}>
+                {diasLabel(item.diasRenovacao)}
+              </span>
             </div>
           ))}
         </div>
@@ -192,14 +190,14 @@ function AlertasVencimentoSection({ alertas }: { alertas: AlertasVencimento }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       <AlertCard
-        title="Já Vencidos"
+        title="Mentoria Vencida"
         items={vencidos}
         color="#EF4444"
         bg="rgba(239,68,68,0.1)"
         border="rgba(239,68,68,0.18)"
       />
       <AlertCard
-        title="Vencem em 30 dias"
+        title="Vence em 30 dias"
         items={prestes}
         color="#F59E0B"
         bg="rgba(245,158,11,0.1)"

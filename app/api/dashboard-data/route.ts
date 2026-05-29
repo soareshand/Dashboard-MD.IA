@@ -37,10 +37,10 @@ function mapRow(r: Record<string, unknown>) {
 
 export async function GET() {
   try {
-    const [{ data: rows }, { data: tokens }, { data: renovacoes }] = await Promise.all([
+    const [{ data: rows }, { data: tokens }, { data: clientesAtivos }] = await Promise.all([
       supabase.from('quiz_renovacao_responses').select('*'),
       supabase.from('tokens').select('token, status'),
-      supabase.from('renovacoes').select('data, medico, status_contrato, valor'),
+      supabase.from('clientes').select('nome, clinica, entrada').eq('situacao', 'Ativo'),
     ]);
 
     const responses = (rows ?? []).map(mapRow);
@@ -111,19 +111,23 @@ export async function GET() {
       });
 
     const hoje = new Date();
-    const hojeStr = hoje.toISOString().split('T')[0];
-    const trintaDiasStr = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const rList = (renovacoes ?? []).filter(r => r.data && r.status_contrato?.toLowerCase() !== 'assinado');
-    const alertasVencimento = {
-      vencidos: rList
-        .filter(r => r.data < hojeStr)
-        .sort((a, b) => b.data.localeCompare(a.data))
-        .map(r => ({ medico: r.medico, data: r.data, status: r.status_contrato, valor: r.valor })),
-      prestes: rList
-        .filter(r => r.data >= hojeStr && r.data <= trintaDiasStr)
-        .sort((a, b) => a.data.localeCompare(b.data))
-        .map(r => ({ medico: r.medico, data: r.data, status: r.status_contrato, valor: r.valor })),
-    };
+    hoje.setHours(0, 0, 0, 0);
+    const vencidos: { medico: string; clinica: string; diasRenovacao: number }[] = [];
+    const prestes: { medico: string; clinica: string; diasRenovacao: number }[] = [];
+    for (const c of (clientesAtivos ?? [])) {
+      if (!c.entrada) continue;
+      const entrada = new Date(c.entrada + 'T00:00:00');
+      const renovDate = new Date(entrada.getFullYear() + 1, entrada.getMonth(), entrada.getDate());
+      const dias = Math.ceil((renovDate.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+      if (dias < 0) {
+        vencidos.push({ medico: c.nome, clinica: c.clinica ?? '', diasRenovacao: dias });
+      } else if (dias <= 30) {
+        prestes.push({ medico: c.nome, clinica: c.clinica ?? '', diasRenovacao: dias });
+      }
+    }
+    vencidos.sort((a, b) => b.diasRenovacao - a.diasRenovacao);
+    prestes.sort((a, b) => a.diasRenovacao - b.diasRenovacao);
+    const alertasVencimento = { vencidos, prestes };
 
     return NextResponse.json({
       kpis: {
