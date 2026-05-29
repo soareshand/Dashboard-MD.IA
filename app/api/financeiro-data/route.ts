@@ -20,14 +20,7 @@ export async function GET() {
     const emAberto = cList.filter(c => c.status_financeiro?.toLowerCase() === 'em aberto');
     const mrr = cList.reduce((s, c) => s + (Number(c.valor) || 0), 0);
 
-    const now = new Date();
-    const mesAtual = now.getMonth() + 1;
-    const anoAtual = now.getFullYear();
-    const renovacoesDoMes = rList.filter(r => {
-      if (!r.data) return false;
-      const d = new Date(r.data + 'T00:00:00');
-      return d.getMonth() + 1 === mesAtual && d.getFullYear() === anoAtual;
-    });
+    const totalRenovacoesValor = rList.reduce((s, r) => s + (Number(r.valor) || 0), 0);
 
     return NextResponse.json({
       kpis: {
@@ -35,7 +28,7 @@ export async function GET() {
         contratosPagos: pagos.length,
         contratosEmAberto: emAberto.length,
         mrr,
-        renovacoesDoMes: renovacoesDoMes.length,
+        totalRenovacoesValor,
       },
       contratos: cList,
       renovacoes: rList,
