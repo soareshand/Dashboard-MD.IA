@@ -21,6 +21,7 @@ interface Membro {
   telefone: string | null;
   email: string | null;
   data_nascimento: string | null;
+  ultima_renovacao: string | null;
   created_at: string;
   produtos: Record<string, boolean> | null;
 }
@@ -496,9 +497,10 @@ function toDisplay(iso: string | null | undefined): string {
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
-function getRenovacaoInfo(entradaISO: string | null) {
+function getRenovacaoInfo(entradaISO: string | null, ultimaRenovacaoISO: string | null = null) {
   if (!entradaISO) return { dataRenovacao: '—', diasRestantes: null as number | null, status: 'sem-data' as const };
-  const entradaDate = new Date(entradaISO + 'T00:00:00');
+  const baseISO = ultimaRenovacaoISO && ultimaRenovacaoISO > entradaISO ? ultimaRenovacaoISO : entradaISO;
+  const entradaDate = new Date(baseISO + 'T00:00:00');
   const renovacao = new Date(entradaDate.getFullYear() + 1, entradaDate.getMonth(), entradaDate.getDate());
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
@@ -511,8 +513,8 @@ function getRenovacaoInfo(entradaISO: string | null) {
   return { dataRenovacao, diasRestantes, status: 'ok' as const };
 }
 
-function RenovacaoBadge({ entrada }: { entrada: string | null }) {
-  const { dataRenovacao, diasRestantes, status } = getRenovacaoInfo(entrada);
+function RenovacaoBadge({ entrada, ultimaRenovacao }: { entrada: string | null; ultimaRenovacao?: string | null }) {
+  const { dataRenovacao, diasRestantes, status } = getRenovacaoInfo(entrada, ultimaRenovacao ?? null);
   if (status === 'sem-data') return <span className="text-[#A0A0B0] text-xs">—</span>;
   const styles = {
     vencida:    'bg-[rgba(245,158,11,0.15)] text-[#F59E0B] border-[rgba(245,158,11,0.4)]',
@@ -1123,7 +1125,7 @@ export default function ClientesTab() {
                         <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.entrada)}</td>
                         <td className="px-4 py-3 text-[#A0A0B0] text-xs font-mono whitespace-nowrap">{toDisplay(m.saida)}</td>
                         <td className="px-4 py-3">
-                          {inativo ? <span className="text-[#555570] text-xs">—</span> : <RenovacaoBadge entrada={m.entrada} />}
+                          {inativo ? <span className="text-[#555570] text-xs">—</span> : <RenovacaoBadge entrada={m.entrada} ultimaRenovacao={m.ultima_renovacao} />}
                         </td>
                         <td className="px-4 py-3">
                           <button

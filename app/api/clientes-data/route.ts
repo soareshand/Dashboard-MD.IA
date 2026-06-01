@@ -5,15 +5,26 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const [{ data: membros, error: e1 }, { data: contatosRaw, error: e2 }] = await Promise.all([
+    const [{ data: membros, error: e1 }, { data: contatosRaw, error: e2 }, { data: renovacoesRows }] = await Promise.all([
       supabase.from('clientes').select('*').order('nome'),
       supabase.from('contatos').select('*').order('created_at', { ascending: false }),
+      supabase.from('renovacoes').select('medico, data').order('data', { ascending: false }),
     ]);
 
     if (e1) throw e1;
     if (e2) throw e2;
 
-    const rows = membros ?? [];
+    const latestRenovacaoMap = new Map<string, string>();
+    for (const r of (renovacoesRows ?? [])) {
+      if (!r.data || !r.medico) continue;
+      const key = (r.medico as string).trim().toLowerCase();
+      if (!latestRenovacaoMap.has(key)) latestRenovacaoMap.set(key, r.data as string);
+    }
+
+    const rows = (membros ?? []).map(m => ({
+      ...m,
+      ultima_renovacao: latestRenovacaoMap.get((m.nome as string).trim().toLowerCase()) ?? null,
+    }));
 
     // Deduplicate by nome (clientes table may have duplicate active entries)
     const seenNomes = new Set<string>();
