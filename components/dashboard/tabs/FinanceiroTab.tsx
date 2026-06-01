@@ -48,7 +48,7 @@ const BLANK_CONTRATO = {
 const BLANK_RENOVACAO = {
   data: '',
   medico: '',
-  statusContrato: 'Enviado',
+  statusContrato: 'Não enviado',
   valor: '',
   statusFinanceiro: 'Em Aberto',
 };
@@ -366,6 +366,7 @@ function RenovacaoModal({
           <div>
             <label className={lbl}>Status do Contrato</label>
             <select value={form.statusContrato} onChange={e => set('statusContrato', e.target.value)} className={inp + ' cursor-pointer'}>
+              <option value="Não enviado">Não enviado</option>
               <option value="Enviado">Enviado</option>
               <option value="Assinado">Assinado</option>
               <option value="Não precisa">Não precisa</option>
