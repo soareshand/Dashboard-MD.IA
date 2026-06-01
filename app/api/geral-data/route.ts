@@ -83,15 +83,19 @@ export async function GET() {
       supabase.from('contatos').select('medico, proximo_contato'),
       supabase.from('produtos_catalogo').select('id, nome, ordem').order('ordem'),
       supabase.from('contratos').select('medico, status_contrato, created_at').order('created_at', { ascending: false }),
-      supabase.from('renovacoes').select('medico, data').order('data', { ascending: false }),
+      supabase.from('renovacoes').select('medico, data, status_contrato').order('data', { ascending: false }),
     ]);
 
-    // Most recent renewal date per medico (case-insensitive key)
+    // Most recent renewal date and status per medico (case-insensitive key)
     const latestRenovacaoMap = new Map<string, string>();
+    const renovacaoStatusMap = new Map<string, string>();
     for (const r of (renovacoesRows ?? [])) {
       if (!r.data || !r.medico) continue;
       const key = r.medico.trim().toLowerCase();
-      if (!latestRenovacaoMap.has(key)) latestRenovacaoMap.set(key, r.data);
+      if (!latestRenovacaoMap.has(key)) {
+        latestRenovacaoMap.set(key, r.data);
+        if (r.status_contrato) renovacaoStatusMap.set(key, r.status_contrato);
+      }
     }
 
     if (callErr) console.error('[geral-data] quiz_call_responses error:', callErr);
@@ -211,7 +215,8 @@ export async function GET() {
 
       const presenca = presencaByMedico.get(m.nome);
       const contatoStatus = contatoByMedico.get(m.nome) ?? null;
-      const statusContrato = contratoByMedico.get(m.nome.toLowerCase()) ?? null;
+      const key = m.nome.trim().toLowerCase();
+      const statusContrato = renovacaoStatusMap.get(key) ?? contratoByMedico.get(key) ?? null;
 
       const npsRenovacao = renovByMedico.get(m.nome) ?? null;
       const npsMedico = medicoByMedico.get(m.nome) ?? null;
