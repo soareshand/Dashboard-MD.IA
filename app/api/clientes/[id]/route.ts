@@ -29,6 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         entrada: body.entrada || null,
         saida: body.saida || null,
         cpf: body.cpf || null,
+        cnpj: body.cnpj || null,
         endereco: body.endereco || null,
         cep: body.cep || null,
         estado: body.estado || null,

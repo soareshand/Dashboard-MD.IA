@@ -14,6 +14,7 @@ interface Membro {
   entrada: string | null;
   saida: string | null;
   cpf: string | null;
+  cnpj: string | null;
   endereco: string | null;
   cep: string | null;
   estado: string | null;
@@ -469,6 +470,7 @@ const BLANK_FORM = {
   entrada: '',
   saida: '',
   cpf: '',
+  cnpj: '',
   endereco: '',
   cep: '',
   estado: '',
@@ -581,7 +583,7 @@ function MembroModal({
 }) {
   const [form, setForm] = useState<MembroForm>(
     initial
-      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
+      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, cnpj: initial.cnpj, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
       : BLANK_FORM
   );
   const [modalTab, setModalTab] = useState<'dados' | 'produtos'>('dados');
@@ -729,6 +731,10 @@ function MembroModal({
             <div>
               <label className={lbl}>CPF</label>
               <input value={form.cpf} onChange={e => set('cpf', e.target.value)} placeholder="000.000.000-00" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>CNPJ</label>
+              <input value={form.cnpj} onChange={e => set('cnpj', e.target.value)} placeholder="00.000.000/0001-00" className={inp} />
             </div>
             <div>
               <label className={lbl}>Data de Nascimento</label>
@@ -900,6 +906,7 @@ export default function ClientesTab() {
       entrada: m.entrada ?? '',
       saida: m.saida ?? '',
       cpf: m.cpf ?? '',
+      cnpj: m.cnpj ?? '',
       endereco: m.endereco ?? '',
       cep: m.cep ?? '',
       estado: m.estado ?? '',
