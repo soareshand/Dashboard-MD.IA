@@ -243,6 +243,7 @@ export async function GET() {
         grupo: m.grupo,
         entrada: m.entrada,
         produtosAtivos,
+        produtos: produtosMap,
         npsMedia,
         npsRenovacao,
         npsMedico,

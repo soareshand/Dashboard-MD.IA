@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+interface CatalogItem {
+  id: string;
+  nome: string;
+  ordem: number;
+}
+
 interface CardData {
   id: string;
   nome: string;
@@ -9,6 +15,7 @@ interface CardData {
   grupo: string | null;
   entrada: string | null;
   produtosAtivos: number;
+  produtos: Record<string, boolean>;
   npsMedia: number | null;
   npsRenovacao: number | null;
   npsMedico: number | null;
@@ -28,6 +35,7 @@ interface CardData {
 interface GeralData {
   cards: CardData[];
   totalProdutos: number;
+  catalog: CatalogItem[];
 }
 
 function ScoreRing({ score }: { score: number }) {
@@ -114,7 +122,29 @@ function QuizBreakdown({ renovacao, medico, equipe, call, treinamento }: {
   );
 }
 
-function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: number }) {
+function ProductDots({ produtos, catalog }: { produtos: Record<string, boolean>; catalog: CatalogItem[] }) {
+  return (
+    <div className="flex flex-wrap gap-x-2 gap-y-1.5 pt-1">
+      {catalog.map(item => {
+        const active = produtos[item.id] === true;
+        return (
+          <div key={item.id} className="relative group flex items-center gap-1">
+            <div
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ background: active ? '#3B9EF5' : 'rgba(255,255,255,0.12)' }}
+            />
+            <span className="text-[9px]" style={{ color: active ? '#a2a2b2' : 'rgba(255,255,255,0.25)' }}>
+              {item.nome}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ClinicCard({ card, totalProdutos, catalog }: { card: CardData; totalProdutos: number; catalog: CatalogItem[] }) {
+  const [prodExpanded, setProdExpanded] = useState(false);
   const score = card.score;
   const scoreColor = score >= 7 ? '#3B9EF5' : score >= 4 ? '#8B5CF6' : '#F59E0B';
 
@@ -165,11 +195,24 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
 
       {/* Metrics */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-        <MetricChip
-          label="Produtos Ativos"
-          value={totalProdutos > 0 ? `${card.produtosAtivos} / ${totalProdutos}` : '—'}
-          color={prodColor}
-        />
+        <button
+          onClick={() => setProdExpanded(v => !v)}
+          className="flex flex-col gap-0.5 text-left group"
+        >
+          <span className="text-[9px] text-[#a2a2b2] uppercase tracking-wider font-medium flex items-center gap-1">
+            Produtos Ativos
+            <svg
+              width="8" height="8" viewBox="0 0 8 8" fill="none"
+              className="transition-transform duration-200"
+              style={{ transform: prodExpanded ? 'rotate(180deg)' : 'rotate(0deg)', color: '#a2a2b2' }}
+            >
+              <path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </span>
+          <span className="text-xs font-semibold leading-none group-hover:opacity-80 transition-opacity" style={{ color: prodColor }}>
+            {totalProdutos > 0 ? `${card.produtosAtivos} / ${totalProdutos}` : '—'}
+          </span>
+        </button>
         <MetricChip
           label="Presença"
           value={card.taxaPresenca !== null ? `${card.taxaPresenca}%` : '—'}
@@ -186,6 +229,12 @@ function ClinicCard({ card, totalProdutos }: { card: CardData; totalProdutos: nu
           color={contratoColor}
         />
       </div>
+
+      {prodExpanded && catalog.length > 0 && (
+        <div className="rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <ProductDots produtos={card.produtos ?? {}} catalog={catalog} />
+        </div>
+      )}
 
       <QuizBreakdown
         renovacao={card.npsRenovacao}
@@ -394,7 +443,7 @@ export default function GeralTab() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(card => (
-            <ClinicCard key={card.id} card={card} totalProdutos={data.totalProdutos} />
+            <ClinicCard key={card.id} card={card} totalProdutos={data.totalProdutos} catalog={data.catalog} />
           ))}
         </div>
       )}
