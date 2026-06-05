@@ -10,6 +10,7 @@ interface Membro {
   situacao: string;
   nome: string;
   clinica: string | null;
+  clinicas: string[] | null;
   grupo: string | null;
   entrada: string | null;
   saida: string | null;
@@ -579,7 +580,7 @@ function MembroModal({
   onSave,
   onClose,
 }: {
-  initial: (MembroForm & { id?: string; produtos?: Record<string, boolean> }) | null;
+  initial: (MembroForm & { id?: string; produtos?: Record<string, boolean>; clinicas?: string[] }) | null;
   onSave: () => void;
   onClose: () => void;
 }) {
@@ -587,6 +588,9 @@ function MembroModal({
     initial
       ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, cnpj: initial.cnpj, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
       : BLANK_FORM
+  );
+  const [clinicas, setClinicas] = useState<string[]>(
+    initial?.clinicas?.length ? initial.clinicas : initial?.clinica ? [initial.clinica] : ['']
   );
   const [modalTab, setModalTab] = useState<'dados' | 'produtos'>('dados');
   const [catalog, setCatalog] = useState<ProdutoItem[]>([]);
@@ -623,10 +627,16 @@ function MembroModal({
     setError('');
     try {
       const url = isEdit ? `/api/clientes/${initial!.id}` : '/api/clientes';
+      const clinicasFiltradas = clinicas.map(c => c.trim()).filter(Boolean);
       const res = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, produtos: produtosAtivos }),
+        body: JSON.stringify({
+          ...form,
+          clinica: clinicasFiltradas[0] || null,
+          clinicas: clinicasFiltradas.length > 0 ? clinicasFiltradas : null,
+          produtos: produtosAtivos,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao salvar.');
@@ -719,8 +729,32 @@ function MembroModal({
               <input value={form.nome} onChange={e => set('nome', e.target.value)} placeholder="Nome completo" className={inp} />
             </div>
             <div className="sm:col-span-2">
-              <label className={lbl}>Nome da Clínica</label>
-              <input value={form.clinica} onChange={e => set('clinica', e.target.value)} placeholder="Nome da clínica" className={inp} />
+              <div className="flex items-center justify-between mb-1">
+                <label className={lbl}>Clínica(s)</label>
+                <button type="button" onClick={() => setClinicas(c => [...c, ''])}
+                  className="text-[#3B9EF5] text-xs hover:underline">
+                  + Adicionar clínica
+                </button>
+              </div>
+              <div className="flex flex-col gap-2">
+                {clinicas.map((c, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input
+                      value={c}
+                      onChange={e => setClinicas(prev => prev.map((v, idx) => idx === i ? e.target.value : v))}
+                      placeholder={i === 0 ? 'Clínica principal' : `Clínica ${i + 1}`}
+                      className={inp + ' flex-1'}
+                    />
+                    {clinicas.length > 1 && (
+                      <button type="button"
+                        onClick={() => setClinicas(prev => prev.filter((_, idx) => idx !== i))}
+                        className="text-[#F59E0B] hover:opacity-70 text-sm px-1 flex-shrink-0">
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
             <div>
               <label className={lbl}>Entrada</label>
@@ -850,7 +884,7 @@ export default function ClientesTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTable, setActiveTable] = useState<'membros' | 'contato' | 'catalogo'>('membros');
-  const [modal, setModal] = useState<(MembroForm & { id?: string; produtos?: Record<string, boolean> }) | null | false>(false);
+  const [modal, setModal] = useState<(MembroForm & { id?: string; produtos?: Record<string, boolean>; clinicas?: string[] }) | null | false>(false);
   const [modalContato, setModalContato] = useState<(ContatoForm & { id?: string }) | null | false>(false);
   const [modalProduto, setModalProduto] = useState<ProdutoItem | null | false>(false);
   const [catalog, setCatalog] = useState<ProdutoItem[]>([]);
@@ -904,6 +938,7 @@ export default function ClientesTab() {
       situacao: (m.situacao as 'Ativo' | 'Inativo') || 'Ativo',
       nome: m.nome,
       clinica: m.clinica ?? '',
+      clinicas: m.clinicas?.length ? m.clinicas : m.clinica ? [m.clinica] : undefined,
       grupo: m.grupo ?? '',
       entrada: m.entrada ?? '',
       saida: m.saida ?? '',

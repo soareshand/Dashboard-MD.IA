@@ -30,6 +30,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         saida: body.saida || null,
         cpf: body.cpf || null,
         cnpj: body.cnpj || null,
+        clinicas: body.clinicas || null,
         endereco: body.endereco || null,
         cep: body.cep || null,
         estado: body.estado || null,
