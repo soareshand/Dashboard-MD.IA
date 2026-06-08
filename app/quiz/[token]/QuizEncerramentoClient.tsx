@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-const SERVICOS = ['Mentoria', 'CRM com IA (Infinite Gear)', 'Ambos'];
+const SERVICOS = ['Mentoria', 'CRM com IA (Infinite Gear)'];
 
 const MOTIVOS = [
   'Financeiro',
