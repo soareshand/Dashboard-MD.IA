@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nome e clínica são obrigatórios.' }, { status: 400 });
     }
 
-    const validTypes = ['renovacao', 'call', 'treinamento', 'mensal_medico', 'mensal_equipe'];
+    const validTypes = ['renovacao', 'call', 'treinamento', 'mensal_medico', 'mensal_equipe', 'encerramento'];
     const type = validTypes.includes(quizType) ? quizType : 'renovacao';
 
     const token = generateToken();

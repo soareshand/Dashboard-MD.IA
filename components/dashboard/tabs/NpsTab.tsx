@@ -706,51 +706,270 @@ function TreinamentoSubTab() {
   );
 }
 
+// ── Encerramento sub-tab ──────────────────────────────────────────────────────
+
+interface EncerramentoRow {
+  timestamp: string;
+  token: string;
+  nome: string;
+  clinica: string;
+  servicoUtilizado: string;
+  motivoEncerramento: string;
+  nps: number | null;
+  oque: string;
+  mensagem: string;
+}
+
+interface EncerramentoData {
+  kpis: { total: number; mediaNps: number | null };
+  npsDistribuicao: { nota: number; count: number }[];
+  porMotivo: { motivo: string; count: number }[];
+  porServico: { servico: string; count: number }[];
+  recent: EncerramentoRow[];
+}
+
+function npsColor(nps: number | null) {
+  if (nps === null) return '#a2a2b2';
+  if (nps >= 9) return '#3B9EF5';
+  if (nps >= 7) return '#8B5CF6';
+  return '#F59E0B';
+}
+
+function EncerramentoDetailModal({ row, onClose }: { row: EncerramentoRow; onClose: () => void }) {
+  return (
+    <DetailModal title={row.nome} subtitle={row.clinica || '—'} onClose={onClose}>
+      <MSection title="Identificação">
+        <MField label="Nome" value={row.nome} />
+        <MField label="Clínica" value={row.clinica} />
+        <MField label="Serviço utilizado" value={row.servicoUtilizado} />
+      </MSection>
+      <MSection title="Encerramento">
+        <MField label="Motivo" value={row.motivoEncerramento} />
+        <MField label="NPS" value={row.nps !== null ? String(row.nps) : '—'} />
+      </MSection>
+      {row.oque?.trim() && (
+        <MSection title="O que poderia ter sido diferente">
+          <p className="text-white text-xs leading-relaxed bg-[#12122A] rounded-xl p-3 border border-[rgba(139,92,246,0.15)]">{row.oque}</p>
+        </MSection>
+      )}
+      {row.mensagem?.trim() && (
+        <MSection title="Mensagem final">
+          <p className="text-white text-xs leading-relaxed bg-[#12122A] rounded-xl p-3 border border-[rgba(139,92,246,0.15)]">{row.mensagem}</p>
+        </MSection>
+      )}
+    </DetailModal>
+  );
+}
+
+function EncerramentoSubTab() {
+  const [data, setData] = useState<EncerramentoData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selected, setSelected] = useState<EncerramentoRow | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch('/api/nps-encerramento-data');
+      if (!res.ok) throw new Error('Erro ao carregar dados de Encerramento.');
+      setData(await res.json());
+      setError('');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erro desconhecido.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  if (loading) return <TabLoader />;
+  if (error) return <TabError message={error} onRetry={fetchData} />;
+  if (!data) return null;
+  if (data.kpis.total === 0) return <EmptyState label="Encerramento" />;
+
+  const maxMotivo = Math.max(...data.porMotivo.map(m => m.count), 1);
+  const maxNps = Math.max(...data.npsDistribuicao.map(d => d.count), 1);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <KpiCard icon="users" title="Total de Encerramentos" value={data.kpis.total} />
+        <KpiCard
+          icon="star"
+          title="NPS Médio"
+          value={data.kpis.mediaNps !== null ? String(data.kpis.mediaNps) : '—'}
+          subtitle="0 a 10"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Por motivo */}
+        <div className="card-gradient-border p-5">
+          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-[0.15em] mb-4">Motivo de Encerramento</h3>
+          <div className="space-y-3">
+            {data.porMotivo.map(m => {
+              const pct = maxMotivo > 0 ? (m.count / maxMotivo) * 100 : 0;
+              return (
+                <div key={m.motivo} className="flex items-center gap-3">
+                  <span className="text-[#a2a2b2] text-xs w-44 shrink-0 truncate" title={m.motivo}>{m.motivo}</span>
+                  <div className="flex-1 h-4 bg-[#12122A] rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#8B5CF6' }} />
+                  </div>
+                  <span className="text-xs text-[#A0A0B0] font-mono w-5 text-right">{m.count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* NPS distribution */}
+        <div className="card-gradient-border p-5">
+          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-[0.15em] mb-4">Distribuição NPS</h3>
+          <div className="space-y-2">
+            {[...data.npsDistribuicao].reverse().map(d => {
+              const pct = maxNps > 0 ? (d.count / maxNps) * 100 : 0;
+              const color = d.nota >= 9 ? '#3B9EF5' : d.nota >= 7 ? '#8B5CF6' : '#F59E0B';
+              return (
+                <div key={d.nota} className="flex items-center gap-2">
+                  <span className="font-orbitron font-bold text-xs w-4 text-right" style={{ color }}>{d.nota}</span>
+                  <div className="flex-1 h-3 bg-[#12122A] rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
+                  </div>
+                  <span className="text-xs text-[#A0A0B0] font-mono w-5 text-right">{d.count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Por serviço */}
+      {data.porServico.length > 0 && (
+        <div className="card-gradient-border p-5">
+          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-[0.15em] mb-4">Por Serviço Utilizado</h3>
+          <div className="flex flex-wrap gap-3">
+            {data.porServico.map(s => (
+              <div key={s.servico} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#12122A] border border-[rgba(59,158,245,0.15)]">
+                <span className="text-white text-xs">{s.servico}</span>
+                <span className="font-orbitron font-bold text-sm text-[#3B9EF5]">{s.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recent */}
+      <div className="card-gradient-border overflow-hidden">
+        <div className="px-5 pt-5 pb-3">
+          <h3 className="font-orbitron text-xs font-bold text-white uppercase tracking-wider">Respostas recentes</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[rgba(59,158,245,0.1)]">
+                <th className="text-left px-5 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Nome</th>
+                <th className="text-left px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">Motivo</th>
+                <th className="text-center px-4 py-2 text-[#A0A0B0] text-xs uppercase tracking-wider">NPS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.recent.map((r, i) => (
+                <tr key={i} onClick={() => setSelected(r)} className="border-b border-[rgba(59,158,245,0.05)] hover:bg-[rgba(59,158,245,0.03)] cursor-pointer">
+                  <td className="px-5 py-3">
+                    <p className="text-white font-medium">{r.nome}</p>
+                    <p className="text-[#A0A0B0] text-xs">{r.clinica}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-[rgba(139,92,246,0.1)] text-[#A78BFA] border border-[rgba(139,92,246,0.2)]">
+                      {r.motivoEncerramento || '—'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center font-orbitron font-bold text-sm" style={{ color: npsColor(r.nps) }}>
+                    {r.nps !== null ? r.nps : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {selected && <EncerramentoDetailModal row={selected} onClose={() => setSelected(null)} />}
+    </div>
+  );
+}
+
 // ── Main NpsTab ───────────────────────────────────────────────────────────────
 
-const SUB_TABS = [
+const SUB_TABS_ROW1 = [
   { id: 'renovacao', label: 'Renovação' },
   { id: 'call', label: 'Pós-Call' },
   { id: 'treinamento', label: 'Pós-Treinamento' },
 ] as const;
 
-type SubTabId = typeof SUB_TABS[number]['id'];
+const SUB_TABS_ROW2 = [
+  { id: 'encerramento', label: 'Encerramento' },
+] as const;
+
+const ALL_SUB_TABS = [...SUB_TABS_ROW1, ...SUB_TABS_ROW2];
+type SubTabId = typeof ALL_SUB_TABS[number]['id'];
 
 function SubTabIcon({ id, active }: { id: SubTabId; active: boolean }) {
   const c = active ? '#ffffff' : '#a2a2b2';
   const s = { width: 17, height: 17, viewBox: '0 0 24 24' as const, fill: 'none' as const, stroke: c, strokeWidth: '1.8' as const, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   if (id === 'renovacao') return <svg {...s}><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>;
   if (id === 'call') return <svg {...s}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.1 6.1l1-1a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>;
+  if (id === 'encerramento') return <svg {...s}><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>;
   return <svg {...s}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
 }
 
 export default function NpsTab() {
   const [active, setActive] = useState<SubTabId>('renovacao');
 
+  const tabStyle = (id: SubTabId) =>
+    active === id
+      ? { background: id === 'encerramento' ? 'linear-gradient(135deg, #6D28D9, #8B5CF6)' : '#3B9EF5' }
+      : {};
+
   return (
     <div className="space-y-6">
-      {/* Sub-navigation */}
-      <div className="flex gap-1 bg-[#06060E] rounded-xl p-1">
-        {SUB_TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActive(t.id)}
-            style={active === t.id ? { background: '#3B9EF5' } : {}}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-sora transition-all ${
-              active === t.id
-                ? 'text-white shadow-md'
-                : 'text-[#a2a2b2] hover:text-[#A0A0B0]'
-            }`}
-          >
-            <SubTabIcon id={t.id} active={active === t.id} />
-            <span className="truncate">{t.label}</span>
-          </button>
-        ))}
+      {/* Sub-navigation row 1 */}
+      <div className="space-y-1">
+        <div className="flex gap-1 bg-[#06060E] rounded-xl p-1">
+          {SUB_TABS_ROW1.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActive(t.id)}
+              style={tabStyle(t.id)}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-sora transition-all ${
+                active === t.id ? 'text-white shadow-md' : 'text-[#a2a2b2] hover:text-[#A0A0B0]'
+              }`}
+            >
+              <SubTabIcon id={t.id} active={active === t.id} />
+              <span className="truncate">{t.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 bg-[#06060E] rounded-xl p-1">
+          {SUB_TABS_ROW2.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActive(t.id)}
+              style={tabStyle(t.id)}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-sora transition-all ${
+                active === t.id ? 'text-white shadow-md' : 'text-[#a2a2b2] hover:text-[#A0A0B0]'
+              }`}
+            >
+              <SubTabIcon id={t.id} active={active === t.id} />
+              <span className="truncate">{t.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {active === 'renovacao' && <RenovacaoSubTab />}
       {active === 'call' && <CallSubTab />}
       {active === 'treinamento' && <TreinamentoSubTab />}
+      {active === 'encerramento' && <EncerramentoSubTab />}
     </div>
   );
 }
