@@ -14,7 +14,7 @@ interface GenerateLinkModalProps {
   onLinkGenerated?: () => void;
 }
 
-type QuizType = 'renovacao' | 'call' | 'treinamento' | 'mensal_medico' | 'mensal_equipe';
+type QuizType = 'renovacao' | 'call' | 'treinamento' | 'mensal_medico' | 'mensal_equipe' | 'encerramento';
 type Genero = 'Dr.' | 'Dra.';
 type Participante = 'medico' | 'equipe';
 
@@ -29,8 +29,9 @@ const TABS_ROW1: { id: QuizType; label: string }[] = [
   { id: 'treinamento', label: 'Pós-Treino'      },
 ];
 const TABS_ROW2: { id: QuizType; label: string }[] = [
-  { id: 'mensal_medico', label: 'Pulso Médico' },
-  { id: 'mensal_equipe', label: 'Pulso Equipe' },
+  { id: 'mensal_medico',  label: 'Pulso Médico'  },
+  { id: 'mensal_equipe',  label: 'Pulso Equipe'  },
+  { id: 'encerramento',   label: 'Encerramento'  },
 ];
 const ALL_TABS = [...TABS_ROW1, ...TABS_ROW2];
 
@@ -48,6 +49,9 @@ function TabIcon({ id, active }: { id: QuizType; active: boolean }) {
   );
   if (id === 'mensal_equipe') return (
     <svg {...s}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  );
+  if (id === 'encerramento') return (
+    <svg {...s}><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
   );
   return (
     <svg {...s}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -180,6 +184,9 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
     if (quizType === 'mensal_equipe') {
       return `Oláa, ${saudacao}!\n\nTodo mês colhemos o feedback da equipe para garantir que tudo está funcionando bem e identificar onde podemos melhorar.\n\nPreparamos uma avaliação rápida, são apenas 4 perguntinhas, leva menos de 2 minutinhos.\n\n${url}`;
     }
+    if (quizType === 'encerramento') {
+      return `Oláa, ${saudacao}! Tudo bem?\n\nPrimeiro, queremos te agradecer pela sua jornada conosco na MD.IA. Foi uma honra fazer parte da evolução da sua clínica.\n\nGostaríamos muito de entender a sua experiência. Preparamos um formulário rápido — leva menos de 2 minutinhos. O seu feedback é muito valioso e nos ajuda a melhorar continuamente.\n\n${url}\n\nQualquer dúvida, estou à disposição. Muito obrigado!`;
+    }
     return `Oláa, ${saudacao}! Tudo bem?\n\nPassando para avisar que a sua mentoria da MD.IA já está chegando ao fim. Preparei um formulário onde gostaríamos de ouvir a sua experiência ao longo da jornada, seus objetivos, resultados percebidos, avaliação das ferramentas e mentorias, além da intenção de renovação.\n\nSegue o link: ${url}\n\nO seu retorno é muito importante para nós e nos ajuda a evoluir cada vez mais. Qualquer dúvida, estou à disposição. Muito obrigado!`;
   }
 
@@ -190,12 +197,13 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
     setTimeout(() => setCopiedMsg(false), 2000);
   }
 
-  const isMedicoFlow = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico';
+  const isMedicoFlow = quizType === 'renovacao' || quizType === 'mensal_medico' || quizType === 'encerramento' || participante === 'medico';
 
   const metaValid =
     quizType === 'renovacao' ||
     quizType === 'mensal_medico' ||
     quizType === 'mensal_equipe' ||
+    quizType === 'encerramento' ||
     (quizType === 'call' && tipoCall !== '') ||
     (quizType === 'treinamento' && ferramenta.trim() !== '');
 

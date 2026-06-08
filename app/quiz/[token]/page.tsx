@@ -5,6 +5,7 @@ import QuizCallClient from './QuizCallClient';
 import QuizTreinamentoClient from './QuizTreinamentoClient';
 import QuizMensalMedicoClient from './QuizMensalMedicoClient';
 import QuizMensalEquipeClient from './QuizMensalEquipeClient';
+import QuizEncerramentoClient from './QuizEncerramentoClient';
 
 interface Props {
   params: { token: string };
@@ -62,6 +63,13 @@ export default async function QuizPage({ params }: Props) {
           )}
           {quizType === 'mensal_equipe' && (
             <QuizMensalEquipeClient
+              token={token}
+              nome={tokenData.cliente_nome}
+              clinica={tokenData.clinica}
+            />
+          )}
+          {quizType === 'encerramento' && (
+            <QuizEncerramentoClient
               token={token}
               nome={tokenData.cliente_nome}
               clinica={tokenData.clinica}
