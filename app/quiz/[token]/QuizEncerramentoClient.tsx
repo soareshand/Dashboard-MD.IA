@@ -42,6 +42,55 @@ function ChoiceQuestion({ label, options, value, onChange }: {
   );
 }
 
+function MultiChoiceQuestion({ label, options, values, outroText, onChange, onOutroChange }: {
+  label: string;
+  options: string[];
+  values: string[];
+  outroText: string;
+  onChange: (v: string[]) => void;
+  onOutroChange: (v: string) => void;
+}) {
+  function toggle(opt: string) {
+    if (values.includes(opt)) {
+      onChange(values.filter(v => v !== opt));
+    } else {
+      onChange([...values, opt]);
+    }
+  }
+  const outroSelected = values.includes('Outro');
+  return (
+    <div className="space-y-4">
+      <p className="text-white font-sora text-sm leading-relaxed">{label}</p>
+      <div className="flex flex-col gap-2">
+        {options.map(opt => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => toggle(opt)}
+            className={`px-4 py-3 rounded-xl text-sm font-sora transition-all duration-200 border text-left ${
+              values.includes(opt)
+                ? 'bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] text-white border-transparent shadow-[0_0_12px_rgba(109,40,217,0.35)]'
+                : 'bg-[#12122A] text-[#A0A0B0] border-[rgba(139,92,246,0.2)] hover:border-[#8B5CF6] hover:text-white'
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {outroSelected && (
+        <textarea
+          value={outroText}
+          onChange={e => onOutroChange(e.target.value)}
+          placeholder="Descreva o motivo…"
+          rows={3}
+          className="w-full bg-[#12122A] border border-[rgba(139,92,246,0.35)] rounded-xl px-4 py-3 text-white placeholder-[#555570] focus:outline-none focus:border-[#8B5CF6] transition-all font-sora text-sm resize-none"
+        />
+      )}
+      <p className="text-[10px] text-[#a2a2b2]">Pode selecionar mais de um</p>
+    </div>
+  );
+}
+
 function NpsQuestion({ label, value, onChange }: {
   label: string;
   value: number | null;
@@ -50,13 +99,13 @@ function NpsQuestion({ label, value, onChange }: {
   return (
     <div className="space-y-4">
       <p className="text-white font-sora text-sm leading-relaxed">{label}</p>
-      <div className="grid grid-cols-6 gap-1.5 sm:flex sm:flex-wrap sm:gap-1.5">
+      <div className="grid grid-cols-6 gap-2 sm:grid-cols-11">
         {Array.from({ length: 11 }, (_, i) => (
           <button
             key={i}
             type="button"
             onClick={() => onChange(i)}
-            className={`flex items-center justify-center rounded-xl transition-all duration-200 border font-orbitron font-bold text-sm h-10 ${
+            className={`flex items-center justify-center rounded-xl transition-all duration-200 border font-orbitron font-bold text-sm h-11 ${
               value === i
                 ? 'bg-gradient-to-br from-[#4A90E2] to-[#6EC6FF] border-transparent text-white shadow-[0_0_12px_rgba(74,144,226,0.4)] scale-105'
                 : 'bg-[#12122A] border-[rgba(74,144,226,0.2)] text-[#A0A0B0] hover:border-[#4A90E2] hover:text-white'
@@ -83,7 +132,8 @@ interface Props {
 export default function QuizEncerramentoClient({ token, nome, clinica }: Props) {
   const [step, setStep] = useState(0);
   const [servico, setServico] = useState('');
-  const [motivo, setMotivo] = useState('');
+  const [motivos, setMotivos] = useState<string[]>([]);
+  const [outroMotivo, setOutroMotivo] = useState('');
   const [nps, setNps] = useState<number | null>(null);
   const [oque, setOque] = useState('');
   const [mensagem, setMensagem] = useState('');
@@ -93,9 +143,11 @@ export default function QuizEncerramentoClient({ token, nome, clinica }: Props) 
 
   const TOTAL = 5;
 
+  const motivoValido = motivos.length > 0 && (!motivos.includes('Outro') || outroMotivo.trim() !== '');
+
   const canNext = [
     servico !== '',
-    motivo !== '',
+    motivoValido,
     nps !== null,
     true,
     true,
@@ -105,10 +157,13 @@ export default function QuizEncerramentoClient({ token, nome, clinica }: Props) 
     setLoading(true);
     setError('');
     try {
+      const motivoFinal = motivos
+        .map(m => (m === 'Outro' && outroMotivo.trim() ? `Outro: ${outroMotivo.trim()}` : m))
+        .join(', ');
       const res = await fetch('/api/submit-encerramento', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, servico, motivo, nps, oque, mensagem }),
+        body: JSON.stringify({ token, servico, motivo: motivoFinal, nps, oque, mensagem }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao enviar.');
@@ -162,11 +217,13 @@ export default function QuizEncerramentoClient({ token, nome, clinica }: Props) 
       )}
 
       {step === 1 && (
-        <ChoiceQuestion
+        <MultiChoiceQuestion
           label="Qual foi o principal motivo do encerramento?"
           options={MOTIVOS}
-          value={motivo}
-          onChange={setMotivo}
+          values={motivos}
+          outroText={outroMotivo}
+          onChange={setMotivos}
+          onOutroChange={setOutroMotivo}
         />
       )}
 
