@@ -72,11 +72,11 @@ export default function AtividadesTab() {
     fetch('/api/clientes-data')
       .then(r => r.json())
       .then(json => {
-        const nomes = [...new Set<string>(
+        const nomes = Array.from(new Set<string>(
           (json.membros ?? [])
             .map((m: { clinica: string | null }) => m.clinica)
             .filter(Boolean) as string[]
-        )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        )).sort((a, b) => a.localeCompare(b, 'pt-BR'));
         setClinicas(nomes);
       })
       .catch(() => {});
