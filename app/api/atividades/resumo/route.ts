@@ -9,6 +9,7 @@ interface Atividade {
   data: string;
   categoria: string;
   descricao: string;
+  meta?: { clinica?: string } | null;
 }
 
 export async function POST(req: NextRequest) {
@@ -47,7 +48,8 @@ export async function POST(req: NextRequest) {
     if (!items || items.length === 0) continue;
     linhas.push(`*${dia}*`);
     for (const a of items) {
-      linhas.push(`• [${a.categoria}] ${a.descricao}`);
+      const clinicaSuffix = a.meta?.clinica ? ` — ${a.meta.clinica}` : '';
+      linhas.push(`• [${a.categoria}] ${a.descricao}${clinicaSuffix}`);
     }
     linhas.push('');
   }

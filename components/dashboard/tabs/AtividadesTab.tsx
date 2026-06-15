@@ -22,6 +22,7 @@ interface Atividade {
   descricao: string;
   origem: string;
   timestamp: string;
+  meta?: { clinica?: string; [key: string]: unknown } | null;
 }
 
 function weekRange(ref: Date) {
@@ -48,6 +49,8 @@ export default function AtividadesTab() {
   const [addData, setAddData] = useState(toYMD(new Date()));
   const [addCat, setAddCat] = useState('Reunião');
   const [addDesc, setAddDesc] = useState('');
+  const [addClinica, setAddClinica] = useState('');
+  const [clinicas, setClinicas] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const { start, end } = weekRange(weekRef);
@@ -65,6 +68,20 @@ export default function AtividadesTab() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    fetch('/api/clientes-data')
+      .then(r => r.json())
+      .then(json => {
+        const nomes = [...new Set<string>(
+          (json.membros ?? [])
+            .map((m: { clinica: string | null }) => m.clinica)
+            .filter(Boolean) as string[]
+        )].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        setClinicas(nomes);
+      })
+      .catch(() => {});
+  }, []);
+
   const days = eachDayOfInterval({ start, end });
 
   function atividadesDoDia(day: Date) {
@@ -76,13 +93,16 @@ export default function AtividadesTab() {
     if (!addDesc.trim()) return;
     setSaving(true);
     try {
+      const body: Record<string, string> = { categoria: addCat, descricao: addDesc.trim(), data: addData };
+      if (addClinica.trim()) body.clinica = addClinica.trim();
       const res = await fetch('/api/atividades', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ categoria: addCat, descricao: addDesc.trim(), data: addData }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
         setAddDesc('');
+        setAddClinica('');
         setShowAdd(false);
         load();
       }
@@ -212,7 +232,12 @@ export default function AtividadesTab() {
                         <span className={`shrink-0 mt-0.5 text-[10px] px-2 py-0.5 rounded-full border font-sora ${CAT_STYLE[a.categoria] ?? CAT_STYLE['Outro']}`}>
                           {a.categoria}
                         </span>
-                        <span className="flex-1 text-white text-sm font-sora leading-relaxed">{a.descricao}</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-white text-sm font-sora leading-relaxed">{a.descricao}</span>
+                          {a.meta?.clinica && (
+                            <span className="ml-2 text-[10px] text-[#a2a2b2] font-sora">· {a.meta.clinica}</span>
+                          )}
+                        </div>
                         {a.origem === 'auto' && (
                           <span className="shrink-0 text-[9px] text-[#a2a2b2] mt-1">auto</span>
                         )}
@@ -272,6 +297,21 @@ export default function AtividadesTab() {
                   className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-2.5 text-white font-sora text-sm focus:outline-none focus:border-[#4A90E2]"
                 >
                   {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[#a2a2b2] text-xs font-sora block mb-1">
+                  Clínica <span className="text-[#555570]">(opcional)</span>
+                </label>
+                <select
+                  value={addClinica}
+                  onChange={e => setAddClinica(e.target.value)}
+                  className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-2.5 font-sora text-sm focus:outline-none focus:border-[#4A90E2]"
+                  style={{ color: addClinica ? '#ffffff' : '#555570' }}
+                >
+                  <option value="">— Nenhuma —</option>
+                  {clinicas.map(c => <option key={c} value={c} style={{ color: '#ffffff' }}>{c}</option>)}
                 </select>
               </div>
 

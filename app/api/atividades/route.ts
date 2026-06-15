@@ -19,11 +19,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { categoria, descricao, data, origem, meta } = body;
+  const { categoria, descricao, data, origem, meta, clinica } = body;
 
   if (!categoria || !descricao) {
     return NextResponse.json({ error: 'Categoria e descrição são obrigatórias.' }, { status: 400 });
   }
+
+  const metaFinal = clinica ? { ...(meta ?? {}), clinica } : (meta ?? null);
 
   const { data: row, error } = await supabase
     .from('atividades')
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
       descricao,
       data: data ?? new Date().toISOString().split('T')[0],
       origem: origem ?? 'manual',
-      meta: meta ?? null,
+      meta: metaFinal,
     })
     .select()
     .single();
