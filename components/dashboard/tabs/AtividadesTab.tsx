@@ -272,7 +272,7 @@ export default function AtividadesTab() {
       {/* Modal: Adicionar atividade */}
       {showAdd && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full max-w-md bg-[#12122A] rounded-2xl border border-[rgba(74,144,226,0.2)] p-6 space-y-4">
+          <div className="w-full max-w-md bg-[#12122A] rounded-2xl border border-[rgba(74,144,226,0.2)] p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <h3 className="font-orbitron text-base font-bold text-white">Nova Atividade</h3>
               <button onClick={() => setShowAdd(false)} className="text-[#a2a2b2] hover:text-white">✕</button>
