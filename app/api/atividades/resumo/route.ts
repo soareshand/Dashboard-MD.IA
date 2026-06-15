@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (!items || items.length === 0) continue;
     linhas.push(`*${dia}*`);
     for (const a of items) {
-      linhas.push(`• ${a.descricao}`);
+      linhas.push(`• [${a.categoria}] ${a.descricao}`);
     }
     linhas.push('');
   }
