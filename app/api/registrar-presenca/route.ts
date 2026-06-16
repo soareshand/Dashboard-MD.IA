@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     if (delError) throw delError;
 
     const rows = Object.entries(presencas as Record<string, 'Presente' | 'Faltou'>).map(
-      ([medico, status]) => ({ medico, sessao: isoDate, status })
+      ([medico, status]) => ({ medico: medico.trim(), sessao: isoDate, status })
     );
 
     const { error } = await supabase.from('presencas').insert(rows);

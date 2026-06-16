@@ -11,13 +11,13 @@ function isoToDdMmYyyy(iso: string): string {
 export async function GET() {
   try {
     const [{ data: presencaRows }, { data: clientesRows }] = await Promise.all([
-      supabase.from('presencas').select('medico, sessao, status').order('sessao', { ascending: true }),
+      supabase.from('presencas').select('medico, sessao, status').order('sessao', { ascending: true }).order('id', { ascending: true }),
       supabase.from('clientes').select('nome, situacao'),
     ]);
 
     const medicosAtivos = (clientesRows ?? [])
       .filter(m => m.situacao === 'Ativo')
-      .map(m => m.nome)
+      .map(m => m.nome.trim())
       .sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
     const grid: Record<string, Record<string, string>> = {};
@@ -26,12 +26,13 @@ export async function GET() {
 
     for (const row of (presencaRows ?? [])) {
       const sessao = isoToDdMmYyyy(row.sessao);
+      const medicoKey = row.medico.trim();
       if (!sessoesSet.has(sessao)) {
         sessoesSet.add(sessao);
         sessoesOrdenadas.push(sessao);
       }
-      if (!grid[row.medico]) grid[row.medico] = {};
-      grid[row.medico][sessao] = row.status;
+      if (!grid[medicoKey]) grid[medicoKey] = {};
+      grid[medicoKey][sessao] = row.status;
     }
 
     const totalSessoes = sessoesOrdenadas.length;
