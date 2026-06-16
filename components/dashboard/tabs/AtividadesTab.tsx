@@ -4,10 +4,38 @@ import { useState, useEffect, useCallback } from 'react';
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, addWeeks, subWeeks, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const CATEGORIAS = ['Reunião', 'Onboarding', 'Suporte', 'Follow-up', 'Outro'];
+const SUBCATEGORIAS: Record<string, string[]> = {
+  'Follow-up': [
+    'WhatsApp enviado',
+    'Check-in pós-treinamento',
+    'Acompanhamento do teste com IA',
+    'Acompanhamento da automação de experiência',
+  ],
+  'Call': [
+    'Call de onboarding',
+    'Call de renovação',
+    'Call de acompanhamento',
+    'Call interno',
+  ],
+  'Onboarding': [
+    'Apresentação da plataforma',
+    'Treinamento CRM',
+    'Configuração do CRM',
+    'Follow-up de onboarding',
+  ],
+  'Suporte': [
+    'Suporte CRM via Call',
+    'Suporte CRM via WhatsApp',
+    'Ajuste de IA via Call',
+    'Ajuste de IA via WhatsApp',
+  ],
+  'Outro': [],
+};
+
+const CATEGORIAS = Object.keys(SUBCATEGORIAS);
 
 const CAT_STYLE: Record<string, string> = {
-  'Reunião':     'bg-[rgba(59,158,245,0.12)] text-[#6EC6FF] border-[rgba(59,158,245,0.3)]',
+  'Call':        'bg-[rgba(59,158,245,0.12)] text-[#6EC6FF] border-[rgba(59,158,245,0.3)]',
   'Onboarding':  'bg-[rgba(16,185,129,0.12)] text-[#34D399] border-[rgba(16,185,129,0.3)]',
   'Suporte':     'bg-[rgba(245,158,11,0.12)] text-[#FCD34D] border-[rgba(245,158,11,0.3)]',
   'Follow-up':   'bg-[rgba(139,92,246,0.12)] text-[#A78BFA] border-[rgba(139,92,246,0.3)]',
@@ -47,11 +75,18 @@ export default function AtividadesTab() {
 
   // Add form state
   const [addData, setAddData] = useState(toYMD(new Date()));
-  const [addCat, setAddCat] = useState('Reunião');
-  const [addDesc, setAddDesc] = useState('');
+  const [addCat, setAddCat] = useState('Follow-up');
+  const [addSub, setAddSub] = useState(SUBCATEGORIAS['Follow-up'][0]);
+  const [addNota, setAddNota] = useState('');
   const [addClinica, setAddClinica] = useState('');
   const [clinicas, setClinicas] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
+  function handleCatChange(cat: string) {
+    setAddCat(cat);
+    setAddSub(SUBCATEGORIAS[cat][0] ?? '');
+    setAddNota('');
+  }
 
   const { start, end } = weekRange(weekRef);
 
@@ -90,10 +125,14 @@ export default function AtividadesTab() {
   }
 
   async function handleAdd() {
-    if (!addDesc.trim()) return;
+    const isOutro = addCat === 'Outro';
+    if (isOutro && !addNota.trim()) return;
+    const descricao = isOutro
+      ? addNota.trim()
+      : addNota.trim() ? `${addSub} — ${addNota.trim()}` : addSub;
     setSaving(true);
     try {
-      const body: Record<string, string> = { categoria: addCat, descricao: addDesc.trim(), data: addData };
+      const body: Record<string, string> = { categoria: addCat, descricao, data: addData };
       if (addClinica.trim()) body.clinica = addClinica.trim();
       const res = await fetch('/api/atividades', {
         method: 'POST',
@@ -101,7 +140,7 @@ export default function AtividadesTab() {
         body: JSON.stringify(body),
       });
       if (res.ok) {
-        setAddDesc('');
+        setAddNota('');
         setAddClinica('');
         setShowAdd(false);
         load();
@@ -154,7 +193,7 @@ export default function AtividadesTab() {
           <p className="text-[#a2a2b2] text-xs mt-0.5">Registro diário de atividades do CS</p>
         </div>
         <button
-          onClick={() => { setShowAdd(true); setAddData(toYMD(new Date())); }}
+          onClick={() => { setShowAdd(true); setAddData(toYMD(new Date())); setAddCat('Follow-up'); setAddSub(SUBCATEGORIAS['Follow-up'][0]); setAddNota(''); setAddClinica(''); }}
           className="px-4 py-2 rounded-xl text-sm font-sora font-semibold text-white transition-all"
           style={{ background: 'linear-gradient(135deg, #4A90E2, #6EC6FF)' }}
         >
@@ -293,11 +332,37 @@ export default function AtividadesTab() {
                 <label className="text-[#a2a2b2] text-xs font-sora block mb-1">Categoria</label>
                 <select
                   value={addCat}
-                  onChange={e => setAddCat(e.target.value)}
+                  onChange={e => handleCatChange(e.target.value)}
                   className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-2.5 text-white font-sora text-sm focus:outline-none focus:border-[#4A90E2]"
                 >
                   {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
+              </div>
+
+              {addCat !== 'Outro' && (
+                <div>
+                  <label className="text-[#a2a2b2] text-xs font-sora block mb-1">Subcategoria</label>
+                  <select
+                    value={addSub}
+                    onChange={e => setAddSub(e.target.value)}
+                    className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-2.5 text-white font-sora text-sm focus:outline-none focus:border-[#4A90E2]"
+                  >
+                    {SUBCATEGORIAS[addCat].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="text-[#a2a2b2] text-xs font-sora block mb-1">
+                  {addCat === 'Outro' ? 'Descrição' : <>Nota <span className="text-[#555570]">(opcional)</span></>}
+                </label>
+                <input
+                  type="text"
+                  value={addNota}
+                  onChange={e => setAddNota(e.target.value)}
+                  placeholder={addCat === 'Outro' ? 'Descreva a atividade…' : 'Ex: com Dr. João, aguardando retorno…'}
+                  className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-2.5 text-white placeholder-[#555570] font-sora text-sm focus:outline-none focus:border-[#4A90E2]"
+                />
               </div>
 
               <div>
@@ -315,16 +380,15 @@ export default function AtividadesTab() {
                 </select>
               </div>
 
-              <div>
-                <label className="text-[#a2a2b2] text-xs font-sora block mb-1">Descrição</label>
-                <textarea
-                  value={addDesc}
-                  onChange={e => setAddDesc(e.target.value)}
-                  placeholder="Descreva a atividade…"
-                  rows={3}
-                  className="w-full bg-[#0D0D1A] border border-[rgba(74,144,226,0.25)] rounded-xl px-4 py-3 text-white placeholder-[#555570] font-sora text-sm focus:outline-none focus:border-[#4A90E2] resize-none"
-                />
-              </div>
+              {addCat !== 'Outro' && (addSub || addNota) && (
+                <div className="rounded-xl bg-[#0D0D1A] border border-[rgba(74,144,226,0.15)] px-4 py-2.5">
+                  <p className="text-[10px] text-[#a2a2b2] font-sora mb-1">Prévia</p>
+                  <p className="text-white text-sm font-sora">
+                    {addNota.trim() ? `${addSub} — ${addNota.trim()}` : addSub}
+                    {addClinica && <span className="text-[#a2a2b2]"> · {addClinica}</span>}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-1">
@@ -333,7 +397,7 @@ export default function AtividadesTab() {
               </button>
               <button
                 onClick={handleAdd}
-                disabled={!addDesc.trim() || saving}
+                disabled={(addCat === 'Outro' && !addNota.trim()) || saving}
                 className="flex-1 py-2.5 rounded-xl text-white font-sora font-semibold text-sm transition-all disabled:opacity-40"
                 style={{ background: 'linear-gradient(135deg, #4A90E2, #6EC6FF)' }}
               >
