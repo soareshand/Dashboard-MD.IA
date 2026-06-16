@@ -31,7 +31,14 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.from('presencas').insert(rows);
 
     if (error) throw error;
-    return NextResponse.json({ success: true });
+
+    // Debug: verify row count after insert
+    const { count } = await supabase
+      .from('presencas')
+      .select('*', { count: 'exact', head: true })
+      .eq('sessao', isoDate);
+
+    return NextResponse.json({ success: true, debug: { rowsSent: rows.length, rowsInDB: count } });
   } catch (err) {
     console.error('[registrar-presenca]', err);
     return NextResponse.json({ error: 'Erro ao registrar presença.' }, { status: 500 });
