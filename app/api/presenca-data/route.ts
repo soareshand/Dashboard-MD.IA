@@ -20,19 +20,27 @@ export async function GET() {
       .map(m => m.nome.trim())
       .sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
+    // Case-insensitive map: normalized name → canonical clientes name
+    const normToCanonical: Record<string, string> = {};
+    for (const nome of medicosAtivos) {
+      normToCanonical[nome.toLowerCase()] = nome;
+    }
+
     const grid: Record<string, Record<string, string>> = {};
     const sessoesOrdenadas: string[] = [];
     const sessoesSet = new Set<string>();
 
     for (const row of (presencaRows ?? [])) {
       const sessao = isoToDdMmYyyy(row.sessao);
-      const medicoKey = row.medico.trim();
+      // Resolve presencas.medico to the canonical clientes name (case-insensitive)
+      const normKey = row.medico.trim().toLowerCase();
+      const canonicalKey = normToCanonical[normKey] ?? row.medico.trim();
       if (!sessoesSet.has(sessao)) {
         sessoesSet.add(sessao);
         sessoesOrdenadas.push(sessao);
       }
-      if (!grid[medicoKey]) grid[medicoKey] = {};
-      grid[medicoKey][sessao] = row.status;
+      if (!grid[canonicalKey]) grid[canonicalKey] = {};
+      grid[canonicalKey][sessao] = row.status;
     }
 
     const totalSessoes = sessoesOrdenadas.length;
