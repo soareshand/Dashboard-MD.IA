@@ -43,7 +43,6 @@ export default function RegistrarPresencaModal({ medicos, grid, onClose, onSucce
   const [presencas, setPresencas] = useState<Record<string, 'Presente' | 'Faltou'>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [debugInfo, setDebugInfo] = useState('');
   const [search, setSearch] = useState('');
 
   const sessaoFormatada = fromInputValue(dateInput);
@@ -85,10 +84,6 @@ export default function RegistrarPresencaModal({ medicos, grid, onClose, onSucce
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Erro ao registrar.');
-      if (json.debug) {
-        setDebugInfo(`Enviados: ${json.debug.rowsSent} | No banco: ${json.debug.rowsInDB}`);
-        await new Promise(r => setTimeout(r, 3000));
-      }
       onSuccess();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erro desconhecido.');
@@ -186,7 +181,6 @@ export default function RegistrarPresencaModal({ medicos, grid, onClose, onSucce
         {/* Footer */}
         <div className="p-6 pt-4 shrink-0 space-y-3 border-t border-[rgba(74,144,226,0.1)]">
           {error && <p className="text-[#F59E0B] text-xs">{error}</p>}
-          {debugInfo && <p className="text-[#3B9EF5] text-xs font-mono">{debugInfo}</p>}
           <button
             onClick={handleSubmit}
             disabled={loading || !sessaoFormatada}

@@ -80,10 +80,6 @@ export async function GET() {
       return { sessao, presentes, faltaram, total: presentes + faltaram };
     });
 
-    // Debug: count rows per last session
-    const lastSessao = sessoesOrdenadas[sessoesOrdenadas.length - 1];
-    const lastSessaoGridCount = lastSessao ? Object.keys(grid).filter(m => grid[m][lastSessao]).length : 0;
-
     return NextResponse.json({
       kpis: { taxaGeral, totalSessoes, totalMedicos: medicosAtivos.length },
       medicoStats: medicoStats.sort((a, b) => b.taxa - a.taxa),
@@ -91,9 +87,6 @@ export async function GET() {
       medicos: medicosAtivos,
       sessoes: sessoesOrdenadas,
       grid,
-      _debug: { totalRowsRead: allPresencaRows.length, lastSessao, lastSessaoGridCount },
-    }, {
-      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
     });
   } catch (err) {
     console.error('[presenca-data]', err);

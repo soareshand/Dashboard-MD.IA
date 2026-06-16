@@ -26,7 +26,6 @@ interface PresencaData {
   medicos: string[];
   sessoes: string[];
   grid: Record<string, Record<string, string>>;
-  _debug?: { totalRowsRead: number; lastSessao: string; lastSessaoGridCount: number };
 }
 
 const MESES_PT = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -162,11 +161,6 @@ export default function PresencaTab() {
 
   return (
     <div className="space-y-6">
-      {data._debug && (
-        <div className="text-xs font-mono text-[#3B9EF5] bg-[#0D0D20] border border-[rgba(59,158,245,0.2)] rounded-lg px-4 py-2">
-          DEBUG — linhas lidas do DB: {data._debug.totalRowsRead} | última sessão: {data._debug.lastSessao} | entradas no grid: {data._debug.lastSessaoGridCount}
-        </div>
-      )}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="grid grid-cols-3 gap-3 sm:flex-1">
           <KpiCard icon="chart" title="Taxa Geral de Presença" value={`${kpisFiltrados.taxaGeral}%`} />
