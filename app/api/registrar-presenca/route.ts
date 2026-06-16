@@ -16,13 +16,19 @@ export async function POST(req: NextRequest) {
     }
 
     const isoDate = ddmmyyyyToISO(data);
+
+    // Delete all existing rows for this session before inserting to avoid duplicates
+    const { error: delError } = await supabase
+      .from('presencas')
+      .delete()
+      .eq('sessao', isoDate);
+    if (delError) throw delError;
+
     const rows = Object.entries(presencas as Record<string, 'Presente' | 'Faltou'>).map(
       ([medico, status]) => ({ medico, sessao: isoDate, status })
     );
 
-    const { error } = await supabase
-      .from('presencas')
-      .upsert(rows, { onConflict: 'medico,sessao' });
+    const { error } = await supabase.from('presencas').insert(rows);
 
     if (error) throw error;
     return NextResponse.json({ success: true });
