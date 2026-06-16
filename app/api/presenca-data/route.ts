@@ -11,7 +11,7 @@ function isoToDdMmYyyy(iso: string): string {
 export async function GET() {
   try {
     const [{ data: presencaRows }, { data: clientesRows }] = await Promise.all([
-      supabase.from('presencas').select('medico, sessao, status').order('sessao', { ascending: true }).order('id', { ascending: true }),
+      supabase.from('presencas').select('medico, sessao, status').order('sessao', { ascending: true }).order('id', { ascending: true }).limit(10000),
       supabase.from('clientes').select('nome, situacao'),
     ]);
 
