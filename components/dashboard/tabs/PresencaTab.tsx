@@ -323,6 +323,7 @@ export default function PresencaTab() {
       {showModal && (
         <RegistrarPresencaModal
           medicos={data.medicos}
+          grid={data.grid}
           onClose={() => setShowModal(false)}
           onSuccess={() => { setShowModal(false); fetchData(); }}
         />
