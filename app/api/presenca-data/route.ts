@@ -10,10 +10,28 @@ function isoToDdMmYyyy(iso: string): string {
 
 export async function GET() {
   try {
-    const [{ data: presencaRows }, { data: clientesRows }] = await Promise.all([
-      supabase.from('presencas').select('medico, sessao, status').order('sessao', { ascending: true }).order('id', { ascending: true }).limit(10000),
-      supabase.from('clientes').select('nome, situacao'),
-    ]);
+    // Start clientes query in parallel with presencas pagination
+    const clientesPromise = supabase.from('clientes').select('nome, situacao');
+
+    // Fetch all presenca rows via pagination (Supabase caps single queries at 1000 rows)
+    const allPresencaRows: { medico: string; sessao: string; status: string }[] = [];
+    const BATCH = 1000;
+    let from = 0;
+    while (true) {
+      const { data: batch, error: batchError } = await supabase
+        .from('presencas')
+        .select('medico, sessao, status')
+        .order('sessao', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, from + BATCH - 1);
+      if (batchError) throw batchError;
+      if (!batch || batch.length === 0) break;
+      allPresencaRows.push(...batch);
+      if (batch.length < BATCH) break;
+      from += BATCH;
+    }
+
+    const { data: clientesRows } = await clientesPromise;
 
     const medicosAtivos = (clientesRows ?? [])
       .filter(m => m.situacao === 'Ativo')
@@ -30,7 +48,7 @@ export async function GET() {
     const sessoesOrdenadas: string[] = [];
     const sessoesSet = new Set<string>();
 
-    for (const row of (presencaRows ?? [])) {
+    for (const row of allPresencaRows) {
       const sessao = isoToDdMmYyyy(row.sessao);
       // Resolve presencas.medico to the canonical clientes name (case-insensitive)
       const normKey = row.medico.trim().toLowerCase();
@@ -73,7 +91,7 @@ export async function GET() {
       medicos: medicosAtivos,
       sessoes: sessoesOrdenadas,
       grid,
-      _debug: { totalRowsRead: (presencaRows ?? []).length, lastSessao, lastSessaoGridCount },
+      _debug: { totalRowsRead: allPresencaRows.length, lastSessao, lastSessaoGridCount },
     }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
     });
