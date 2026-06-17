@@ -58,11 +58,30 @@ function calcScore(opts: {
   return Math.round(s * 10) / 10;
 }
 
+async function fetchAllPresencas(): Promise<Array<{ medico: string; sessao: string; status: string }>> {
+  const BATCH = 1000;
+  let from = 0;
+  const all: Array<{ medico: string; sessao: string; status: string }> = [];
+  while (true) {
+    const { data, error } = await supabase
+      .from('presencas')
+      .select('medico, sessao, status')
+      .order('id', { ascending: true })
+      .range(from, from + BATCH - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < BATCH) break;
+    from += BATCH;
+  }
+  return all;
+}
+
 export async function GET() {
   try {
     const [
       { data: clientesRows },
-      { data: presencaRows },
+      allPresencaRows,
       { data: quizRows },
       { data: mensalMedicoRows },
       { data: mensalEquipeRows, error: equipeErr },
@@ -74,7 +93,7 @@ export async function GET() {
       { data: renovacoesRows },
     ] = await Promise.all([
       supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos').eq('situacao', 'Ativo'),
-      supabase.from('presencas').select('medico, sessao, status'),
+      fetchAllPresencas(),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
       supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nps'),
       supabase.from('quiz_mensal_equipe_responses').select('clinica, timestamp, nps'),
@@ -105,15 +124,19 @@ export async function GET() {
     const clientes = clientesRows ?? [];
     const totalProdutos = (catalogRows ?? []).length;
 
-    // Presença: count unique sessions and presences per medico
-    const allSessoes = new Set((presencaRows ?? []).map(p => p.sessao as string));
+    // Presença: case-insensitive name normalization + all rows via pagination
+    const normToCanonical: Record<string, string> = {};
+    for (const m of clientes) normToCanonical[m.nome.trim().toLowerCase()] = m.nome.trim();
+
+    const allSessoes = new Set(allPresencaRows.map(p => p.sessao));
     const totalSessoes = allSessoes.size;
     const presCount = new Map<string, number>();
     const medicosInPresenca = new Set<string>();
-    for (const p of (presencaRows ?? [])) {
-      medicosInPresenca.add(p.medico);
+    for (const p of allPresencaRows) {
+      const canonical = normToCanonical[p.medico.trim().toLowerCase()] ?? p.medico.trim();
+      medicosInPresenca.add(canonical);
       if (p.status === 'Presente') {
-        presCount.set(p.medico, (presCount.get(p.medico) ?? 0) + 1);
+        presCount.set(canonical, (presCount.get(canonical) ?? 0) + 1);
       }
     }
     const presencaByMedico = new Map<string, { presencas: number; taxa: number }>();
