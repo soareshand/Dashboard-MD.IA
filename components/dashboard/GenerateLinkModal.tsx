@@ -172,20 +172,20 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
     const isMed = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico';
     const saudacao = isMed ? `${genero} ${getPrimeiroNome(nome)}` : nome.trim().split(' ')[0];
     if (quizType === 'call') {
-      return `Oláa, ${saudacao}!\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido, leva menos de 2 minutinhos. Sua avaliação é essencial para melhorarmos cada vez mais!\n\n${url}`;
+      return `Oláa, ${saudacao}!\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido, leva menos de 1 minutinho. Sua avaliação é essencial para melhorarmos cada vez mais!\n\n${url}`;
     }
     if (quizType === 'treinamento') {
       const tool = ferramenta.trim() || 'a ferramenta';
-      return `Oláa, ${saudacao}!\n\nObrigado pela disponibilidade no treinamento de ${tool}! Queremos saber como foi a sua experiência.\n\nPreparamos um formulário rápido, leva menos de 2 minutinhos. Sua avaliação nos ajuda a oferecer treinamentos cada vez melhores!\n\n${url}`;
+      return `Oláa, ${saudacao}!\n\nObrigado pela disponibilidade no treinamento de ${tool}! Queremos saber como foi a sua experiência.\n\nPreparamos um formulário rápido, leva menos de 1 minutinho. Sua avaliação nos ajuda a oferecer treinamentos cada vez melhores!\n\n${url}`;
     }
     if (quizType === 'mensal_medico') {
-      return `Oláa, ${saudacao}! Tudo bem?\n\nTodo mês acompanhamos de perto a evolução da sua clínica, e adoraríamos ouvir você!\n\nPreparamos uma avaliação rápida, são apenas 4 perguntinhas, leva menos de 2 minutinhos. Seu feedback faz toda a diferença para continuarmos evoluindo juntos.\n\n${url}`;
+      return `Oláa, ${saudacao}! Tudo bem?\n\nTodo mês acompanhamos de perto a evolução da sua clínica, e adoraríamos ouvir você!\n\nPreparamos uma avaliação rápida, são apenas 4 perguntinhas, leva menos de 1 minutinho. Seu feedback faz toda a diferença para continuarmos evoluindo juntos.\n\n${url}`;
     }
     if (quizType === 'mensal_equipe') {
-      return `Oláa, ${saudacao}!\n\nTodo mês colhemos o feedback da equipe para garantir que tudo está funcionando bem e identificar onde podemos melhorar.\n\nPreparamos uma avaliação rápida, são apenas 4 perguntinhas, leva menos de 2 minutinhos.\n\n${url}`;
+      return `Oláa, ${saudacao}!\n\nTodo mês colhemos o feedback da equipe para garantir que tudo está funcionando bem e identificar onde podemos melhorar.\n\nPreparamos uma avaliação rápida, são apenas 4 perguntinhas, leva menos de 1 minutinho.\n\n${url}`;
     }
     if (quizType === 'encerramento') {
-      return `Oláa, ${saudacao}! Tudo bem?\n\nPrimeiro, queremos te agradecer pela sua jornada conosco na MD.IA. Foi uma honra fazer parte da evolução da sua clínica.\n\nGostaríamos muito de entender a sua experiência. Preparamos um formulário rápido — leva menos de 2 minutinhos. O seu feedback é muito valioso e nos ajuda a melhorar continuamente.\n\n${url}\n\nQualquer dúvida, estou à disposição. Muito obrigado!`;
+      return `Oláa, ${saudacao}! Tudo bem?\n\nPrimeiro, queremos te agradecer pela sua jornada conosco na MD.IA. Foi uma honra fazer parte da evolução da sua clínica.\n\nGostaríamos muito de entender a sua experiência. Preparamos um formulário rápido — leva menos de 1 minutinho. O seu feedback é muito valioso e nos ajuda a melhorar continuamente.\n\n${url}\n\nQualquer dúvida, estou à disposição. Muito obrigado!`;
     }
     return `Oláa, ${saudacao}! Tudo bem?\n\nPassando para avisar que a sua mentoria da MD.IA já está chegando ao fim. Preparei um formulário onde gostaríamos de ouvir a sua experiência ao longo da jornada, seus objetivos, resultados percebidos, avaliação das ferramentas e mentorias, além da intenção de renovação.\n\nSegue o link: ${url}\n\nO seu retorno é muito importante para nós e nos ajuda a evoluir cada vez mais. Qualquer dúvida, estou à disposição. Muito obrigado!`;
   }

@@ -9,7 +9,6 @@ import FinanceiroTab from '@/components/dashboard/tabs/FinanceiroTab';
 import ClientesTab from '@/components/dashboard/tabs/ClientesTab';
 import PresencaTab from '@/components/dashboard/tabs/PresencaTab';
 import TarefasTab from '@/components/dashboard/tabs/TarefasTab';
-import AtividadesTab from '@/components/dashboard/tabs/AtividadesTab';
 import PulsoTab, { type ModalPrefill } from '@/components/dashboard/tabs/PulsoTab';
 
 const TABS = [
@@ -20,7 +19,6 @@ const TABS = [
   { id: 'clientes',   label: 'Clientes',     icon: '👥', featured: false },
   { id: 'presenca',   label: 'Presenças',    icon: '📅', featured: false },
   { id: 'tarefas',    label: 'Tarefas',      icon: '✅', featured: false },
-  { id: 'atividades', label: 'Atividades',   icon: '📋', featured: false },
 ] as const;
 
 function SidebarIcon({ id, active, size = 26, inactiveColor = '#ffffff' }: { id: string; active: boolean; size?: number; inactiveColor?: string }) {
@@ -87,7 +85,6 @@ function TabContent({ activeTab, onOpenModal, pulsoVersion }: { activeTab: TabId
       {activeTab === 'clientes'   && <ClientesTab />}
       {activeTab === 'presenca'   && <PresencaTab />}
       {activeTab === 'tarefas'    && <TarefasTab />}
-      {activeTab === 'atividades' && <AtividadesTab />}
       {activeTab === 'pulso'      && <PulsoTab key={pulsoVersion} onOpenModal={onOpenModal} />}
     </>
   );
