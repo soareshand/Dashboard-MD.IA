@@ -22,6 +22,7 @@ interface Renovacao {
   status_contrato: string;
   valor: number;
   status_financeiro: string;
+  observacoes: string | null;
 }
 
 interface FinanceiroData {
@@ -51,6 +52,7 @@ const BLANK_RENOVACAO = {
   statusContrato: 'Não enviado',
   valor: '',
   statusFinanceiro: 'Em Aberto',
+  observacoes: '',
 };
 
 type ContratoForm = typeof BLANK_CONTRATO;
@@ -394,6 +396,16 @@ function RenovacaoModal({
               className={inp}
             />
           </div>
+          <div className="sm:col-span-2">
+            <label className={lbl}>Observações</label>
+            <textarea
+              value={form.observacoes}
+              onChange={e => set('observacoes', e.target.value)}
+              placeholder="..."
+              rows={2}
+              className={inp + ' resize-none'}
+            />
+          </div>
         </div>
 
         {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
@@ -483,6 +495,7 @@ export default function FinanceiroTab() {
       statusContrato: r.status_contrato,
       valor: String(r.valor ?? 0),
       statusFinanceiro: r.status_financeiro,
+      observacoes: r.observacoes ?? '',
     });
   }
 

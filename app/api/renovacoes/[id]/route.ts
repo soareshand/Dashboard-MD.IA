@@ -27,6 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         status_contrato: body.statusContrato || 'Enviado',
         valor: Number(body.valor) || 0,
         status_financeiro: body.statusFinanceiro || 'Em Aberto',
+        observacoes: body.observacoes?.trim() || null,
       })
       .eq('id', params.id);
 
