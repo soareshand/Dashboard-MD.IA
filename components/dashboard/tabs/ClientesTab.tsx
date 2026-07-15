@@ -11,6 +11,7 @@ interface Membro {
   nome: string;
   clinica: string | null;
   clinicas: string[] | null;
+  razao_social: string | null;
   grupo: string | null;
   entrada: string | null;
   saida: string | null;
@@ -468,6 +469,7 @@ const BLANK_FORM = {
   situacao: 'Ativo' as 'Ativo' | 'Inativo',
   nome: '',
   clinica: '',
+  razaoSocial: '',
   grupo: '',
   entrada: '',
   saida: '',
@@ -586,7 +588,7 @@ function MembroModal({
 }) {
   const [form, setForm] = useState<MembroForm>(
     initial
-      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, cnpj: initial.cnpj, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
+      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', razaoSocial: initial.razaoSocial ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, cnpj: initial.cnpj, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
       : BLANK_FORM
   );
   const [clinicas, setClinicas] = useState<string[]>(
@@ -755,6 +757,10 @@ function MembroModal({
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label className={lbl}>Razão Social</label>
+              <input value={form.razaoSocial} onChange={e => set('razaoSocial', e.target.value)} placeholder="Razão social da empresa" className={inp} />
             </div>
             <div>
               <label className={lbl}>Entrada</label>
@@ -939,6 +945,7 @@ export default function ClientesTab() {
       nome: m.nome,
       clinica: m.clinica ?? '',
       clinicas: m.clinicas?.length ? m.clinicas : m.clinica ? [m.clinica] : undefined,
+      razaoSocial: m.razao_social ?? '',
       grupo: m.grupo ?? '',
       entrada: m.entrada ?? '',
       saida: m.saida ?? '',

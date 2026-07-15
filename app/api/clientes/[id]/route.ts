@@ -25,6 +25,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         situacao: body.situacao || 'Ativo',
         nome: body.nome.trim(),
         clinica: body.clinica || null,
+        razao_social: body.razaoSocial || null,
         grupo: body.grupo || null,
         entrada: body.entrada || null,
         saida: body.saida || null,
