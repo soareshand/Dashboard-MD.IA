@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import QuizHeader from '@/components/quiz/QuizHeader';
 import QuizClient from './QuizClient';
+import QuizClientIG from './QuizClientIG';
 import QuizCallClient from './QuizCallClient';
 import QuizTreinamentoClient from './QuizTreinamentoClient';
 import QuizMensalMedicoClient from './QuizMensalMedicoClient';
@@ -50,6 +51,12 @@ export default async function QuizPage({ params }: Props) {
           )}
           {(quizType === 'renovacao' || !quizType) && (
             <QuizClient
+              token={token}
+              initial={{ nome: tokenData.cliente_nome, clinica: tokenData.clinica, email: tokenData.email }}
+            />
+          )}
+          {quizType === 'renovacao_ig' && (
+            <QuizClientIG
               token={token}
               initial={{ nome: tokenData.cliente_nome, clinica: tokenData.clinica, email: tokenData.email }}
             />

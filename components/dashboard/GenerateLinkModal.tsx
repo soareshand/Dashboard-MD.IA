@@ -15,6 +15,7 @@ interface GenerateLinkModalProps {
 }
 
 type QuizType = 'renovacao' | 'call' | 'treinamento' | 'mensal_medico' | 'mensal_equipe' | 'encerramento';
+type RenovacaoSubtipo = 'mentorado' | 'ig';
 type Genero = 'Dr.' | 'Dra.';
 type Participante = 'medico' | 'equipe';
 
@@ -65,6 +66,7 @@ const INP = 'w-full bg-[#12122A] border border-[rgba(59,158,245,0.25)] rounded-x
 
 export default function GenerateLinkModal({ onClose, initialData, onLinkGenerated }: GenerateLinkModalProps) {
   const [quizType, setQuizType] = useState<QuizType>(initialData?.quizType ?? 'renovacao');
+  const [renovacaoSubtipo, setRenovacaoSubtipo] = useState<RenovacaoSubtipo>('mentorado');
   const [participante, setParticipante] = useState<Participante>(
     initialData?.quizType === 'mensal_equipe' ? 'equipe' : 'medico'
   );
@@ -141,10 +143,11 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
     setLoading(true);
     try {
       const meta = quizType === 'call' ? tipoCall : quizType === 'treinamento' ? ferramenta : '';
+      const actualQuizType = quizType === 'renovacao' && renovacaoSubtipo === 'ig' ? 'renovacao_ig' : quizType;
       const res = await fetch('/api/generate-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, clinica, quizType, meta, email: '', enviarEmail: false }),
+        body: JSON.stringify({ nome, clinica, quizType: actualQuizType, meta, email: '', enviarEmail: false }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erro ao gerar link.');
@@ -169,8 +172,11 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
   }
 
   function buildWhatsAppMessage(url: string): string {
-    const isMed = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico';
+    const isMed = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico' || isIGRenovacao;
     const saudacao = isMed ? `${genero} ${getPrimeiroNome(nome)}` : nome.trim().split(' ')[0];
+    if (isIGRenovacao) {
+      return `Oláa, ${saudacao}! Tudo bem?\n\nPassando para avisar que o contrato com o Infinite Gear está chegando ao fim. Gostaríamos muito de ouvir a sua experiência com as ferramentas e entender os resultados percebidos na sua clínica.\n\nPreparei um formulário rápido, leva menos de 1 minutinho: ${url}\n\nO seu retorno é muito importante para nós. Qualquer dúvida, estou à disposição. Muito obrigado!`;
+    }
     if (quizType === 'call') {
       return `Oláa, ${saudacao}!\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido, leva menos de 1 minutinho. Sua avaliação é essencial para melhorarmos cada vez mais!\n\n${url}`;
     }
@@ -197,7 +203,8 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
     setTimeout(() => setCopiedMsg(false), 2000);
   }
 
-  const isMedicoFlow = quizType === 'renovacao' || quizType === 'mensal_medico' || quizType === 'encerramento' || participante === 'medico';
+  const isIGRenovacao = quizType === 'renovacao' && renovacaoSubtipo === 'ig';
+  const isMedicoFlow = (quizType === 'renovacao' && renovacaoSubtipo === 'mentorado') || quizType === 'mensal_medico' || quizType === 'encerramento' || participante === 'medico';
 
   const metaValid =
     quizType === 'renovacao' ||
@@ -257,6 +264,28 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
 
+            {/* Subtipo — Mentorado / Infinite Gear (só para Renovação) */}
+            {quizType === 'renovacao' && (
+              <div>
+                <label className="text-xs text-[#A0A0B0] mb-1.5 block">Tipo de cliente</label>
+                <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)]">
+                  {(['mentorado', 'ig'] as RenovacaoSubtipo[]).map(sub => (
+                    <button
+                      key={sub}
+                      type="button"
+                      onClick={() => { setRenovacaoSubtipo(sub); setNome(''); setClinica(''); }}
+                      className={`flex-1 py-2.5 text-xs font-sora font-semibold transition-all ${
+                        renovacaoSubtipo === sub ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
+                      }`}
+                      style={renovacaoSubtipo === sub ? BTN_ACTIVE : {}}
+                    >
+                      {sub === 'mentorado' ? 'Mentorado' : 'Infinite Gear'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Participante toggle — só para call e treinamento (pulso tem tipo fixo) */}
             {quizType !== 'renovacao' && quizType !== 'mensal_medico' && quizType !== 'mensal_equipe' && (
               <div>
@@ -285,8 +314,34 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
                 {isMedicoFlow ? 'Nome do médico *' : 'Nome do responsável *'}
               </label>
 
-              {isMedicoFlow ? (
-                /* Doctor dropdown + Dr./Dra. toggle */
+              {isIGRenovacao ? (
+                /* IG: Dr./Dra. toggle + free text */
+                <div className="flex gap-2">
+                  <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
+                    {(['Dr.', 'Dra.'] as Genero[]).map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setGenero(g)}
+                        className={`px-3 py-2.5 text-xs font-sora font-semibold transition-all ${
+                          genero === g ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
+                        }`}
+                        style={genero === g ? BTN_ACTIVE : {}}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    value={nome}
+                    onChange={e => setNome(e.target.value)}
+                    required
+                    placeholder="Nome do médico"
+                    className={INP + ' flex-1'}
+                  />
+                </div>
+              ) : isMedicoFlow ? (
+                /* Mentorado: Dr./Dra. toggle + dropdown */
                 <div className="flex gap-2">
                   <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
                     {(['Dr.', 'Dra.'] as Genero[]).map(g => (
@@ -316,7 +371,7 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
                   </select>
                 </div>
               ) : (
-                /* Free text for equipe */
+                /* Equipe: free text */
                 <input
                   value={nome}
                   onChange={e => setNome(e.target.value)}
@@ -399,7 +454,7 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
               disabled={loading || !metaValid}
               className="w-full py-3 rounded-xl btn-glow text-white font-sora font-semibold text-sm disabled:opacity-60"
             >
-              {loading ? 'Gerando…' : `Gerar Link — ${ALL_TABS.find(t => t.id === quizType)?.label}`}
+              {loading ? 'Gerando…' : `Gerar Link — ${isIGRenovacao ? 'Infinite Gear' : ALL_TABS.find(t => t.id === quizType)?.label}`}
             </button>
           </form>
         ) : (
@@ -408,7 +463,7 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
               <div>
                 <p className="text-[#3B9EF5] font-medium text-sm">Link gerado!</p>
                 <p className="text-[#93C5FD]/70 text-xs mt-0.5">
-                  {ALL_TABS.find(t => t.id === quizType)?.label}
+                  {isIGRenovacao ? 'Renovação · Infinite Gear' : ALL_TABS.find(t => t.id === quizType)?.label}
                   {quizType === 'call' && tipoCall ? ` · ${tipoCall}` : ''}
                   {quizType === 'treinamento' && ferramenta ? ` · ${ferramenta}` : ''}
                   {quizType !== 'renovacao' && quizType !== 'mensal_medico' && quizType !== 'mensal_equipe'
