@@ -311,36 +311,10 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
             {/* Nome */}
             <div>
               <label className="text-xs text-[#A0A0B0] mb-1.5 block">
-                {isMedicoFlow ? 'Nome do médico *' : 'Nome do responsável *'}
+                {isMedicoFlow || isIGRenovacao ? 'Nome do médico *' : 'Nome do responsável *'}
               </label>
 
-              {isIGRenovacao ? (
-                /* IG: Dr./Dra. toggle + free text */
-                <div className="flex gap-2">
-                  <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
-                    {(['Dr.', 'Dra.'] as Genero[]).map(g => (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => setGenero(g)}
-                        className={`px-3 py-2.5 text-xs font-sora font-semibold transition-all ${
-                          genero === g ? 'text-white' : 'bg-[#12122A] text-[#A0A0B0] hover:text-white'
-                        }`}
-                        style={genero === g ? BTN_ACTIVE : {}}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                  <input
-                    value={nome}
-                    onChange={e => setNome(e.target.value)}
-                    required
-                    placeholder="Nome do médico"
-                    className={INP + ' flex-1'}
-                  />
-                </div>
-              ) : isMedicoFlow ? (
+              {isIGRenovacao || isMedicoFlow ? (
                 /* Mentorado: Dr./Dra. toggle + dropdown */
                 <div className="flex gap-2">
                   <div className="flex rounded-xl overflow-hidden border border-[rgba(59,158,245,0.25)] shrink-0">
@@ -385,7 +359,7 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
             {/* Clínica */}
             <div>
               <label className="text-xs text-[#A0A0B0] mb-1.5 block">Clínica *</label>
-              {!isMedicoFlow && clinicasDisponiveis.length > 0 ? (
+              {!isMedicoFlow && !isIGRenovacao && clinicasDisponiveis.length > 0 ? (
                 /* Equipe: dropdown with registered clinics */
                 <select
                   value={clinica}
