@@ -92,7 +92,7 @@ export async function GET() {
       { data: contratoRows },
       { data: renovacoesRows },
     ] = await Promise.all([
-      supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos').eq('situacao', 'Ativo'),
+      supabase.from('clientes').select('id, nome, clinica, grupo, entrada, data_nascimento, produtos, conexoes_oficial, conexoes_nao_oficial').eq('situacao', 'Ativo'),
       fetchAllPresencas(),
       supabase.from('quiz_renovacao_responses').select('nome, timestamp, nota_mentorias_grupo, nota_academy, nota_agente_ia, nota_gerente_ia, nota_automacoes, nota_dashboard, nota_crm, nota_treinamentos_crm, nota_suporte_equipe, nota_mentoria_gestao'),
       supabase.from('quiz_mensal_medico_responses').select('nome, timestamp, nps'),
@@ -281,6 +281,8 @@ export async function GET() {
         score,
         isAniversariante,
         isAniversarioHoje,
+        conexoesOficial: (m as { conexoes_oficial: number | null }).conexoes_oficial ?? 0,
+        conexoesNaoOficial: (m as { conexoes_nao_oficial: number | null }).conexoes_nao_oficial ?? 0,
       };
     }).sort((a, b) => b.score - a.score);
 

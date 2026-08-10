@@ -30,6 +30,8 @@ interface CardData {
   score: number;
   isAniversariante: boolean;
   isAniversarioHoje: boolean;
+  conexoesOficial: number;
+  conexoesNaoOficial: number;
 }
 
 interface GeralData {
@@ -159,6 +161,8 @@ function ClinicCard({ card, totalProdutos, catalog }: { card: CardData; totalPro
     : card.produtosAtivos > 0 ? '#8B5CF6' : '#a2a2b2';
   const sc = (card.statusContrato ?? '').toLowerCase();
   const contratoColor = sc === 'assinado' ? '#3B9EF5' : sc === 'não precisa' ? '#8B5CF6' : '#a2a2b2';
+  const totalConexoes = card.conexoesOficial + card.conexoesNaoOficial;
+  const conexoesColor = totalConexoes === 0 ? '#a2a2b2' : card.conexoesOficial > 0 ? '#3B9EF5' : '#F59E0B';
 
   return (
     <div className="card-gradient-border p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
@@ -227,6 +231,11 @@ function ClinicCard({ card, totalProdutos, catalog }: { card: CardData; totalPro
           label="Contrato"
           value={card.statusContrato || '—'}
           color={contratoColor}
+        />
+        <MetricChip
+          label="Conexões CRM"
+          value={totalConexoes > 0 ? `${card.conexoesOficial} Of. / ${card.conexoesNaoOficial} Não Of.` : '—'}
+          color={conexoesColor}
         />
       </div>
 
@@ -337,6 +346,7 @@ export default function GeralTab() {
   const [error, setError] = useState('');
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState<'todos' | 'saudavel' | 'atencao' | 'critico'>('todos');
+  const [apenasOficial, setApenasOficial] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -385,7 +395,8 @@ export default function GeralTab() {
       if (filtro === 'atencao') return c.score >= 4 && c.score < 7;
       if (filtro === 'critico') return c.score < 4;
       return true;
-    });
+    })
+    .filter(c => !apenasOficial || c.conexoesOficial > 0);
 
   return (
     <div className="space-y-6">
@@ -424,6 +435,16 @@ export default function GeralTab() {
           ))}
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setApenasOficial(v => !v)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-sora transition-all whitespace-nowrap border ${
+              apenasOficial
+                ? 'bg-[#4A90E2] text-white border-[#4A90E2]'
+                : 'text-[#A0A0B0] hover:text-white border-[rgba(74,144,226,0.25)]'
+            }`}
+          >
+            🔌 API Oficial
+          </button>
           <input
             value={busca}
             onChange={e => setBusca(e.target.value)}
