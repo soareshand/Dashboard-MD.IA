@@ -39,6 +39,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         email: body.email || null,
         data_nascimento: body.dataNascimento || null,
         ...(body.produtos !== undefined ? { produtos: body.produtos } : {}),
+        ...(body.conexoesOficial !== undefined ? { conexoes_oficial: body.conexoesOficial } : {}),
+        ...(body.conexoesNaoOficial !== undefined ? { conexoes_nao_oficial: body.conexoesNaoOficial } : {}),
       })
       .eq('id', params.id);
 

@@ -26,6 +26,8 @@ interface Membro {
   ultima_renovacao: string | null;
   created_at: string;
   produtos: Record<string, boolean> | null;
+  conexoes_oficial: number | null;
+  conexoes_nao_oficial: number | null;
 }
 
 interface ProdutoItem {
@@ -481,6 +483,8 @@ const BLANK_FORM = {
   telefone: '',
   email: '',
   dataNascimento: '',
+  conexoesOficial: '',
+  conexoesNaoOficial: '',
 };
 
 type MembroForm = typeof BLANK_FORM;
@@ -588,13 +592,13 @@ function MembroModal({
 }) {
   const [form, setForm] = useState<MembroForm>(
     initial
-      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', razaoSocial: initial.razaoSocial ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, cnpj: initial.cnpj, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento }
+      ? { situacao: initial.situacao as 'Ativo' | 'Inativo', nome: initial.nome, clinica: initial.clinica ?? '', razaoSocial: initial.razaoSocial ?? '', grupo: initial.grupo, entrada: initial.entrada, saida: initial.saida, cpf: initial.cpf, cnpj: initial.cnpj, endereco: initial.endereco, cep: initial.cep, estado: initial.estado, telefone: initial.telefone, email: initial.email, dataNascimento: initial.dataNascimento, conexoesOficial: initial.conexoesOficial ?? '', conexoesNaoOficial: initial.conexoesNaoOficial ?? '' }
       : BLANK_FORM
   );
   const [clinicas, setClinicas] = useState<string[]>(
     initial?.clinicas?.length ? initial.clinicas : initial?.clinica ? [initial.clinica] : ['']
   );
-  const [modalTab, setModalTab] = useState<'dados' | 'produtos'>('dados');
+  const [modalTab, setModalTab] = useState<'dados' | 'produtos' | 'conexoes'>('dados');
   const [catalog, setCatalog] = useState<ProdutoItem[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [produtosAtivos, setProdutosAtivos] = useState<Record<string, boolean>>(initial?.produtos ?? {});
@@ -638,6 +642,8 @@ function MembroModal({
           clinica: clinicasFiltradas[0] || null,
           clinicas: clinicasFiltradas.length > 0 ? clinicasFiltradas : null,
           produtos: produtosAtivos,
+          conexoesOficial: Number(form.conexoesOficial) || 0,
+          conexoesNaoOficial: Number(form.conexoesNaoOficial) || 0,
         }),
       });
       const data = await res.json();
@@ -672,6 +678,7 @@ function MembroModal({
   const lbl = 'text-xs text-[#A0A0B0] mb-1 block';
 
   const produtosAtivosCount = catalog.filter(p => produtosAtivos[p.id]).length;
+  const totalConexoes = (Number(form.conexoesOficial) || 0) + (Number(form.conexoesNaoOficial) || 0);
 
   return (
     <div
@@ -703,6 +710,17 @@ function MembroModal({
             {catalog.length > 0 && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${modalTab === 'produtos' ? 'bg-white/20' : 'bg-[rgba(74,144,226,0.2)]'}`}>
                 {produtosAtivosCount}/{catalog.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setModalTab('conexoes')}
+            className={`flex-1 py-1.5 rounded-lg text-sm font-sora transition-all flex items-center justify-center gap-1.5 ${modalTab === 'conexoes' ? 'bg-[#4A90E2] text-white' : 'text-[#A0A0B0] hover:text-white'}`}
+          >
+            🔌 Conexões
+            {totalConexoes > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${modalTab === 'conexoes' ? 'bg-white/20' : 'bg-[rgba(74,144,226,0.2)]'}`}>
+                {totalConexoes}
               </span>
             )}
           </button>
@@ -855,6 +873,40 @@ function MembroModal({
           </div>
         )}
 
+        {/* ── Conexões tab ── */}
+        {modalTab === 'conexoes' && (
+          <div>
+            <p className="text-[#555570] text-xs mb-4">Quantidade de canais conectados no CRM, por tipo de API.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={lbl}>Canais via API Oficial</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.conexoesOficial}
+                  onChange={e => set('conexoesOficial', e.target.value)}
+                  placeholder="0"
+                  className={inp}
+                />
+              </div>
+              <div>
+                <label className={lbl}>Canais via API Não Oficial</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.conexoesNaoOficial}
+                  onChange={e => set('conexoesNaoOficial', e.target.value)}
+                  placeholder="0"
+                  className={inp}
+                />
+              </div>
+            </div>
+            <p className="text-[#404060] text-xs mt-4 text-right">
+              {totalConexoes} {totalConexoes === 1 ? 'canal conectado' : 'canais conectados'} no total
+            </p>
+          </div>
+        )}
+
         {error && <p className="text-[#F59E0B] text-xs mt-4">{error}</p>}
 
         <div className="flex gap-3 mt-6">
@@ -958,6 +1010,8 @@ export default function ClientesTab() {
       email: m.email ?? '',
       dataNascimento: m.data_nascimento ?? '',
       produtos: m.produtos ?? {},
+      conexoesOficial: m.conexoes_oficial != null ? String(m.conexoes_oficial) : '',
+      conexoesNaoOficial: m.conexoes_nao_oficial != null ? String(m.conexoes_nao_oficial) : '',
     });
   }
 

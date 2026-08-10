@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
         email: body.email || null,
         data_nascimento: body.dataNascimento || null,
         produtos: body.produtos ?? {},
+        conexoes_oficial: body.conexoesOficial ?? 0,
+        conexoes_nao_oficial: body.conexoesNaoOficial ?? 0,
       })
       .select()
       .single();
