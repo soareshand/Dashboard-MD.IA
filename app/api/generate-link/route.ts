@@ -4,6 +4,7 @@ import { generateToken, buildQuizUrl } from '@/lib/tokens';
 
 const TIPO_LABELS: Record<string, string> = {
   renovacao: 'Renovação',
+  renovacao_ig: 'Renovação · Infinite Gear',
   call: 'Pós-Call',
   treinamento: 'Pós-Treinamento',
   encerramento: 'Encerramento',
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nome e clínica são obrigatórios.' }, { status: 400 });
     }
 
-    const validTypes = ['renovacao', 'call', 'treinamento', 'mensal_medico', 'mensal_equipe', 'encerramento'];
+    const validTypes = ['renovacao', 'renovacao_ig', 'call', 'treinamento', 'mensal_medico', 'mensal_equipe', 'encerramento'];
     const type = validTypes.includes(quizType) ? quizType : 'renovacao';
 
     const token = generateToken();
