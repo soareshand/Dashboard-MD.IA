@@ -175,7 +175,7 @@ export default function GenerateLinkModal({ onClose, initialData, onLinkGenerate
     const isMed = quizType === 'renovacao' || quizType === 'mensal_medico' || participante === 'medico' || isIGRenovacao;
     const saudacao = isMed ? `${genero} ${getPrimeiroNome(nome)}` : nome.trim().split(' ')[0];
     if (isIGRenovacao) {
-      return `Oláa, ${saudacao}! Tudo bem?\n\nPassando para avisar que o contrato com o Infinite Gear está chegando ao fim. Gostaríamos muito de ouvir a sua experiência com as ferramentas e entender os resultados percebidos na sua clínica.\n\nPreparei um formulário rápido, leva menos de 1 minutinho: ${url}\n\nO seu retorno é muito importante para nós. Qualquer dúvida, estou à disposição. Muito obrigado!`;
+      return `Oláa, ${saudacao}! Tudo bem?\n\nPassando para avisar que o contrato com o Infinite Gear está chegando ao fim. Preparei um formulário onde gostaríamos de ouvir a sua experiência com as ferramentas, os resultados percebidos na sua clínica, além de validar a sua intenção de renovação.\n\nSegue o link, leva menos de 1 minutinho: ${url}\n\nO seu retorno é muito importante para nós. Qualquer dúvida, estou à disposição. Muito obrigado!`;
     }
     if (quizType === 'call') {
       return `Oláa, ${saudacao}!\n\nObrigado pela disponibilidade na nossa call! Adoraríamos saber sua opinião sobre ela.\n\nPreparamos um formulário rápido, leva menos de 1 minutinho. Sua avaliação é essencial para melhorarmos cada vez mais!\n\n${url}`;
