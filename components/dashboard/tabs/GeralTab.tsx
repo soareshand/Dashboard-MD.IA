@@ -347,6 +347,7 @@ export default function GeralTab() {
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState<'todos' | 'saudavel' | 'atencao' | 'critico'>('todos');
   const [apenasOficial, setApenasOficial] = useState(false);
+  const [apenasRenovar, setApenasRenovar] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -396,7 +397,12 @@ export default function GeralTab() {
       if (filtro === 'critico') return c.score < 4;
       return true;
     })
-    .filter(c => !apenasOficial || c.conexoesOficial > 0);
+    .filter(c => !apenasOficial || c.conexoesOficial > 0)
+    .filter(c => !apenasRenovar || (c.diasRenovacao !== null && c.diasRenovacao <= 30));
+
+  const paraRenovar = data.cards
+    .filter(c => c.diasRenovacao !== null && c.diasRenovacao <= 30)
+    .sort((a, b) => (a.diasRenovacao as number) - (b.diasRenovacao as number));
 
   return (
     <div className="space-y-6">
@@ -419,6 +425,30 @@ export default function GeralTab() {
 
       <SummaryKpis cards={data.cards} />
 
+      {paraRenovar.length > 0 && (
+        <div className="card-gradient-border p-4 rounded-xl">
+          <h3 className="flex items-center gap-2 text-xs font-medium text-white uppercase tracking-wider mb-3">
+            🗓 Renovações nos próximos 30 dias
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-[rgba(245,158,11,0.12)] text-[#F59E0B]">{paraRenovar.length}</span>
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {paraRenovar.map(c => {
+              const d = c.diasRenovacao as number;
+              return (
+                <span key={c.id}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs"
+                  style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', color: '#ffffff' }}>
+                  {c.clinica || c.nome}
+                  <span className="text-[10px] font-semibold text-[#F59E0B]">
+                    {d < 0 ? `vencida há ${Math.abs(d)}d` : d === 0 ? 'hoje' : `${d}d`}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="card-gradient-border p-1 flex gap-1 rounded-xl flex-wrap">
@@ -435,6 +465,16 @@ export default function GeralTab() {
           ))}
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setApenasRenovar(v => !v)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-sora transition-all whitespace-nowrap border ${
+              apenasRenovar
+                ? 'bg-[#4A90E2] text-white border-[#4A90E2]'
+                : 'text-[#A0A0B0] hover:text-white border-[rgba(74,144,226,0.25)]'
+            }`}
+          >
+            🗓 Renovar em 30d
+          </button>
           <button
             onClick={() => setApenasOficial(v => !v)}
             className={`px-3 py-1.5 rounded-xl text-xs font-sora transition-all whitespace-nowrap border ${
